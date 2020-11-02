@@ -51,16 +51,16 @@ all file managers, and also some unique features:
 
 ## Dependencies (all are already part of emacs):
 
-   auto-revert -- for auto-revert-mode
-   dired       -- ... (doh) ...
-   dired-x     -- for dired-guess-default, dired-omit-mode
-   dired-aux   -- for dired-compress-files
-   hl-line     -- for hl-line-mode
-   term        -- for term-line-mode, term-send-input
-   view        -- for view-mode
+   * auto-revert -- for auto-revert-mode
+   * dired       -- ... (doh) ...
+   * dired-x     -- for dired-guess-default, dired-omit-mode
+   * dired-aux   -- for dired-compress-files
+   * hl-line     -- for hl-line-mode
+   * term        -- for term-line-mode, term-send-input
+   * view        -- for view-mode
 
    Suggested (not part of emacs):
-   popup       -- for popup-menu*
+   * popup       -- for popup-menu*
 
 
 ## Installation:
