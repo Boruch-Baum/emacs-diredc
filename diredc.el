@@ -81,14 +81,19 @@
 ;;     * option 2: (setq diredc-bonus-configuration nil)
 
 ;;
-;;; Dependencies (all are already part of emacs):
+;;; Dependencies (all are already part of Emacs):
 ;;
 ;;   auto-revert -- for auto-revert-mode
 ;;   dired       -- ... (doh) ...
 ;;   dired-x     -- for dired-guess-default, dired-omit-mode
 ;;   dired-aux   -- for dired-compress-files
 ;;   hl-line     -- for hl-line-mode
+;;   term        -- for term-line-mode, term-send-input
 ;;   view        -- for view-mode
+;;
+;; Suggested (not part of Emacs):
+;;
+;;   popup       -- for popup-menu*
 
 ;;
 ;;; Installation:
@@ -313,9 +318,15 @@
 
 ;;
 ;;; Dependencies
-(require 'dired)   ; ... (doh)
-(require 'dired-x) ; dired-guess-default, dired-omit-mode
-(require 'view)    ; view-mode
+(require 'dired)     ; ... (doh)
+(require 'dired-aux) ; dired-compress-files-alist
+(require 'dired-x)   ; dired-guess-default, dired-omit-mode
+(require 'term)      ; term-line-mode, term-send-input
+(require 'view)      ; view-mode
+
+;;
+;;; Suggested
+;; (require 'popup)  ; popup-menu*
 
 
 ;;
@@ -853,7 +864,7 @@ This function replaces the Emacs standard function in order to
 change a single line in order to allow multiple `dired' buffers
 to be visiting the same directory.
 
-See also: emacs bug report #44023:
+See also: Emacs bug report #44023:
           https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44023"
 ;; IMPORTANT: This is good for emacs 26.1, 27.1, 28.0(snapshot 2020-09)
 ;; TODO: emacs 25.1, emacs 27.1
@@ -1022,9 +1033,10 @@ other Emacs functions."
 
 (defun diredc-shell--array-variable (program val)
   "Internal function for use with variable `diredc-shell-list'.
-Returns a string suitable for function
-`diredc-shell--launch-shell' to pass possible array variables to
-a shell."
+PROGRAM is the shell executable to run, and VAL is the list of
+tagged files in a `dired' buffer. Returns a string suitable for
+function `diredc-shell--launch-shell' to pass possible array
+variables to a shell."
   (if (member (file-name-nondirectory program) '("bash" "zsh"))
     (cond
      ((zerop (length val)) "")
@@ -1034,9 +1046,10 @@ a shell."
 
 (defun diredc-shell--launch-shell (program d1 d2 f1 f2 t1 t2)
   "Internal function for use with variable `diredc-shell-list'.
-PROGRAM is what the shell should run. If optional ANSI is
-NON-NIL, then the program is run in emacs ansi-term; Otherwise,
-the simple emacs term is used."
+PROGRAM is the shell executable to run. D1, D2, F1, F2, T1, and
+T2 are shell variables to be set based upon their dired values.
+If optional ANSI is NON-NIL, then the program is run in Emacs
+`ansi-term'; Otherwise, the simple Emacs `term-mode' is used."
   (let ((explicit-shell-file-name program)
         (buf (get-buffer-create (format "*diredc-shell <%s>*" d1))))
     ;; `shell' performs its window selection differently than
@@ -1052,7 +1065,9 @@ the simple emacs term is used."
     buf))
 
 (defun diredc-shell--launch-eshell (program d1 d2 f1 f2 t1 t2)
-  "Internal function for use with variable `diredc-shell-list'."
+  "Internal function for use with variable `diredc-shell-list'.
+PROGRAM is the shell executable to run. D1, D2, F1, F2, T1, and
+T2 are shell variables to be set based upon their dired values."
   (let ((buf (eshell)))
     (setq-local d1 d1)
     (setq-local f1 f1)
@@ -1063,18 +1078,24 @@ the simple emacs term is used."
     buf))
 
 (defun diredc-shell--launch-term (program d1 d2 f1 f2 t1 t2)
-  "Internal function for use with variable `diredc-shell-list'."
+  "Internal function for use with variable `diredc-shell-list'.
+PROGRAM is the shell executable to run. D1, D2, F1, F2, T1, and
+T2 are shell variables to be set based upon their dired values."
   (diredc-shell--launch-emulator program nil d1 d2 f1 f2 t1 t2))
 
 (defun diredc-shell--launch-ansi-term (program d1 d2 f1 f2 t1 t2)
-  "Internal function for use with variable `diredc-shell-list'."
+  "Internal function for use with variable `diredc-shell-list'.
+PROGRAM is the shell executable to run. D1, D2, F1, F2, T1, and
+T2 are shell variables to be set based upon their dired values."
   (diredc-shell--launch-emulator program t d1 d2 f1 f2 t1 t2))
 
 (defun diredc-shell--launch-emulator (program ansi d1 d2 f1 f2 t1 t2)
   "Internal `dired-shell' function to launch a terminal emulator.
-PROGRAM is what the terminal-emulator should run. If optional
-ANSI is NON-NIL, then the program is run in Emacs ansi-term;
-Otherwise, the simple Emacs term is used."
+PROGRAM is what the terminal-emulator should run. D1, D2, F1, F2,
+T1, and T2 are shell variables to be set based upon their dired
+values. If optional ANSI is NON-NIL, then the program is run in
+Emacs `ansi-term'; Otherwise, the simple Emacs `term-mode' is
+used."
   (let ((buf (if ansi (ansi-term program) (term program))))
     (term-line-mode)
       (insert (format "export d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
@@ -1114,9 +1135,7 @@ management."
        t)
      ((or (not (eq major-mode 'dired-mode))
           (not (equal (expand-file-name dired-directory)
-                      diredc-trash-files-dir)))
-       (remove-hook 'post-command-hook
-                    'diredc-trash--hook-function-freedesktop))
+                      diredc-trash-files-dir))))
      ((and (setq trash-file (diredc--file-name-at-point))
            diredc-trash-info-dir
            (setq info-file
@@ -1182,7 +1201,8 @@ position."
       pos)))
 
 (defun diredc-display--update (new)
-  "Internal function to update all dired buffers."
+  "Internal function to update all `dired' buffers.
+NEW is the new listing switch entry to use."
   (setq dired-listing-switches (cdr new))
   (dolist (buf (buffer-list))
     (with-current-buffer buf
@@ -1217,7 +1237,7 @@ If a shell-window already exists for the current `dired'
 directory, select it instead of creating an additional one."
   (interactive)
   (when (not (eq major-mode 'dired-mode))
-    (error "Not a dired-buffer."))
+    (error "Not a dired-buffer"))
   (let ((d1-window (selected-window))
         window-list minibuffer-history len d2 f2 t2 make-new
         (shell-choice (when (not current-prefix-arg)
@@ -1296,10 +1316,13 @@ the behavior of 'C-x q' in midnight commander.
 
 The browsed file's buffer is put in `view-mode' with the
 additional feature of having the TAB key set to switch the
-selected window back to the calling Dired window."
+selected window back to the calling Dired window.
+
+When called non-interactively, turns the mode on if ARG is
+positive or nil. Otherwise, turns the mode off."
   (interactive)
   (when (not (derived-mode-p 'dired-mode))
-    (user-error "Not a Dired buffer."))
+    (user-error "Not a Dired buffer"))
   (cond
    ((called-interactively-p 'interactive)
      (setq diredc-browse-mode (not diredc-browse-mode)))
@@ -1372,9 +1395,8 @@ selected window back to the calling Dired window."
                              "\nEmpty the trash?: "))
     (cond
      (trash-directory
-       ;; (shell-command-to-string
-       ;;   (format "rm -r -- \"%s*\"" (file-name-as-directory trash-directory)))
-       (diredc-trash--empty-a-dir (file-name-as-directory trash-directory)))
+       (dired-delete-file trash-directory 'always)
+       (dired-create-directory trash-directory))
      ((fboundp 'system-trash-empty)
        (system-trash-empty))
      (t ;; http://freedesktop.org/wiki/Specifications/trash-spec
@@ -1400,8 +1422,8 @@ files to their original location."
   (cond
    (trash-directory
      (user-error "Not supported for `trash-directory'=%s" trash-directory))
-   ((fboundp 'system-trash-empty)
-     (system-trash-info))
+   ((fboundp 'system-trash-empty) ; placeholder for future possible trash schemes
+     (system-trash-info))         ; placeholder for future possible trash schemes
    (t ;; http://freedesktop.org/wiki/Specifications/trash-spec
      (let (size num)
        (if (not (file-exists-p diredc-trash-files-dir))
@@ -1428,7 +1450,7 @@ files to their original location."
 If a REGION is selected, all files within are restored."
   (interactive)
   (when (not (eq major-mode 'dired-mode))
-    (user-error "Not in a Dired buffer."))
+    (user-error "Not in a Dired buffer"))
   (cond
    (trash-directory
      (user-error "Not supported for `trash-directory'=%s" trash-directory))
@@ -1442,9 +1464,9 @@ If a REGION is selected, all files within are restored."
        (when (not (equal (expand-file-name dired-directory)
                          diredc-trash-files-dir))
          (when (not (yes-or-no-p "Not in the 'Trash' files directory. Go there? "))
-           (user-error "Not in the 'Trash' files directory."))
+           (user-error "Not in the 'Trash' files directory"))
          (diredc-hist-change-directory diredc-trash-files-dir)
-         (user-error "Now in 'Trash' files directory. Try again."))
+         (user-error "Now in 'Trash' files directory. Try again"))
       ;; This next code idiom repeats elsewhere (eg.
       ;; `diredc-trash-quick-delete'), so consider making it a function.
        (if (not (region-active-p))
@@ -1477,7 +1499,7 @@ If a REGION is selected, all files within are restored."
          (deactivate-mark))
        (when file
          (let (auto-revert-verbose)
-           (auto-revert-buffer (current-buffer))))))))
+           (auto-revert-mode)))))))
 
 (defun diredc-trash-view ()
   "Jump to the user's 'Trash' files directory."
@@ -1488,17 +1510,15 @@ If a REGION is selected, all files within are restored."
    ((fboundp 'system-trash-view)
      (system-trash-view))
    (t ;; http://freedesktop.org/wiki/Specifications/trash-spec
-     (diredc-hist-change-directory diredc-trash-files-dir)
-     (add-hook 'post-command-hook 'diredc-trash--hook-function-freedesktop nil t)
-     (diredc-trash--hook-function-freedesktop))))
+     (diredc-hist-change-directory diredc-trash-files-dir))))
 
 (defun diredc-trash-quick-delete (&optional toggle-trash-option)
-  "In Dired, delete a file without needing to mark it first.
+  "In `dired-mode', delete a file without needing to mark it first.
 
 If a REGION is selected, delete all files in that region.
 
-Use the PREFIX-ARG to change your setting of variable
-`delete-by-moving-to-trash'."
+Use the prefix argument TOGGLE-TRASH-OPTION to change your
+setting of variable `delete-by-moving-to-trash'."
   (interactive)
   (when (or current-prefix-arg toggle-trash-option)
     (setq delete-by-moving-to-trash (not delete-by-moving-to-trash)))
@@ -1523,6 +1543,9 @@ Use the PREFIX-ARG to change your setting of variable
 If the directory is already bookmarked, a second entry is not
 created. The user will be prompted for a short description, which
 will be what is displayed when running `diredc-bookmark-jump'.
+
+When called non-interactively, the optional args DIR and DOC can
+specify the default directory and bookmark description.
 
 See the defcustom variable `diredc-bookmarks'."
   (interactive)
@@ -1570,7 +1593,7 @@ See the defcustom variable `diredc-bookmarks'."
                     choices :test 'equal))))
     (diredc-hist-change-directory (car (nth choice diredc-bookmarks)))))
 
-(defun diredc-bookmark-edit (&optional doc)
+(defun diredc-bookmark-edit ()
   "Edit the `diredc' bookmarks."
   (interactive)
   (customize-variable 'diredc-bookmarks))
@@ -1676,7 +1699,7 @@ operation."
 (defun diredc-history-mode (&optional arg)
   "Control ability to navigate directory history.
 
-Interactively, toggle the mode. From lisp, with ARG positive or NIL,
+Interactively, toggle the mode. From Lisp, with ARG positive or NIL,
 turn the mode on; Otherwise, turn it off.
 
 The mode allows each Dired window to maintain its own individual
@@ -1708,10 +1731,10 @@ See functions `diredc-hist-previous-directory',
 (defun diredc-hist-previous-directory (&optional arg)
   "Navigate one `dired' directory back in this buffer's history list.
 
-Optionally, navigate PREFIX-ARG number of history elements."
+Optionally, navigate prefix argument ARG number of history elements."
   (interactive "p")
   (when (not diredc-history-mode)
-    (user-error "Diredc-history-mode not enabled."))
+    (user-error "Diredc-history-mode not enabled"))
   (let* ((max (1- (length diredc-hist--history-list)))
          (req (+ diredc-hist--history-position arg))
          (ovr (or (when (> req max) (setq req max))
@@ -1731,16 +1754,16 @@ Optionally, navigate PREFIX-ARG number of history elements."
 (defun diredc-hist-next-directory (&optional arg)
   "Navigate one `dired' directory forward in this buffer's history list.
 
-Optionally, navigate PREFIX-ARG number of history elements."
+Optionally, navigate prefix argument ARG number of history elements."
   (interactive "p")
   (when (not diredc-history-mode)
-    (user-error "Diredc-history-mode not enabled."))
+    (user-error "Diredc-history-mode not enabled"))
   (diredc-hist-previous-directory (- arg)))
 
 (defun diredc-hist-change-directory (&optional dir)
   "Prompt the user to naviagte the Dired window anywhere.
 
-With PREFIX-ARG, runs `diredc-hist-select' instead to allow
+With prefix argument DIR, runs `diredc-hist-select' instead to allow
 explicit selection of a specific directory in the buffer's
 history.
 
@@ -1748,7 +1771,7 @@ When called from Lisp, optional arg DIR suppresses the prompting
 and navigates to that location."
   (interactive)
   (when (eq major-mode 'wdired-mode)
-    (user-error "Please exit `wdired-mode' before attempting to change directories."))
+    (user-error "Please exit `wdired-mode' before attempting to change directories"))
   (and (not (eq major-mode 'dired-mode))
        (fboundp 'diredc-frame-quick-switch)
        (diredc-frame-quick-switch))
@@ -1773,7 +1796,7 @@ and navigates to that location."
 (defun diredc-hist-up-directory (&optional arg)
   "Navigate the Dired window to its parent directory.
 
-oWith optional PREFIX-ARG, repeat that many times."
+With optional prefix argument, repeat ARG times."
   (interactive "p")
   (cond
    ((zerop arg) (message "Nothing to do!"))
@@ -1799,7 +1822,7 @@ If you have package `popup' installed, but don't want to use it
 for this purpose, see `diredc-hist-select-without-popup'."
   (interactive)
   (when (not diredc-history-mode)
-    (user-error "Requires diredc-history mode."))
+    (user-error "Requires diredc-history mode"))
   (let* ((hist diredc-hist--history-list)
          (pos  diredc-hist--history-position)
          (options (mapcar 'car hist))
@@ -1823,7 +1846,7 @@ This function is designed to operate when the selected
 window (ie. the current window) is one of two that are displaying
 `dired' buffers in the current frame. The `dired' buffer in the
 other window is navigated to the location of the current window.
-With a NON-NIL prefix arg, the reverse operation is performed:
+With a non-nil prefix-arg ARG, the reverse operation is performed:
 the currently selected `dired' buffer is the one navigated to the
 location of the `dired' buffer in the second window.
 
@@ -2007,13 +2030,11 @@ function context, either `diredc-mode' or `dired-mode-hook'."
        (hl-line-mode)
        (define-key dired-mode-map (kbd "M-.") 'dired-omit-mode))
      ((eq caller 'diredc-mode)
-       (require 'dired-x)
-       (setq ; variable of package dired-x
+       (setq ; variables of package dired-x
          dired-omit-files "^\\.?#\\|^\\..*"
          dired-omit-verbose nil
          dired-guess-shell-case-fold-search t)
-       (require 'dired-aux)
-       ;; variables of package dired-aux
+       ;; variable of package dired-aux
        (add-to-list 'dired-compress-files-alist '("\\.gz\\'" . "gzip -k %i"))
        (add-to-list 'dired-compress-files-alist '("\\.xz\\'" . "xz -k %i"))))))
 
@@ -2046,7 +2067,7 @@ modes."
 (defalias 'diredc-quit 'diredc-exit)
 
 (defun diredc-do-not-quit-window ()
-  "Prevent unwanted quit-window actions.
+  "Prevent unwanted `quit-window' actions.
 
 The default Dired keybindings make it too easy to perform a
 `quit-window' operation, first by binding `q' to the command, and
@@ -2062,7 +2083,7 @@ the layout on the frame has been altered 'somehow' (\"ahem.. no
 judgements...\"), try this function."
   (interactive)
   (when (zerop (length diredc-recover-schemes))
-    (error "Variable 'diredc-recover-schemes' corrupt."))
+    (error "Variable 'diredc-recover-schemes' corrupt"))
   (let (minibuffer-history ; needs to be reset to prevent unwanted entries
         temp-list ; variable is re-used for several purposes!
         len       ; variable is re-used for several purposes!
@@ -2112,7 +2133,7 @@ judgements...\"), try this function."
 (defun diredc-mode (&optional arg)
   "Extensions to `dired' mode.
 
-Interactively, toggle the mode. From lisp, with ARG positive or NIL,
+Interactively, toggle the mode. From Lisp, with ARG positive or NIL,
 turn the mode on; Otherwise, turn it off."
   (interactive)
   (cond
