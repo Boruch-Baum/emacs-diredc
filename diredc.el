@@ -2074,7 +2074,8 @@ The default Dired keybindings make it too easy to perform a
 `quit-window' operation, first by binding `q' to the command, and
 second, by binding `Q' to `dired-do-find-regexp-and-replace'."
   (interactive)
-  (message "Use \\[diredc-exit] for diredc-exit, or M-x quit-window for the emacs primitive."))
+  (message "Use %s for diredc-exit, or M-x quit-window for the emacs primitive."
+    (key-description (where-is-internal 'diredc-exit diredc-mode-map t))))
 
 (defun diredc-recover ()
   "Attempt to restore a `dired' dual-pane layout.
