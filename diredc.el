@@ -9,6 +9,7 @@
 ;; Package: diredc
 ;; Package-Version: 1.0
 ;; Package-Requires: ((emacs "26.1"))
+;;
 ;;   (emacs "24.1") for: split-window-right, window-normalize-frame
 ;;   (emacs "24.3") for: lexical-binding, user-error, cl-lib, defvar-local
 ;;   (emacs "24.4") for: advice-remove
