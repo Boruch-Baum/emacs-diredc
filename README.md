@@ -67,7 +67,7 @@ all file managers, and also some unique features:
 
  1) Evaluate or load this file.
 
- 2) M-x diredc, or S-<f11> if that keybinding  is available.
+ 2) M-x diredc, or S-\<F11\> if that keybinding  is available.
 
 
 ## Operation:
