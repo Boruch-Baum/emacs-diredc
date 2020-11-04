@@ -1,0 +1,3 @@
+2020-11-04  Joost Kremers <joostkremers@fastmail.fm>
+
+	* diredc.el (diredc): Add autload cookie.
