@@ -113,7 +113,7 @@
 ;; to/from the named `diredc' frame. Navigation from one `dired' panel
 ;; to another can be accomplished using '<TAB>' or 'S-<TAB>'. As long
 ;; as you are in `diredc' mode, navigating to new directories should
-;; not accumulate additional `dired' buffers and your direcory
+;; not accumulate additional `dired' buffers and your directory
 ;; navigation history for each panel should be remembered. If ever you
 ;; find that the frame configuration has become botched, or you
 ;; somehow accumulate or have lost `dired' buffers, Run M-x
@@ -292,10 +292,10 @@
 ;; *) universal fallback guess shell command(s)
 
 ;;
-;;; Compatability
+;;; Compatibility
 ;;
 ;; This package has been tested under debian linux emacs version 26.1.
-;; The main compatability issue to be aware of is that this suite
+;; The main compatibility issue to be aware of is that this suite
 ;; needs to modify[1] a single line in function
 ;; `dired-internal-no-select' of the standard emacs file `dired.el'
 ;; This was accomplished by advising a wrapper function
@@ -653,7 +653,7 @@ is a string that must match an entry in `diredc-shell-list'."
   :group 'diredc)
 
 (defcustom diredc-bonus-configuration t
-  "Supplemental configuation for `diredc' buffers.
+  "Supplemental configuration for `diredc' buffers.
 
 Dired was developed more than 25 years ago. Around it have
 developed very many configuration options and also very many
@@ -720,7 +720,7 @@ Don't ever set this variable directly! Instead, evaluate function
 Don't ever set this variable directly! Instead, evaluate function
 `diredc-history-mode'. Note that when option `diredc-mode' is
 installed, that this mode will always be updated to follow its
-chnage of state.")
+change of state.")
 
 (defvar diredc-recover-schemes
   '((0 ; no `dired' buffers found
@@ -789,7 +789,7 @@ chnage of state.")
           (kill-buffer (cdr (pop buffer-list))))))))
   "Strategies for recovering `dired' environments.
 
-A list of sub-lists. The CAR fof each sub-list is a number
+A list of sub-lists. The CAR of each sub-list is a number
 corresponding to number of existing `dired' buffers their
 contents are applicable, and this number should correspond to the
 element's position in the list, beginning with zero.
@@ -1762,7 +1762,7 @@ Optionally, navigate prefix argument ARG number of history elements."
   (diredc-hist-previous-directory (- arg)))
 
 (defun diredc-hist-change-directory (&optional dir)
-  "Prompt the user to naviagte the Dired window anywhere.
+  "Prompt the user to navigate the Dired window anywhere.
 
 With prefix argument DIR, runs `diredc-hist-select' instead to allow
 explicit selection of a specific directory in the buffer's
@@ -2264,7 +2264,7 @@ If no `diredc' frame exists, create one with a dual-window layout."
 ;;    https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44023
 ;;
 ;; *) Function `dired-file-name-at-point' should have an optional
-;;    argument NOERROR added, to return NIL instead of signalling
+;;    argument NOERROR added, to return NIL instead of signaling
 ;;    error conditions, and should guarantee a NON-NIL return value
 ;;    otherwise. Once this is done, then all occurrences of
 ;;    (diredc--file-name-at-point) should be removed and replaced with
