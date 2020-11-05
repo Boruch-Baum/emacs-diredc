@@ -79,7 +79,7 @@ all file managers, and also some unique features:
  to/from the named `diredc` frame. Navigation from one `dired` panel
  to another can be accomplished using `<TAB>` or `S-<TAB>`. As long
  as you are in `diredc` mode, navigating to new directories should
- not accumulate additional `dired` buffers and your direcory
+ not accumulate additional `dired` buffers and your directory
  navigation history for each panel should be remembered. If ever you
  find that the frame configuration has become botched, or you
  somehow accumulate or have lost `dired` buffers, Run M-x
@@ -259,10 +259,10 @@ all file managers, and also some unique features:
  *) universal fallback guess shell command(s)
 
 
-## Compatability
+## Compatibility
 
  This package has been tested under debian linux emacs version 26.1
- and a recent snapshot of emacs 28.0. The main compatability issue to
+ and a recent snapshot of emacs 28.0. The main compatibility issue to
  be aware of is that this suite needs to modify[1] a single line in
  function `dired-internal-no-select` of the standard emacs file
  `dired.el`. This was accomplished by advising a wrapper function
