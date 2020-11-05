@@ -1,3 +1,10 @@
+2020-11-05  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-browse--hook-function)
+	(diredc--file-name-at-point, diredc--show-more-file-info)
+	(diredc-exit, diredc): Remove unused VARs from condition-case
+	statements.
+
 2020-11-04  Joost Kremers <joostkremers@fastmail.fm>
 
 	* diredc.el (diredc): Add autload cookie.

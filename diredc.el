@@ -34,8 +34,8 @@
 ;;
 ;;; Commentary:
 ;;
-;; This package extends `dired' with features found in almost all
-;; 'file managers', and also some unique features:
+;; This package extends and configures `dired' with features found in
+;; almost all 'file managers', and also some unique features:
 ;;
 ;;   * Resilient dedicated dual-pane frame.
 ;;     * similar look to 'midnight commander'.
@@ -979,7 +979,7 @@ A hook function for `post-command-hook'. It creates and kills
 `view-mode' buffers for `diredc-browse-mode'."
   (unless (or diredc-browse--buffer
               (minibuffer-window-active-p (selected-window)))
-    (let ((new-file (condition-case err
+    (let ((new-file (condition-case nil
                       (dired-get-filename nil t)
                       (error nil)))
           new-buf)
@@ -1001,7 +1001,7 @@ A hook function for `post-command-hook'. It creates and kills
             (when (not done)
               (split-window-right)
               (other-window 1))
-            (condition-case err
+            (condition-case nil
               (find-file new-file)
               (user-error ;; When a file's size exceeds
                ;; `large-file-warning-threshold', function
@@ -1028,7 +1028,7 @@ other Emacs functions."
   ;; WARNING: Do not confuse function `dired-file-name-at-point' with
   ;; function `dired-filename-at-point'. The latter truncates file
   ;; names at spaces, and possibly has other deficiencies.
-  (condition-case err
+  (condition-case nil
     (dired-file-name-at-point)
     (error nil)))
 
@@ -1159,7 +1159,7 @@ management."
         output)
     (when (and info-file
                (not (zerop (length cmd))))
-      (setq output (condition-case err
+      (setq output (condition-case nil
                      (shell-command-to-string (format cmd info-file))
                      (error ""))) ; TODO: Report error encountered
       (if (zerop (length output))
@@ -2050,10 +2050,10 @@ function context, either `diredc-mode' or `dired-mode-hook'."
 This function does not change any `dired' settings or global
 modes."
   (interactive)
-  (while (condition-case err
+  (while (condition-case nil
            (or (select-frame-by-name "diredc") t)
            (error nil))
-    (condition-case err
+    (condition-case nil
       (delete-frame)
       (error ; this happens when all frames were named 'dired'
         (set-frame-name "F1")))) ; emacs default first frame name
@@ -2190,7 +2190,7 @@ If no `diredc' frame exists, create one with a dual-window layout."
      (other-frame 1)
      (redraw-frame))
    (t
-    (condition-case err
+    (condition-case nil
       (select-frame-by-name "diredc")
       (error
         (setq dired-dwim-target t)  ; dual pane awareness
