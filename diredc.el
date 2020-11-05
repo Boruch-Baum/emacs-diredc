@@ -1488,7 +1488,10 @@ If a REGION is selected, all files within are restored."
                  (concat (file-name-nondirectory file) ".trashinfo")
                  diredc-trash-info-dir)))
            (re-search-forward "Path=\\([^\n]+\\)")
-           (setq dest (match-string-no-properties 1)))
+           (setq dest
+             (if (not (stringp (setq dest (match-string-no-properties 1))))
+               (error "Missing restore path for trash entry \"%s\"" file)
+              (url-unhex-string dest))))
      ;;  (shell-command (format "mv \"%s\" \"%s\"" file dest))
          (when (or (not (file-exists-p dest))
                    (yes-or-no-p

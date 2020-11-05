@@ -1,3 +1,13 @@
+2020-11-05  Michael Albinus <michael.albinus@gmx.de>
+
+	* diredc.el (diredc-trash-restore): Unhexlate file restore paths
+	[partial fix to github issue #5]
+
+2020-11-05  Boruch Baum  <@gmx.com>
+
+	* diredc.el (diredc-trash-restore): Catch error in malformed
+	metadata.
+
 2020-11-05  Shohei YOSHIDA <syohex@gmail.com>
 
 	* diredc.el, README.md: Fix typos
