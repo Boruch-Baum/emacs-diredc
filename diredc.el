@@ -2198,7 +2198,7 @@ If no `diredc' frame exists, create one with a dual-window layout."
       (error
         (setq dired-dwim-target t)  ; dual pane awareness
         (setq dired-allow-duplicate-buffers t)
-        (make-frame-command)
+        (select-frame (make-frame-command))
         (set-frame-name "diredc")
         (split-window-right)
         (dired default-directory)

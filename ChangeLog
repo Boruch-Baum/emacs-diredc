@@ -1,3 +1,7 @@
+2020-11-06  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc): Ensure focus for new frame.
+
 2020-11-05  Michael Albinus <michael.albinus@gmx.de>
 
 	* diredc.el (diredc-trash-restore): Unhexlate file restore paths
