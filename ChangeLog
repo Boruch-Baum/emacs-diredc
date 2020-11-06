@@ -1,5 +1,11 @@
 2020-11-06  Boruch Baum  <boruch_baum@gmx.com>
 
+	(diredc--decode-hexlated-string): New function to handled unicode
+	and multibyte hexlated file names.
+	(diredc-trash-restore): Use the new function.
+
+2020-11-06  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc): Ensure focus for new frame.
 
 2020-11-05  Michael Albinus <michael.albinus@gmx.de>
