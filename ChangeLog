@@ -1,3 +1,8 @@
+2020-11-09  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--decode-hexlated-string): Replace algortihm
+	with one based upon eww and Eli Zaretskii suggestion.
+
 2020-11-06  Boruch Baum  <boruch_baum@gmx.com>
 
 	(diredc--decode-hexlated-string): New function to handled unicode

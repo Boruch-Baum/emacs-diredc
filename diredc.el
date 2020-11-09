@@ -1023,27 +1023,10 @@ A hook function for `post-command-hook'. It creates and kills
 (defun diredc--decode-hexlated-string (str)
   "Convert hexlated string to human-readable, with charset coding support.
 This function improves upon `url-unhex-string' by handled
-hexlated multi-byte and unicode characters. Credit to the
-`emacs-w3m' project for the core-code, at
-`w3m-url-decode-string'."
-  ;; NOTE: This technique should be used by `url-unhex-string' itself,
-  ;;       or integrated otherwise into emacs.
-  (let ((start 0)
-        (case-fold-search t)
-        (regexp "%\\(?:\\([0-9a-f][0-9a-f]\\)\\|0d%0a\\)"))
-    (with-temp-buffer
-      (set-buffer-multibyte nil)
-      (while (string-match regexp str start)
-        (insert (substring str start (match-beginning 0))
-        	   (if (match-beginning 1)
-        	      (string-to-number (match-string 1 str) 16)
-        	    ?\n))
-      (setq start (match-end 0)))
-      (insert (substring str start))
-      (decode-coding-string
-        (buffer-string)
-        (with-coding-priority nil
-               (car (detect-coding-region (point-min) (point-max))))))))
+hexlated multi-byte and unicode characters."
+  (decode-coding-string (url-unhex-string str)
+                        (or file-name-coding-system
+                            default-file-name-coding-system)))
 
 (defun diredc--file-name-at-point ()
   "Wrapper for `dired-file-name-at-point' to suppress errors.
