@@ -1815,13 +1815,13 @@ With optional prefix argument, repeat ARG times."
    ((> 0 arg)   (message "tbd"))
    (t
      (if (not diredc-history-mode)
-       (dotimes (x (max arg 0))
+       (loop repeat (max arg 0) do
          (find-alternate-file ".."))
       (let ((hist diredc-hist--history-list)
             (pos  diredc-hist--history-position)
             new)
         (setf (cdr (nth pos hist)) (point))
-        (dotimes (x (max arg 0))
+        (loop repeat (max arg 0) do
           (find-alternate-file ".."))
         (setq new (diredc-hist--update-directory-history hist pos)
               diredc-hist--history-list (car new)
@@ -2117,7 +2117,7 @@ judgements...\"), try this function."
      ((= 1 (setq len (length (setq temp-list (reverse (window-list))))))
        (split-window-right))
      ((< 2 len)
-       (dotimes (x (- len 2))
+       (loop repeat (- len 2) do
          (delete-window (pop temp-list)))))
     (setq temp-list nil)
     (dolist (buf (buffer-list))
