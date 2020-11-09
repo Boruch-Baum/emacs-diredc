@@ -7,7 +7,7 @@
 ;; License: GPL3+
 ;; Keywords: files
 ;; Package: diredc
-;; Package-Version: 1.0
+;; Version: 1.0
 ;; Package-Requires: ((emacs "26.1"))
 ;;
 ;;   (emacs "24.1") for: split-window-right, window-normalize-frame
@@ -431,7 +431,7 @@ may be and whatever they may be called."
             trash-directory)
           ((fboundp 'system-trash-directory)
             (system-trash-directory))
-          (t ;; http://freedesktop.org/wiki/Specifications/trash-spec
+          (t ;; https://freedesktop.org/wiki/Specifications/trash-spec
             (expand-file-name
               (if (member subdir '("files" "info" "expunged"))
                  subdir
@@ -872,7 +872,7 @@ See also: Emacs bug report #44023:
   (let* ((old-buf (current-buffer))
 	 (dirname (if (consp dir-or-list) (car dir-or-list) dir-or-list))
        ;; BEGIN modification
-       ; (buffer (dired-find-buffer-nocreate dirname mode))
+       ;;(buffer (dired-find-buffer-nocreate dirname mode))
          (buffer (when (not (bound-and-true-p dired-allow-duplicate-buffers))
                    (dired-find-buffer-nocreate dirname mode)))
        ;; END modification
@@ -1021,7 +1021,7 @@ A hook function for `post-command-hook'. It creates and kills
 ;;; Functions:
 
 (defun diredc--decode-hexlated-string (str)
-  "Convert hexlated string to human-readable, with charset coding support.
+  "Convert hexlated string STR to human-readable, with charset coding support.
 This function improves upon `url-unhex-string' by handled
 hexlated multi-byte and unicode characters."
   (decode-coding-string (url-unhex-string str)
@@ -1815,13 +1815,13 @@ With optional prefix argument, repeat ARG times."
    ((> 0 arg)   (message "tbd"))
    (t
      (if (not diredc-history-mode)
-       (loop repeat (max arg 0) do
+       (dotimes ( _x (max arg 0))
          (find-alternate-file ".."))
       (let ((hist diredc-hist--history-list)
             (pos  diredc-hist--history-position)
             new)
         (setf (cdr (nth pos hist)) (point))
-        (loop repeat (max arg 0) do
+        (dotimes (_x (max arg 0))
           (find-alternate-file ".."))
         (setq new (diredc-hist--update-directory-history hist pos)
               diredc-hist--history-list (car new)
@@ -2117,7 +2117,7 @@ judgements...\"), try this function."
      ((= 1 (setq len (length (setq temp-list (reverse (window-list))))))
        (split-window-right))
      ((< 2 len)
-       (loop repeat (- len 2) do
+       (dotimes (_x (- len 2))
          (delete-window (pop temp-list)))))
     (setq temp-list nil)
     (dolist (buf (buffer-list))

@@ -2,8 +2,8 @@
 
 	* diredc.el (diredc--decode-hexlated-string): Replace algortihm
 	with one based upon eww and Eli Zaretskii suggestion.
-	(diredc-hist-up-directory, diredc-recover): Replace dotimes with
-	loop, to remove compiler warnings.
+	(diredc-hist-up-directory, diredc-recover): Rename dotimes
+	iterator to avoid compiler warnings.
 
 2020-11-06  Boruch Baum  <boruch_baum@gmx.com>
 
