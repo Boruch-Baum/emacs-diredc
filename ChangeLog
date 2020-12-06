@@ -1,3 +1,9 @@
+2020-12-06  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--create-keymap): Change keybinding of
+	diredc-show-more-info to C-c ?.
+	(diredc-mode-map): Change to defvar to allow user over-ride.
+
 2020-11-09  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--decode-hexlated-string): Replace algortihm

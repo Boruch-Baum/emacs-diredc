@@ -364,7 +364,7 @@ Returns a keymap."
     (define-key map (kbd "=")         'diredc-hist-duplicate)
     (define-key map (kbd "C-x q")     'diredc-browse-mode)
     (define-key map (kbd "M-t")       'diredc-display-toggle)
-    (define-key map (kbd "C-c i")     'diredc-show-more-file-info)
+    (define-key map (kbd "C-c ?")     'diredc-show-more-file-info)
     (define-key map (kbd "C-c b a")   'diredc-bookmark-add)
     (define-key map (kbd "C-c b j")   'diredc-bookmark-jump)
     (define-key map (kbd "C-c b e")   'diredc-bookmark-edit)
