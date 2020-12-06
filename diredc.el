@@ -385,7 +385,7 @@ Returns a keymap."
     (define-key map (kbd "C-<delete> r") 'diredc-trash-restore)
     map))
 
-(setq diredc-mode-map (diredc--create-keymap))
+(defvar diredc-mode-map (diredc--create-keymap))
 
 (defun diredc-browse--create-keymap ()
   "Internal function for `diredc'.
@@ -1107,10 +1107,10 @@ Emacs `ansi-term'; Otherwise, the simple Emacs `term-mode' is
 used."
   (let ((buf (if ansi (ansi-term program) (term program))))
     (term-line-mode)
-      (insert (format "export d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
-                      d1 (or d2 "") (or f1 "") (or f2 "")
-                      (diredc-shell--array-variable program t1)
-                      (diredc-shell--array-variable program t2)))
+    (insert (format "export d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
+                    d1 (or d2 "") (or f1 "") (or f2 "")
+                    (diredc-shell--array-variable program t1)
+                    (diredc-shell--array-variable program t2)))
     (term-send-input)
     buf))
 
