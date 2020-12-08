@@ -182,13 +182,13 @@
 ;; `diredc-show-more-file-info-list' to present the metadata of your
 ;; choice.
 ;;
-;;     C-c i     `diredc-show-more-file-info'
+;;     C-c ?     `diredc-show-more-file-info'
 ;;
 ;; `diredc' brings bookmarks to dired:
 ;;
-;;     C-c b a   `diredc-bookmark-add'
-;;     C-c b j   `diredc-bookmark-jump'
-;;     C-c b e   `diredc-bookmark-edit'
+;;     C-c + a   `diredc-bookmark-add'
+;;     C-c + j   `diredc-bookmark-jump'
+;;     C-c + e   `diredc-bookmark-edit'
 ;;
 ;; Emacs has a nifty mode to "edit" a `dired' buffer, bringing the
 ;; power of emacs to the application of renaming files. `diredc' just
@@ -365,10 +365,10 @@ Returns a keymap."
     (define-key map (kbd "C-x q")     'diredc-browse-mode)
     (define-key map (kbd "M-t")       'diredc-display-toggle)
     (define-key map (kbd "C-c ?")     'diredc-show-more-file-info)
-    (define-key map (kbd "C-c b a")   'diredc-bookmark-add)
-    (define-key map (kbd "C-c b j")   'diredc-bookmark-jump)
-    (define-key map (kbd "C-c b e")   'diredc-bookmark-edit)
-    (define-key map (kbd "C-c b v")   'diredc-vc-jump) ; TODO: Not certain I want this...
+    (define-key map (kbd "C-c + a")   'diredc-bookmark-add)
+    (define-key map (kbd "C-c + j")   'diredc-bookmark-jump)
+    (define-key map (kbd "C-c + e")   'diredc-bookmark-edit)
+;   (define-key map (kbd "C-c + v")   'diredc-vc-jump) ; TODO: Not certain I want this...
     (define-key map (kbd "E")         'wdired-change-to-wdired-mode)
     (define-key map (kbd "e")         'wdired-change-to-wdired-mode)
     (define-key map (kbd "'")         'diredc-shell)

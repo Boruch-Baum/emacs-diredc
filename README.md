@@ -148,13 +148,13 @@ all file managers, and also some unique features:
  `diredc-show-more-file-info-list` to present the metadata of your
  choice.
 
-     C-c i     `diredc-show-more-file-info`
+     C-c ?     `diredc-show-more-file-info`
 
  `diredc` brings bookmarks to dired:
 
-     C-c b a   `diredc-bookmark-add`
-     C-c b j   `diredc-bookmark-jump`
-     C-c b e   `diredc-bookmark-edit`
+     C-c + a   `diredc-bookmark-add`
+     C-c + j   `diredc-bookmark-jump`
+     C-c + e   `diredc-bookmark-edit`
 
  Emacs has a nifty mode to "edit" a `dired` buffer, bringing the
  power of emacs to the application of renaming files. `diredc` just

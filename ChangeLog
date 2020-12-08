@@ -1,3 +1,8 @@
+2020-12-08  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--create-keymap): Change keybindings of
+	bookmark commands to use C-c + prefix
+
 2020-12-06  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--create-keymap): Change keybinding of
