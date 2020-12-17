@@ -1,8 +1,9 @@
 2020-12-17  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (popup-menu*, diredc-browse-mode-map)
-	(diredc-trash-info): definition changes in order to avoid
-	byte-compiler warnings.
+	(diredc-trash-info, diredc-shell--launch-eshell)
+	(diredc--advice--dired-internal-noselect):  definition changes in
+	order to avoid 	byte-compiler warnings.
 
 2020-12-08  Boruch Baum  <boruch_baum@gmx.com>
 

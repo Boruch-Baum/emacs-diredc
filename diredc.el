@@ -84,7 +84,7 @@
 ;;
 ;;; Dependencies (all are already part of Emacs):
 ;;
-;;   auto-revert -- for auto-revert-mode
+;;   autorevert -- for auto-revert-mode
 ;;   dired       -- ... (doh) ...
 ;;   dired-x     -- for dired-guess-default, dired-omit-mode
 ;;   dired-aux   -- for dired-compress-files
@@ -324,6 +324,7 @@
 (require 'dired-x)   ; dired-guess-default, dired-omit-mode
 (require 'term)      ; term-line-mode, term-send-input
 (require 'view)      ; view-mode
+(require 'autorevert); auto-revert-mode
 
 ;;
 ;;; Suggested
@@ -857,9 +858,9 @@ trivial change in the advised function `dired-guess-default':
   	  (delete-dups (mapcar (lambda (cmd) (eval cmd `((file . ,file)))) cmds))
          (eval (car cmds) `((file . ,file)))))))
 
-(defun diredc--advice--dired-internal-noselect (oldfun dir-or-list &optional switches mode)
+(defun diredc--advice--dired-internal-noselect (_oldfun dir-or-list &optional switches mode)
   "Diredc advice to function `dired-internal-noselect'.
-OLDFUN is function `dired-internal-noselect'. Args DIR-OR-LIST,
+_OLDFUN is function `dired-internal-noselect'. Args DIR-OR-LIST,
 SWITCHES, and MODE are as defined there.
 
 This function replaces the Emacs standard function in order to
@@ -1074,10 +1075,11 @@ If optional ANSI is NON-NIL, then the program is run in Emacs
     (comint-send-input)
     buf))
 
-(defun diredc-shell--launch-eshell (program d1 d2 f1 f2 t1 t2)
+(defun diredc-shell--launch-eshell (_program d1 d2 f1 f2 t1 t2)
   "Internal function for use with variable `diredc-shell-list'.
-PROGRAM is the shell executable to run. D1, D2, F1, F2, T1, and
-T2 are shell variables to be set based upon their dired values."
+_PROGRAM is an ignored placeholder for consistency with similar
+functions. D1, D2, F1, F2, T1, and T2 are shell variables to be
+set based upon their dired values."
   (let ((buf (eshell)))
     (setq-local d1 d1)
     (setq-local f1 f1)
