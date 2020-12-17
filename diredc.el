@@ -328,6 +328,7 @@
 ;;
 ;;; Suggested
 ;; (require 'popup)  ; popup-menu*
+(declare-function popup-menu* "ext:popup.el")
 
 
 ;;
@@ -403,7 +404,7 @@ keymap."
     (define-key map [remap View-exit-and-edit]  'diredc-browse-find)
     map))
 
-(setq diredc-browse-mode-map (diredc-browse--create-keymap))
+(defvar diredc-browse-mode-map (diredc-browse--create-keymap))
 
 
 ;;
@@ -606,7 +607,7 @@ the file's name replaced with \"%s\". See command `diredc-show-more-file-info'."
   :group 'diredc)
 
 (defcustom diredc-display-select-without-popup nil
-  "Function `dir-display-select' should never use package `popup'."
+  "Function `diredc-display-select' should never use package `popup'."
   :type 'boolean
   :group 'diredc)
 
@@ -1406,7 +1407,7 @@ positive or nil. Otherwise, turns the mode off."
      (trash-directory
        (dired-delete-file trash-directory 'always)
        (dired-create-directory trash-directory))
-     ((fboundp 'system-trash-empty)
+     ((fboundp 'system-trash-empty) ; placeholder for future possible trash schemes
        (system-trash-empty))
      (t ;; http://freedesktop.org/wiki/Specifications/trash-spec
        ;; (shell-command-to-string
@@ -1431,8 +1432,8 @@ files to their original location."
   (cond
    (trash-directory
      (user-error "Not supported for `trash-directory'=%s" trash-directory))
-   ((fboundp 'system-trash-empty) ; placeholder for future possible trash schemes
-     (system-trash-info))         ; placeholder for future possible trash schemes
+   ((fboundp 'system-trash-info) ; placeholder for future possible trash schemes
+     (system-trash-info))
    (t ;; http://freedesktop.org/wiki/Specifications/trash-spec
      (let (size num)
        (if (not (file-exists-p diredc-trash-files-dir))
@@ -2036,6 +2037,8 @@ function context, either `diredc-mode' or `dired-mode-hook'."
        (font-lock-add-keywords 'nil diredc--chmod-font-lock-keyword t)
        (setq truncate-lines t
              directory-free-space-args "-Pm" ; show total/available space in MB
+             ;; TODO: WARNING: `directory-free-space-args' becomes obsolete as
+             ;; of 27.1 and is ignored, as Emacs uses `file-system-info' instead
              dired-dwim-target t)            ; dual pane awareness
        (dired-omit-mode)
        (auto-revert-mode)
