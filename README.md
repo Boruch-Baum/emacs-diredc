@@ -51,7 +51,7 @@ all file managers, and also some unique features:
 
 ## Dependencies (all are already part of emacs):
 
-   * auto-revert -- for auto-revert-mode
+   * autorevert -- for auto-revert-mode
    * dired       -- ... (doh) ...
    * dired-x     -- for dired-guess-default, dired-omit-mode
    * dired-aux   -- for dired-compress-files
@@ -67,7 +67,10 @@ all file managers, and also some unique features:
 
  1) Evaluate or load this file.
 
- 2) M-x diredc, or S-\<F11\> if that keybinding  is available.
+ 2) I recommend defining a global keybinding for function `diredc',
+    with a preference for Shift-F11, as follows:
+
+      (global-set-key (kbd "S-<f11>") 'diredc))
 
 
 ## Operation:

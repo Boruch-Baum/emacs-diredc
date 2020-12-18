@@ -1,9 +1,16 @@
+2020-12-18  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el: Remove conditional global keybinding for function
+	diredc, rename variable dired-allow-duplicate-buffers to
+	diredc-allow-duplicate-buffers, update the documentation
+	accordingly.
+
 2020-12-17  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (popup-menu*, diredc-browse-mode-map)
 	(diredc-trash-info, diredc-shell--launch-eshell)
 	(diredc--advice--dired-internal-noselect):  definition changes in
-	order to avoid 	byte-compiler warnings.
+	order to avoid byte-compiler warnings.
 
 2020-12-08  Boruch Baum  <boruch_baum@gmx.com>
 

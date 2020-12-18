@@ -101,7 +101,10 @@
 ;;
 ;; 1) Evaluate or load this file.
 ;;
-;; 2) M-x diredc, or S-<f11> if that keybinding  is available.
+;; 2) I recommend defining a global keybinding for function `diredc',
+;;    with a preference for Shift-F11, as follows:
+;;
+;;      (global-set-key (kbd "S-<f11>") 'diredc))
 
 ;;
 ;;; Operation:
@@ -335,12 +338,6 @@
 ;;
 ;;; Keymaps:
 
-;; Being pushy in a considerate kind of way, set up the default global
-;; keybinding only if the user hasn't already set one and the
-;; keybinding isn't already being used.
-(when (and (not (where-is-internal 'diredc global-map))
-           (not (lookup-key global-map (kbd "S-<f11>"))))
-  (global-set-key (kbd "S-<f11>") 'diredc))
 (global-set-key [remap dired-other-frame] 'diredc)
 
 (defun diredc--create-keymap ()
@@ -520,7 +517,7 @@ This constant is used to colorize the string, using `font-lock'.")
   :group 'dired
   :prefix "diredc-")
 
-(defcustom dired-allow-duplicate-buffers t
+(defcustom diredc-allow-duplicate-buffers t
   "Allow multiple `dired' buffers to visit the same directory.
 
 This must be set NON-NIL for `diredc' to work properly, and
@@ -875,7 +872,7 @@ See also: Emacs bug report #44023:
 	 (dirname (if (consp dir-or-list) (car dir-or-list) dir-or-list))
        ;; BEGIN modification
        ;;(buffer (dired-find-buffer-nocreate dirname mode))
-         (buffer (when (not (bound-and-true-p dired-allow-duplicate-buffers))
+         (buffer (when (not (bound-and-true-p diredc-allow-duplicate-buffers))
                    (dired-find-buffer-nocreate dirname mode)))
        ;; END modification
 	 (new-buffer-p (null buffer)))
@@ -1732,7 +1729,7 @@ See functions `diredc-hist-previous-directory',
      (setq diredc-history-mode t)))
   (cond
    (diredc-history-mode
-     (setq dired-allow-duplicate-buffers t)
+     (setq diredc-allow-duplicate-buffers t)
      (add-hook 'dired-mode-hook  'diredc-hist--hook-function t)
      (message "Diredc-history-mode enabled in all Dired buffers."))
    (t
@@ -2165,7 +2162,7 @@ turn the mode on; Otherwise, turn it off."
     (diredc-history-mode (if diredc-mode 1 -1)))
   (cond
    (diredc-mode
-     (setq dired-allow-duplicate-buffers t)
+     (setq diredc-allow-duplicate-buffers t)
      (add-hook 'dired-mode-hook  'diredc--hook-function t)
      (advice-add 'dired-internal-noselect
                  :around #'diredc--advice--dired-internal-noselect)
@@ -2180,7 +2177,7 @@ turn the mode on; Otherwise, turn it off."
      (message "Diredc-mode enabled in all Dired buffers."))
    (t
      (remove-hook 'dired-mode-hook 'diredc--hook-function)
-     ;; Do not set `dired-allow-duplicate-buffers' to NIL, because it
+     ;; Do not set `diredc-allow-duplicate-buffers' to NIL, because it
      ;; may be required by other minor modes or features (eg.
      ;; dired-frame.el)
      (advice-remove 'dired-guess-default
@@ -2210,7 +2207,7 @@ If no `diredc' frame exists, create one with a dual-window layout."
       (select-frame-by-name "diredc")
       (error
         (setq dired-dwim-target t)  ; dual pane awareness
-        (setq dired-allow-duplicate-buffers t)
+        (setq diredc-allow-duplicate-buffers t)
         (select-frame (make-frame-command))
         (set-frame-name "diredc")
         (split-window-right)
