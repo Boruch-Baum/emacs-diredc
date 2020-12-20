@@ -72,6 +72,10 @@ all file managers, and also some unique features:
 
       (global-set-key (kbd "S-<f11>") 'diredc))
 
+    An alternative or additional option would be:
+
+      (global-set-key [remap dired-other-frame] 'diredc)
+
 
 ## Operation:
 
