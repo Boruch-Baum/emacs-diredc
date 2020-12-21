@@ -1,4 +1,4 @@
-# diredc - extensions to emacs dired-mode
+# diredc - extensions to emacs dired-mode [![MELPA](https://melpa.org/packages/diredc-badge.svg)](https://melpa.org/#/diredc)
 
 This package extends emacs' `dired-mode` with features found in almost
 all file managers, and also some unique features:
@@ -70,11 +70,11 @@ all file managers, and also some unique features:
  2) I recommend defining a global keybinding for function `diredc',
     with a preference for Shift-F11, as follows:
 
-      (global-set-key (kbd "S-<f11>") 'diredc))
+       `(global-set-key (kbd "S-<f11>") 'diredc))`
 
     An alternative or additional option would be:
 
-      (global-set-key [remap dired-other-frame] 'diredc)
+       `(global-set-key [remap dired-other-frame] 'diredc)`
 
 
 ## Operation:
