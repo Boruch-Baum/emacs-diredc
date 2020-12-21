@@ -1,3 +1,8 @@
+2020-12-21  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc): Don't autoload global keybinding (closes
+	github issue #6).
+
 2020-12-18  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el: Remove conditional global keybinding for function

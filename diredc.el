@@ -2192,7 +2192,6 @@ turn the mode on; Otherwise, turn it off."
           (use-local-map dired-mode-map))))
      (message "Diredc-mode disabled in all Dired buffers."))))
 
-;;;###autoload (global-set-key (kbd "S-<f11>") 'diredc)
 ;;;###autoload
 (defun diredc ()
   "Launch `diredc'. Switch back and forth between `diredc' and previous frame.
