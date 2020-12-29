@@ -1226,6 +1226,36 @@ NEW is the new listing switch entry to use."
         (revert-buffer))))
   (message "Dired using 'ls' switches: \"%s\"" (car new)))
 
+(defun diredc-hist--prune-deleted-directories ()
+  "Prune non-existing directories from a diredc buffer's history."
+  ;; TODO: consider standardiing retval. Compare function
+  ;; `diredc-hist--update-directory-history'
+  (let ((pos diredc-hist--history-position)
+        hist)
+    (mapc
+      (lambda (elem)
+        (if (file-directory-p (car elem))
+          (push elem hist)
+         (unless (zerop pos) (cl-decf pos))))
+      diredc-hist--history-list)
+    (setq diredc-hist--history-list
+      (cond
+       (hist (reverse hist))
+       ((file-directory-p default-directory)
+         (list (cons default-directory 1)))
+       (t (list (cons "/" 1)))))
+    (setq diredc-hist--history-position pos)))
+
+(defun diredc--abort-on-directory-deleted (dir)
+  (unless (file-directory-p dir)
+    (user-error "This diredc buffer %s describes a directory that has been deleted!" dir)))
+
+(defun diredc--ask-on-directory-deleted (dir)
+  (unless (file-directory-p dir)
+    (unless (yes-or-no-p
+	      (format "This diredc buffer %s describes a directory that has been deleted!
+Continue anyway? " dir))
+      (user-error "Operation aborted"))))
 
 ;;
 ;;; Interactive functions:
@@ -1779,14 +1809,15 @@ Optionally, navigate prefix argument ARG number of history elements."
     (user-error "Diredc-history-mode not enabled"))
   (diredc-hist-previous-directory (- arg)))
 
-(defun diredc-hist-change-directory (&optional dir)
+(defun diredc-hist-change-directory (&optional new-dir)
   "Prompt the user to navigate the Dired window anywhere.
 
-With prefix argument DIR, runs `diredc-hist-select' instead to allow
-explicit selection of a specific directory in the buffer's
-history.
+When called interactively with a prefix argument and
+`diredc-history-mode' active, runs `diredc-hist-select' instead
+to allow explicit selection of a specific directory in the
+buffer's history.
 
-When called from Lisp, optional arg DIR suppresses the prompting
+When called from Lisp, optional arg NEW-DIR suppresses the prompting
 and navigates to that location."
   (interactive)
   (when (eq major-mode 'wdired-mode)
@@ -1794,81 +1825,89 @@ and navigates to that location."
   (and (not (eq major-mode 'dired-mode))
        (fboundp 'diredc-frame-quick-switch)
        (diredc-frame-quick-switch))
+  (when diredc-history-mode
+    (diredc-hist--prune-deleted-directories))
   (if (and diredc-history-mode
            current-prefix-arg)
     (diredc-hist-select)
-   (let ((new dir)
-         find-existing
-         ;; TODO: test setting hist/pos is a problem if not in diredc-history-mode
-         (hist diredc-hist--history-list)
-         (pos  diredc-hist--history-position))
-     (unless new
-       (setq new (expand-file-name
-                   (read-file-name "Select directory: "
-                                   dired-directory dired-directory t)))
-       (unless (file-directory-p new)
-         (if (file-exists-p new)
-             ;; FIXME: The regex for `find-existing' will fail for
-             ;;        file-names containing embedded spaces...
-           (setq find-existing (concat "\s\\("
-                                       (file-name-nondirectory new)
-                                       "\\)\n")
-                 new (file-name-directory new))
-          (when (yes-or-no-p (format "Directory %s does not exist. Create it? " new))
-            (dired-create-directory new))
-            (message "")))) ; needed (emacs 26) when answer is 'no'
-     (when (file-directory-p new)
-       (setf (cdr (nth pos hist)) (point))
-       (find-alternate-file new)
-       (when (and find-existing
-                  (re-search-forward find-existing nil t))
-         (goto-char (match-beginning 1)))
+   (let (file-to-find new-file new-hist hist pos)
+     (when diredc-history-mode
+       (setq hist diredc-hist--history-list
+             pos  diredc-hist--history-position))
+     (if new-dir
+       (setq new-dir (expand-file-name new-dir))
+      (setq new-dir
+        (expand-file-name (read-file-name "Select directory: "
+                                          dired-directory dired-directory t)))
+      (unless (file-directory-p new-dir)
+        (if (file-exists-p new-dir)
+          (setq new-file      new-dir
+                new-dir       (file-name-directory new-dir)
+                file-to-find (concat "\s\\(" (file-name-nondirectory new-file) "\\)\n"))
+         (when (yes-or-no-p (format "Directory %s does not exist. Create it? " new-dir))
+           (dired-create-directory new-dir))
+           (message "")))) ; clear echo area (emacs 26) when answer is 'no'
+     (when (file-directory-p new-dir)
        (when diredc-history-mode
-         (setq new (diredc-hist--update-directory-history hist pos)
-               diredc-hist--history-list (car new)
-               diredc-hist--history-position (cdr new)))))))
+         (setf (cdr (nth pos hist)) (point)))
+       (find-alternate-file new-dir)
+       (while (and file-to-find
+                   (re-search-forward file-to-find nil t))
+         (backward-char 2)
+         (when (string-match-p new-file
+                               (expand-file-name (dired-file-name-at-point)))
+           (setq file-to-find nil)
+           (goto-char (match-beginning 1))))
+       (when diredc-history-mode
+         (setq new-hist (diredc-hist--update-directory-history hist pos)
+               diredc-hist--history-list (car new-hist)
+               diredc-hist--history-position (cdr new-hist)))))))
 
 (defun diredc-hist-up-directory (&optional arg)
   "Navigate the Dired window to its parent directory.
 
 With optional prefix argument, repeat ARG times."
   (interactive "p")
-  (cond
-   ((zerop arg) (message "Nothing to do!"))
-   ((> 0 arg)   (message "tbd"))
-   (t
-     (if (not diredc-history-mode)
-       (dotimes ( _x (max arg 0))
-         (find-alternate-file ".."))
-      (let ((hist diredc-hist--history-list)
-            (pos  diredc-hist--history-position)
-            new)
-        (setf (cdr (nth pos hist)) (point))
-        (dotimes (_x (max arg 0))
-          (find-alternate-file ".."))
-        (setq new (diredc-hist--update-directory-history hist pos)
-              diredc-hist--history-list (car new)
-              diredc-hist--history-position (cdr new)))))))
-
-(defun diredc-hist--prune-deleted-directories ()
-  "Prune non-existing directories from a diredc buffer's history."
-  ;; TODO: consider standardiing retval. Compare function
-  ;; `diredc-hist--update-directory-history'
-  (let ((pos diredc-hist--history-position)
-        hist)
-    (mapc
-      (lambda (elem)
-        (if (file-directory-p (car elem))
-          (push elem hist)
-         (unless (zerop pos) (decf pos))))
-      diredc-hist--history-list)
-    (setq diredc-hist--history-list
-      (cond
-       (hist (reverse hist))
-       ((file-directory-p default-directory)
-         (list (cons default-directory 1)))
-       (t (list (cons "/" 1)))))
-    (setq diredc-hist--history-position pos)))
+  (let ((dir dired-directory))
+    (cond
+     ((not (file-directory-p dir))
+       (diredc--ask-on-directory-deleted dir)
+       ;; The current directory has been deleted, so we just navigate to
+       ;; the first existing parent.
+       (while (not (file-directory-p (setq dir (file-name-directory (substring dir 0 -1))))))
+       (if (not diredc-history-mode)
+         (find-alternate-file dir)
+        (diredc-hist--prune-deleted-directories)
+        (let ((hist diredc-hist--history-list)
+              (pos  diredc-hist--history-position)
+              new)
+          (setf (cdr (nth pos hist)) (point))
+          (find-alternate-file dir)
+          (setq new (diredc-hist--update-directory-history hist pos)
+                diredc-hist--history-list (car new)
+                diredc-hist--history-position (cdr new)))))
+     ((zerop arg) (message "Nothing to do!"))
+     ((> 0 arg)   (message "tbd"))
+     (t
+       (cond
+        (diredc-history-mode
+          (diredc-hist--prune-deleted-directories)
+          (let ((hist diredc-hist--history-list)
+                (pos  diredc-hist--history-position)
+                new)
+            (setf (cdr (nth pos hist)) (point))
+            (dotimes (_x (max arg 0))
+              (when dir
+                (setq dir (file-name-directory (substring dir 0 -1)))))
+            (find-alternate-file (or dir "/"))
+            (setq new (diredc-hist--update-directory-history hist pos)
+                  diredc-hist--history-list (car new)
+                  diredc-hist--history-position (cdr new))))
+        (t ; (not diredc-history-mode)
+          (dotimes ( _x (max arg 0))
+            (when dir
+              (setq dir (file-name-directory (substring dir 0 -1)))))
+          (find-alternate-file (or dir "/"))))))))
 
 (defun diredc-hist-select ()
   "Navigate anywhere in the Dired history directly.
@@ -1915,6 +1954,7 @@ default to 'M-i'."
         that-dir old-point win new-buf new-data hist pos)
     (cond
      ((or arg current-prefix-arg) ; Change this window/buffer
+       (diredc--ask-on-directory-deleted dired-directory)
        (while (setq win (pop wins))
          (with-current-buffer (setq new-buf (window-buffer win))
            (when (and (eq major-mode 'dired-mode)
@@ -1924,7 +1964,9 @@ default to 'M-i'."
              (setq old-point (point))
              (setq wins '(nil)))))
        (set-buffer start-buf)
+       (diredc--abort-on-directory-deleted that-dir)
        (when diredc-history-mode
+         (diredc-hist--prune-deleted-directories)
          (setq hist diredc-hist--history-list)
          (setq pos  diredc-hist--history-position)
          (setf (cdr (nth pos hist)) (point)))
@@ -1935,6 +1977,7 @@ default to 'M-i'."
          (setq diredc-hist--history-list (car new-data))
          (setq diredc-hist--history-position (cdr new-data))))
      (t ; Change the other window/buffer
+       (diredc--abort-on-directory-deleted dired-directory)
        (setq old-point (point))
        (while (setq win (pop wins))
          (setq new-buf (window-buffer win))
@@ -1942,7 +1985,9 @@ default to 'M-i'."
            (when (and (eq major-mode 'dired-mode)
                       (not (equal this-dir dired-directory)))
              (select-window win)
+             (diredc--ask-on-directory-deleted dired-directory)
              (when diredc-history-mode
+               (diredc-hist--prune-deleted-directories)
                (setq hist diredc-hist--history-list)
                (setq pos  diredc-hist--history-position)
                (setf (cdr (nth pos hist)) (point)))
@@ -1979,8 +2024,12 @@ window, and if ARG is non-nil visits it in a second dired window
 on the same frame. If point is on a non-directory file, visits
 the file in another frame."
   (interactive)
+  ;; TODO: Maybe this check should be done more often.
+  ;; TODO: If this is really a wide dired problem, report it to emacs.
+  (diredc--abort-on-directory-deleted dired-directory)
   (if (not diredc-history-mode)
     (dired-find-alternate-file)
+   (diredc-hist--prune-deleted-directories)
    (let ((target (substring-no-properties (dired-get-file-for-visit)))
          hist pos new)
      (cond ; whether target is a directory or a file

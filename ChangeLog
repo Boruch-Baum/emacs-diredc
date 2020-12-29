@@ -1,5 +1,18 @@
 2020-12-29  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-hist--prune-deleted-directories): Move
+	function in file.
+	(diredc--abort-on-directory-deleted)
+	(diredc--ask-on-directory-deleted): New functions.
+	(diredc-hist-change-directory, diredc-hist-up-directory)
+	(diredc-hist-duplicate, diredc-hist-find-alternate-file): Perform
+	diredc-hist--prune-deleted-directories.
+	(diredc-hist-up-directory, diredc-hist-duplicate)
+	(diredc-hist-find-alternate-file): Handle case of current
+	directory deleted.
+	(diredc-hist-up-directory): Improve method of navigating to parent
+	directories.
+
 	* diredc.el (diredc-hist--history-list): BUGFIX default value.
 	(diredc-hist--hook-function): Property removal should be
 	unnecessary.
