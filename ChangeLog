@@ -1,3 +1,9 @@
+2020-12-29  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-hist--history-list): BUGFIX default value.
+	(diredc-hist--hook-function): Property removal should be
+	unnecessary.
+
 2020-12-28  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-hist--prune-deleted-directories): New function.

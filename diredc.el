@@ -670,7 +670,8 @@ does, see function `diredc-bonus-configuration'."
 ;;
 ;;; Buffer-local variables:
 
-(defvar-local diredc-hist--history-list (list (expand-file-name default-directory))
+(defvar-local diredc-hist--history-list (list (cons (expand-file-name default-directory)
+                                                    (point)))
   "Internal variable for `diredc-history-mode' minor mode.
 
 A buffer-local list of directories visited. Each element of the
@@ -952,7 +953,7 @@ See also: Emacs bug report #44023:
   "Hook function for `dired-mode-hook'."
   (setq diredc-hist--history-position 0
         diredc-hist--history-list
-          (list (cons (substring-no-properties (expand-file-name dired-directory))
+          (list (cons (expand-file-name dired-directory)
                       (point)))))
 
 (defun diredc--hook-function--post-command ()
