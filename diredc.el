@@ -1184,6 +1184,8 @@ HIST should be a buffer's `diredc-hist--history-list' value. POS
 should be a buffer's `diredc-hist--history-position' value.
 Returns a CONS whose CAR is the new list and whose CDR is the new
 position."
+  ;; TODO: consider standardiing retval. Compare function
+  ;; `diredc-hist--prune-deleted-directories'
   (let* ((new-dir (substring-no-properties
                   (expand-file-name dired-directory)))
          (new (cons new-dir (point)))
@@ -1750,6 +1752,7 @@ Optionally, navigate prefix argument ARG number of history elements."
   (interactive "p")
   (when (not diredc-history-mode)
     (user-error "Diredc-history-mode not enabled"))
+  (diredc-hist--prune-deleted-directories)
   (let* ((max (1- (length diredc-hist--history-list)))
          (req (+ diredc-hist--history-position arg))
          (ovr (or (when (> req max) (setq req max))
@@ -1830,6 +1833,26 @@ With optional prefix argument, repeat ARG times."
               diredc-hist--history-list (car new)
               diredc-hist--history-position (cdr new)))))))
 
+(defun diredc-hist--prune-deleted-directories ()
+  "Prune non-existing directories from a diredc buffer's history."
+  ;; TODO: consider standardiing retval. Compare function
+  ;; `diredc-hist--update-directory-history'
+  (let ((pos diredc-hist--history-position)
+        hist)
+    (mapc
+      (lambda (elem)
+        (if (file-directory-p (car elem))
+          (push elem hist)
+         (unless (zerop pos) (decf pos))))
+      diredc-hist--history-list)
+    (setq diredc-hist--history-list
+      (cond
+       (hist (reverse hist))
+       ((file-directory-p default-directory)
+         (list (cons default-directory 1)))
+       (t (list (cons "/" 1)))))
+    (setq diredc-hist--history-position pos)))
+
 (defun diredc-hist-select ()
   "Navigate anywhere in the Dired history directly.
 
@@ -1838,6 +1861,7 @@ for this purpose, see `diredc-hist-select-without-popup'."
   (interactive)
   (when (not diredc-history-mode)
     (user-error "Requires diredc-history mode"))
+  (diredc-hist--prune-deleted-directories)
   (let* ((hist diredc-hist--history-list)
          (pos  diredc-hist--history-position)
          (options (mapcar 'car hist))
