@@ -2,6 +2,8 @@
 
 	* diredc.el (diredc-hist--prune-deleted-directories): New function.
 	(diredc-hist-select, diredc-hist-previous-directory): Use it.
+	(diredc-hist-change-directory): Create non-existing directories
+	and move point to filename when a non-directory is specified.
 
 2020-12-21  Boruch Baum  <boruch_baum@gmx.com>
 

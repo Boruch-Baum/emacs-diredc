@@ -1796,20 +1796,36 @@ and navigates to that location."
   (if (and diredc-history-mode
            current-prefix-arg)
     (diredc-hist-select)
-   (let* ((new  (or dir
-                    (read-file-name "Select directory: "
-                      dired-directory dired-directory t)))
-          (new  (expand-file-name
-                  (if (file-directory-p new) new (file-name-directory new))))
-          ;; TODO: test setting hist/pos is a problem if not in diredc-history-mode
-          (hist diredc-hist--history-list)
-          (pos  diredc-hist--history-position))
-     (setf (cdr (nth pos hist)) (point))
-     (find-alternate-file new)
-     (when diredc-history-mode
-       (setq new (diredc-hist--update-directory-history hist pos)
-             diredc-hist--history-list (car new)
-             diredc-hist--history-position (cdr new))))))
+   (let ((new dir)
+         find-existing
+         ;; TODO: test setting hist/pos is a problem if not in diredc-history-mode
+         (hist diredc-hist--history-list)
+         (pos  diredc-hist--history-position))
+     (unless new
+       (setq new (expand-file-name
+                   (read-file-name "Select directory: "
+                                   dired-directory dired-directory t)))
+       (unless (file-directory-p new)
+         (if (file-exists-p new)
+             ;; FIXME: The regex for `find-existing' will fail for
+             ;;        file-names containing embedded spaces...
+           (setq find-existing (concat "\s\\("
+                                       (file-name-nondirectory new)
+                                       "\\)\n")
+                 new (file-name-directory new))
+          (when (yes-or-no-p (format "Directory %s does not exist. Create it? " new))
+            (dired-create-directory new))
+            (message "")))) ; needed (emacs 26) when answer is 'no'
+     (when (file-directory-p new)
+       (setf (cdr (nth pos hist)) (point))
+       (find-alternate-file new)
+       (when (and find-existing
+                  (re-search-forward find-existing nil t))
+         (goto-char (match-beginning 1)))
+       (when diredc-history-mode
+         (setq new (diredc-hist--update-directory-history hist pos)
+               diredc-hist--history-list (car new)
+               diredc-hist--history-position (cdr new)))))))
 
 (defun diredc-hist-up-directory (&optional arg)
   "Navigate the Dired window to its parent directory.
