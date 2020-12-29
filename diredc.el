@@ -371,8 +371,8 @@ Returns a keymap."
     (define-key map (kbd "C-c + j")   'diredc-bookmark-jump)
     (define-key map (kbd "C-c + e")   'diredc-bookmark-edit)
 ;   (define-key map (kbd "C-c + v")   'diredc-vc-jump) ; TODO: Not certain I want this...
-    (define-key map (kbd "E")         'wdired-change-to-wdired-mode)
-    (define-key map (kbd "e")         'wdired-change-to-wdired-mode)
+    (define-key map (kbd "E")         'diredc-wdired)
+    (define-key map (kbd "e")         'diredc-wdired)
     (define-key map (kbd "'")         'diredc-shell)
     (define-key map (kbd "C-c !")     'diredc-shell)
     (define-key map (kbd "C-k")       'diredc-trash-quick-delete)
@@ -1259,6 +1259,14 @@ Continue anyway? " dir))
 
 ;;
 ;;; Interactive functions:
+
+(defun diredc-wdired ()
+  "Modify directory contents by editing the `dired' buffer.
+This is a simple wrapper for `wdired-mode'. See there for
+details."
+  (interactive)
+  (diredc--abort-on-directory-deleted dired-directory)
+  (wdired-change-to-wdired-mode))
 
 (defun diredc-shell-kill ()
   "Kill the current shell window, buffer, and process."

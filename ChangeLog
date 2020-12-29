@@ -12,6 +12,9 @@
 	directory deleted.
 	(diredc-hist-up-directory): Improve method of navigating to parent
 	directories.
+	(diredc-wdired): New wrapper function to handle case of current
+	directory deleted.
+	(diredc--create-keymap): Use the new wrapper function.
 
 	* diredc.el (diredc-hist--history-list): BUGFIX default value.
 	(diredc-hist--hook-function): Property removal should be
