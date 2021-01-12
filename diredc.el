@@ -1877,6 +1877,7 @@ and navigates to that location."
        (when diredc-history-mode
          (setf (cdr (nth pos hist)) (point)))
        (find-alternate-file new-dir)
+       (set-window-dedicated-p nil t)
        (while (and file-to-find
                    (re-search-forward file-to-find nil t))
          (backward-char 2)
@@ -1933,7 +1934,8 @@ With optional prefix argument, repeat ARG times."
           (dotimes ( _x (max arg 0))
             (when dir
               (setq dir (file-name-directory (substring dir 0 -1)))))
-          (find-alternate-file (or dir "/"))))))))
+          (find-alternate-file (or dir "/"))))))
+         (set-window-dedicated-p nil t)))
 
 (defun diredc-hist-select ()
   "Navigate anywhere in the Dired history directly.
@@ -1955,6 +1957,7 @@ for this purpose, see `diredc-hist-select-without-popup'."
     (when new
       (setf (cdr (nth pos hist)) (point))
       (find-alternate-file new)
+      (set-window-dedicated-p nil t)
       (setq new (diredc-hist--update-directory-history hist pos)
             diredc-hist--history-list (car new)
             diredc-hist--history-position (cdr new))
@@ -1997,6 +2000,7 @@ default to 'M-i'."
          (setq pos  diredc-hist--history-position)
          (setf (cdr (nth pos hist)) (point)))
        (find-alternate-file that-dir)
+       (set-window-dedicated-p nil t)
        (goto-char old-point)
        (when diredc-history-mode
          (setq new-data (diredc-hist--update-directory-history hist pos))
@@ -2018,6 +2022,7 @@ default to 'M-i'."
                (setq pos  diredc-hist--history-position)
                (setf (cdr (nth pos hist)) (point)))
              (find-alternate-file this-dir)
+             (set-window-dedicated-p nil t)
              (goto-char old-point)
              (when diredc-history-mode
                (setq new-data (diredc-hist--update-directory-history hist pos))
@@ -2120,7 +2125,8 @@ the file in another frame."
               (if (< 1 (length (frame-list)))
                 (select-frame (next-frame))
                (make-frame-command))
-              (find-file target)))))))))
+              (find-file target))))))))
+  (set-window-dedicated-p nil t))
 
 (defun diredc-other-window ()
   "Select another `diredc' window, if one exists.

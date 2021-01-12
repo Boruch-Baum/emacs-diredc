@@ -5,6 +5,10 @@
 	instead of find-file. Display an explanation for unviewable dired lines.
 	(diredc-browse-mode): Properly un-dedicate and re-dedicate window
 	on exiting mode.
+	(diredc-hist-change-directory, diredc-hist-up-directory)
+	(diredc-hist-select, diredc-hist-duplicate)
+	(diredc-hist-find-alternate-file): Improve dedication of window to
+	diredc.
 
 2020-12-29  Boruch Baum  <boruch_baum@gmx.com>
 
