@@ -1,3 +1,11 @@
+2021-01-12  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-browse--hook-function): Re-use the same single dired
+	browse buffer for all files, with `use insert-file-contents'
+	instead of find-file. Display an explanation for unviewable dired lines.
+	(diredc-browse-mode): Properly un-dedicate and re-dedicate window
+	on exiting mode.
+
 2020-12-29  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-hist--prune-deleted-directories): Move

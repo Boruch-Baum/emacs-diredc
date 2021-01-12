@@ -708,6 +708,7 @@ CONS of information for a shell associated with the current
 `diredc' buffer. The CAR is the shell's buffer, and the CDR is
 its most recently known window.")
 
+
 ;;
 ;;; Global variables:
 
@@ -982,42 +983,56 @@ A hook function for `post-command-hook'. It creates and kills
 `view-mode' buffers for `diredc-browse-mode'."
   (unless (or diredc-browse--buffer
               (minibuffer-window-active-p (selected-window)))
-    (let ((new-file (condition-case nil
+    (let ((original-win (selected-window))
+          (new-file (condition-case nil
                       (dired-get-filename nil t)
                       (error nil)))
-          new-buf)
+          (browse-buf (cdr diredc-browse--tracker)))
       (when (not (equal new-file (car diredc-browse--tracker)))
-        (when (buffer-live-p (cdr diredc-browse--tracker))
-          (kill-buffer (cdr diredc-browse--tracker))
-          (setq diredc-browse--tracker '(nil . nil)))
-        (when (and new-file (file-regular-p new-file) (file-readable-p new-file))
-          (let ((original-win (selected-window))
-                (w-list (window-list))
+        (setf (car diredc-browse--tracker) new-file)
+        (unless (buffer-live-p browse-buf)
+          (setf (cdr diredc-browse--tracker)
+            (setq browse-buf (get-buffer-create "diredc browse")))
+          (let ((w-list (window-list))
                 w done)
             (while (and (not done)
                         (setq w (pop w-list)))
               (when (not (eq w original-win))
-                (select-window w 'no-record)
+                (select-window w 'norecord)
                 (when (eq major-mode 'dired-mode)
-                  (set-window-dedicated-p nil nil)
                   (setq done t))))
             (when (not done)
               (split-window-right)
               (other-window 1))
-            (condition-case nil
-              (find-file new-file)
-              (user-error ;; When a file's size exceeds
-               ;; `large-file-warning-threshold', function
-               ;; `abort-if-file-too-large' calls function `user-error' if
-               ;; the user wishes to abort.
-               (select-window original-win)
-               (user-error "Aborted")))
-            (setq diredc-browse--buffer original-win)
-            (view-mode)
-            (use-local-map diredc-browse-mode-map)
-            (setq new-buf (current-buffer))
-            (select-window original-win)
-            (setq diredc-browse--tracker (cons new-file new-buf))))))))
+            (set-window-dedicated-p nil nil)
+            (switch-to-buffer browse-buf 'norecord 'force-same-window)
+            (set-window-dedicated-p nil t)
+            (setq diredc-browse--buffer original-win)))
+        (set-buffer browse-buf)
+        (let ((inhibit-read-only t))
+          (cond
+           ((and new-file (file-regular-p new-file) (file-readable-p new-file))
+             (insert-file-contents new-file nil nil nil 'replace)
+             (setq diredc-browse--tracker (cons new-file browse-buf)))
+           (t
+             (erase-buffer)
+             (let ((type (car (file-attributes new-file))))
+               (insert
+                 (concat "diredc browse buffer\n\n Looking at "
+                         (cond
+                          ((stringp type)
+                            (format "a symbolic link to:\n\n %s" type))
+                          (type
+                            (format "a directory"))
+                          (t ;; ie. (eq type nil)
+                            (if (not new-file)
+                              "nothing"
+                             (format "an unreadable file"))))))))))
+        (buffer-disable-undo)
+        (view-mode)
+        (use-local-map diredc-browse-mode-map)
+        (select-window original-win 'norecord)))))
+
 
 
 ;;
@@ -1127,13 +1142,13 @@ If a shell window already exists, select it and return non-nil."
         w done)
     (while (and (not done)
                 (setq w (pop w-list)))
-      (select-window w 'no-record)
+      (select-window w 'norecord)
       (when (and (derived-mode-p 'comint-mode)
                  (equal (bound-and-true-p dired-directory) d1))
         (select-window w)
         (setq done t)))
     (when (not done)
-      (select-window original-window 'no-record))
+      (select-window original-window 'norecord))
     done))
 
 (defun diredc-trash--show-more-file-info--freedesktop ()
@@ -1316,16 +1331,16 @@ directory, select it instead of creating an additional one."
    (when make-new
      (setq diredc-shell-default shell-choice)
      (dolist (x (window-list))
-       (select-window x 'no-record)
+       (select-window x 'norecord)
        (when (eq major-mode 'dired-mode)
          (push x window-list)))
      (setq window-list (remq d1-window window-list))
      (when (= 1 (setq len (length window-list)))
-       (select-window (car window-list) 'no-record)
+       (select-window (car window-list) 'norecord)
        (setq d2        dired-directory
              f2        (or (dired-file-name-at-point) "")
              t2        (or (dired-get-marked-files) "")))
-     (select-window d1-window)
+     (select-window d1-window 'norecord)
      (select-window (split-window-below (- 0 diredc-shell-lines)))
      (funcall (nth 1 (assoc shell-choice diredc-shell-list))
               (nth 2 (assoc shell-choice diredc-shell-list))
@@ -1342,7 +1357,7 @@ directory, select it instead of creating an additional one."
   (interactive)
   (cond
    ((window-live-p diredc-browse--buffer)
-     (select-window diredc-browse--buffer))
+     (select-window diredc-browse--buffer 'norecord))
    ((diredc-other-window) t)
    ((other-window -1) t))
   (diredc-hist-find-file))
@@ -1355,7 +1370,7 @@ window, and exits `diredc-browse-mode'."
   (interactive)
   (cond
    ((window-live-p diredc-browse--buffer)
-     (select-window diredc-browse--buffer))
+     (select-window diredc-browse--buffer 'norecord))
    ((diredc-other-window) t)
    ((other-window -1) t))
   (diredc-browse-mode -1))
@@ -1389,15 +1404,18 @@ positive or nil. Otherwise, turns the mode off."
     (diredc-browse--hook-function))
    (t
     (remove-hook 'post-command-hook 'diredc-browse--hook-function)
-    (when (buffer-live-p (cdr diredc-browse--tracker))
-      (kill-buffer (cdr diredc-browse--tracker)))
-    (setq diredc-browse--tracker '(nil . nil))
-    (let ((w (selected-window)))
+    (let ((w (selected-window))
+          (browse-buf (cdr diredc-browse--tracker)))
+      (when (buffer-live-p browse-buf)
+        (pop-to-buffer browse-buf nil 'norecord)
+        (set-window-dedicated-p nil nil)
+        (kill-buffer browse-buf))
+      (setq diredc-browse--tracker '(nil . nil))
       (dolist (x (window-list))
-        (select-window x 'no-record)
+        (select-window x 'norecord)
         (when (eq major-mode 'dired-mode)
           (set-window-dedicated-p nil t)))
-      (select-window w 'no-record)))))
+      (select-window w 'norecord)))))
 
 (defun diredc-trash-assistant ()
   "Minibuffer cheatsheet and launcher for diredc-trash functions."
@@ -1992,7 +2010,7 @@ default to 'M-i'."
          (with-current-buffer new-buf
            (when (and (eq major-mode 'dired-mode)
                       (not (equal this-dir dired-directory)))
-             (select-window win)
+             (select-window win 'norecord)
              (diredc--ask-on-directory-deleted dired-directory)
              (when diredc-history-mode
                (diredc-hist--prune-deleted-directories)
@@ -2114,7 +2132,7 @@ Returns NON-NIL upon success."
     (while (and (not done)
                 (setq w (pop w-list)))
       (when (not (eq w original-win))
-        (select-window w 'no-record)
+        (select-window w 'norecord)
         (when (or (eq major-mode 'dired-mode)
                   (bound-and-true-p diredc-browse--buffer))
           (setq done t)
@@ -2122,7 +2140,7 @@ Returns NON-NIL upon success."
     (cond
      (done t)
      (t
-       (select-window original-win 'no-record)
+       (select-window original-win 'norecord)
        nil))))
 
 (defun diredc-bonus-configuration (caller)
