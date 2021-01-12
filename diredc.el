@@ -988,11 +988,10 @@ A hook function for `post-command-hook'. It creates and kills
                       (dired-get-filename nil t)
                       (error nil)))
           (browse-buf (cdr diredc-browse--tracker)))
-      (when (not (equal new-file (car diredc-browse--tracker)))
-        (setf (car diredc-browse--tracker) new-file)
+      (unless (and new-file
+                   (equal new-file (car diredc-browse--tracker)))
         (unless (buffer-live-p browse-buf)
-          (setf (cdr diredc-browse--tracker)
-            (setq browse-buf (get-buffer-create "diredc browse")))
+          (setq browse-buf (get-buffer-create "diredc browse"))
           (let ((w-list (window-list))
                 w done)
             (while (and (not done)
@@ -1008,12 +1007,25 @@ A hook function for `post-command-hook'. It creates and kills
             (switch-to-buffer browse-buf 'norecord 'force-same-window)
             (set-window-dedicated-p nil t)
             (setq diredc-browse--buffer original-win)))
+        (setq diredc-browse--tracker (cons new-file browse-buf))
         (set-buffer browse-buf)
         (let ((inhibit-read-only t))
           (cond
            ((and new-file (file-regular-p new-file) (file-readable-p new-file))
-             (insert-file-contents new-file nil nil nil 'replace)
-             (setq diredc-browse--tracker (cons new-file browse-buf)))
+             (condition-case err
+               (insert-file-contents new-file nil nil nil 'replace)
+               (error
+                 (progn
+                   (erase-buffer)
+                   (insert (concat "diredc browse buffer\n\n Error looking at file: "
+                                   (format "%s\n\n %s: %s" new-file (car err) (cdr err))))
+                   (dolist (w (window-list))
+                     (when (not (eq w original-win))
+                       (select-window w 'norecord)
+                       (unless (or  (eq major-mode 'dired-mode)
+                                    (equal "diredc browse" (buffer-name))
+                                    (string-match "^*diredc-shell " (buffer-name)))
+                         (delete-window))))))))
            (t
              (erase-buffer)
              (let ((type (car (file-attributes new-file))))
@@ -1410,10 +1422,10 @@ positive or nil. Otherwise, turns the mode off."
         (pop-to-buffer browse-buf nil 'norecord)
         (set-window-dedicated-p nil nil)
         (kill-buffer browse-buf))
-      (setq diredc-browse--tracker '(nil . nil))
       (dolist (x (window-list))
         (select-window x 'norecord)
         (when (eq major-mode 'dired-mode)
+          (setq diredc-browse--tracker '(nil . nil))
           (set-window-dedicated-p nil t)))
       (select-window w 'norecord)))))
 
@@ -2188,6 +2200,7 @@ function context, either `diredc-mode' or `dired-mode-hook'."
 This function does not change any `dired' settings or global
 modes."
   (interactive)
+  (diredc-browse-mode -1)
   (while (condition-case nil
            (or (select-frame-by-name "diredc") t)
            (error nil))
@@ -2196,13 +2209,13 @@ modes."
       (error ; this happens when all frames were named 'dired'
         (set-frame-name "F1")))) ; emacs default first frame name
   (dolist (buf (buffer-list))
-    (with-current-buffer buf
-      (when (or (eq major-mode 'dired-mode)
-                (bound-and-true-p diredc-browse--buffer))
-        ;; If ALL your existing buffers (including *scratch*) are in
-        ;; dired-mode, when the final one is killed, emacs v26.1
-        ;; creates a *Messages* buffer.
-        (kill-buffer buf)))))
+    (set-buffer buf)
+    (when (or (eq major-mode 'dired-mode)
+              (bound-and-true-p diredc-browse--buffer))
+      ;; If ALL your existing buffers (including *scratch*) are in
+      ;; dired-mode, when the final one is killed, emacs v26.1
+      ;; creates a *Messages* buffer.
+      (kill-buffer buf))))
 (defalias 'diredc-quit 'diredc-exit)
 
 (defun diredc-do-not-quit-window ()

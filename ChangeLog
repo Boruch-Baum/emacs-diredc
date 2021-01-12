@@ -1,5 +1,14 @@
 2021-01-12  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-browse-mode): Ensure all data is cleaned upon
+	exiting mode, handle opening not being on file line.
+	(diredc-browse--hook-function): Handle gpg files and file insert
+	errors.
+	(diredc-exit): Ensure clean exit of diredc-browse-mode when
+	exiting diredc.
+
+2021-01-12  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-browse--hook-function): Re-use the same single dired
 	browse buffer for all files, with `use insert-file-contents'
 	instead of find-file. Display an explanation for unviewable dired lines.
