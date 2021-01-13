@@ -1,5 +1,11 @@
 2021-01-12  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc--advice--wdired-exit): Preserve
+	bonus-configuration options on all exits from wdired mode
+	(diredc--hook-function): Properly handle all exits from wdired mode.
+
+2021-01-12  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-browse-mode): Ensure all data is cleaned upon
 	exiting mode, handle opening not being on file line.
 	(diredc-browse--hook-function): Handle gpg files and file insert

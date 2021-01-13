@@ -830,6 +830,7 @@ Internal variable for `diredc'.")
 (defun diredc--advice--wdired-exit ()
   "Ensure correct keymap when returning from wdired."
   (when diredc-mode
+    (diredc-bonus-configuration 'dired-mode-hook)
     (use-local-map diredc-mode-map)))
 
 (defun diredc--advice--shell-guess-fallback (oldfun files)
@@ -944,9 +945,15 @@ See also: Emacs bug report #44023:
    (diredc-mode
      (use-local-map diredc-mode-map)
      (diredc-bonus-configuration 'dired-mode-hook)
+     (advice-add 'wdired-finish-edit :after #'diredc--advice--wdired-exit)
+     (advice-add 'wdired-abort-changes :after #'diredc--advice--wdired-exit)
+     (advice-add 'wdired-exit :after #'diredc--advice--wdired-exit)
      (add-hook 'post-command-hook
                'diredc--hook-function--post-command t))
    (t ; not diredc-mode
+     (advice-remove 'wdired-finish-edit #'diredc--advice--wdired-exit)
+     (advice-remove 'wdired-abort-changes #'diredc--advice--wdired-exit)
+     (advice-remove 'wdired-exit #'diredc--advice--wdired-exit)
      (remove-hook 'post-command-hook
                   'diredc--hook-function--post-command))))
 
