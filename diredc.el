@@ -625,13 +625,13 @@ the file's name replaced with \"%s\". See command `diredc-show-more-file-info'."
     ("POSIX dumb terminal-emulator" diredc-shell--launch-term "/bin/sh")
     ("bash dumb terminal-emulator"  diredc-shell--launch-term "/bin/bash")
     ("zsh dumb terminal-emulator"   diredc-shell--launch-term "/bin/zsh")
-    ("POSIX ansi terminal-emulator" diredc-shell--launch-term "/bin/sh" t)
-    ("bash ansi terminal-emulator"  diredc-shell--launch-term "/bin/bash" t)
-    ("zsh ansi terminal-emulator"   diredc-shell--launch-term "/bin/zsh" t))
+    ("POSIX ansi terminal-emulator" diredc-shell--launch-term "/bin/sh")
+    ("bash ansi terminal-emulator"  diredc-shell--launch-term "/bin/bash")
+    ("zsh ansi terminal-emulator"   diredc-shell--launch-term "/bin/zsh"))
   "Shell options to offer to the user.
 Each item of the list must have three elements: A description
-string; A launch program, and; A path string to the desired shell
-executable. The launch program should return the shell's buffer,
+string; A launch function, and; A path string to the desired shell
+executable. The launch function should return the shell's buffer,
 and should accept seven string arguments: A path string to the
 desired shell executable; the current dired directory ('$d1'); a
 possible second dired directory ('$d2'); a possible current
@@ -640,7 +640,8 @@ directory ('$f2'); a possible list of tagged files in the current
 dired directory ('$t1'); and a possible list of tagged files in
 the other dired directory ('$t2')."
   :type '(repeat (list (string :tag "Description")
-                       (function :tag "Function")))
+                       (function  :must-match t :tag "Function")
+                       (file :must-match t :tag "Shell executable")))
   :group 'diredc)
 
 (defcustom diredc-shell-default "POSIX shell"
