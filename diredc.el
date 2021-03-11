@@ -702,11 +702,9 @@ created.")
 This is an internal variable for `diredc-mode' buffers. Do not
 manipulate it directly. See function `diredc-browse-mode'.")
 
-(defvar-local diredc-shell--bufwin '(nil . nil)
+(defvar-local diredc-shell--bufwin nil
   "Internal variable for `diredc-shell'.
-CONS of information for a shell associated with the current
-`diredc' buffer. The CAR is the shell's buffer, and the CDR is
-its most recently known window.")
+Window from which the current `diredc-shell' buffer was created.")
 
 
 ;;
@@ -1306,12 +1304,15 @@ details."
   "Kill the current shell window, buffer, and process."
   (interactive)
   ;; TODO preform sanity check here (only use in diredc shell buffers)
-  (let (proc)
+  (let ((return-window diredc-shell--bufwin)
+        proc)
     (while (and (setq proc (get-buffer-process (current-buffer)))
                 (process-live-p proc))
       (set-process-query-on-exit-flag proc nil)
-      (kill-process proc)))
-  (kill-buffer-and-window))
+      (kill-process proc))
+    (kill-buffer-and-window)
+    (when (window-live-p return-window)
+      (select-window return-window))))
 
 (defun diredc-shell ()
   "Create a `diredc' shell window and buffer.
@@ -1365,8 +1366,10 @@ directory, select it instead of creating an additional one."
               (nth 2 (assoc shell-choice diredc-shell-list))
               d1 d2 f1 f2 t1 t2)
      (setq-local dired-directory d1)
+     (setq  diredc-shell--bufwin d1-window)
      (use-local-map (copy-keymap (current-local-map)))
      (local-set-key (kbd "C-c C-k") 'diredc-shell-kill)
+     (local-set-key [remap kill-buffer] 'diredc-shell-kill)
      (set-window-dedicated-p nil t)
      (when (< 1 len)
        (message "Variables d2,f2,t2 not set. (More than two dired buffers visible).")))))

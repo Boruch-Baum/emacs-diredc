@@ -1,3 +1,9 @@
+2021-03-11  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-shell--bufwin): Redefine and make unused variable useful.
+	(diredc-shell-kill, diredc-shell): Use it, to return control to
+	parent window unpoin buffer being killed.
+
 2021-01-12  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--advice--wdired-exit): Preserve
