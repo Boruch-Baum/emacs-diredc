@@ -1,4 +1,5 @@
-# diredc - extensions to emacs dired-mode [![MELPA](https://melpa.org/packages/diredc-badge.svg)](https://melpa.org/#/diredc)
+# diredc - extensions to emacs dired-mode
+[![MELPA](https://melpa.org/packages/diredc-badge.svg)](https://melpa.org/#/diredc) [![MELPA Stable](https://stable.melpa.org/packages/diredc-badge.svg)](https://stable.melpa.org/#/diredc)
 
 This package extends emacs' `dired-mode` with features found in almost
 all file managers, and also some unique features:
@@ -72,7 +73,7 @@ all file managers, and also some unique features:
 
        `(global-set-key (kbd "S-<f11>") 'diredc))`
 
-    An alternative or additional option would be:
+ 3) An alternative or additional option would be:
 
        `(global-set-key [remap dired-other-frame] 'diredc)`
 
@@ -288,7 +289,7 @@ all file managers, and also some unique features:
 
 ## Colophon
 
-* Copyright © 2020, Boruch Baum <boruch_baum@gmx.com>
+* Copyright © 2020-2021, Boruch Baum <boruch_baum@gmx.com>
 * Author/Maintainer: Boruch Baum <boruch_baum@gmx.com>
 * Homepage: https://github.com/Boruch-Baum/emacs-diredc
 * License: GPL3+
