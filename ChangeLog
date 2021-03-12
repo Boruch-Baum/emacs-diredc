@@ -1,6 +1,15 @@
 2021-03-11  Boruch Baum  <boruch_baum@gmx.com>
 
-	(diredc-shell-list): Correct defcustom.
+	* diredc.el (diredc-browse-exclude-file-extensions)
+	(diredc-browse-exclude-coding-systems)
+	(diredc-browse-exclude-helper): New defcustoms.
+	(diredc--guess-decoding, diredc-browse--exclude)
+	(diredc-browse--hook-function): Use them.
+	(diredc-browse-mode): Describe new feature in docstring.
+
+2021-03-11  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-shell-list): Correct defcustom.
 
 2021-03-11  Boruch Baum  <boruch_baum@gmx.com>
 

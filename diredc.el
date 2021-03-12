@@ -45,6 +45,8 @@
 ;;     * backward, forward, or to a direct history entry
 ;;   * File quick-preview mode
 ;;     * inspired by, and similar to, midnight commander's "C-x q"
+;;     * customizable exclusion criteria to suppress undesirable files
+;;       (eg. binaries)
 ;;   * Current file's supplemental information in minibuffer (optional)
 ;;     * eg. output from 'getfattr', 'getfacl', 'stat', 'exif'.
 ;;   * Multiple panel views
@@ -144,7 +146,8 @@
 ;; automatically when you either disable the mode or you move point to
 ;; another line in the `dired' buffer. Use '<TAB>' or 'S-<TAB>' to
 ;; navigate between the `dired' buffer window and the file preview
-;; window.
+;; window. There are several options for excluding undesirable files
+;; (eg. binaries) from preview; see the mode's docstring for details.
 ;;
 ;; The traditional `dired' operations that 'find' or 'open' a file
 ;; should do so to a separate frame, most likely the one from which
@@ -655,6 +658,71 @@ is a string that must match an entry in `diredc-shell-list'."
            result)
   :group 'diredc)
 
+(defcustom diredc-browse-exclude-file-extensions nil
+  "Regexps for filename extensions of files not to be browsed.
+
+Example: For a tar file, the use form  tar$, not .tar
+
+This is useful to avoid displaying unnecessary garbage buffers
+when using `diredc-browse-mode'. See also the related
+customization variables `diredc-browse-exclude-coding-systems'
+and `diredc-browse-exclude-helper'.
+
+Setting this variable isn't expected to be necessary, as all
+cases ought to be caught by the settings for
+`diredc-browse-exclude-coding-systems'."
+  :type '(repeat string)
+  :group 'diredc)
+
+(defcustom diredc-browse-exclude-coding-systems
+  '(binary no-conversion no-conversion-multibyte)
+  "Coding systems of files not to be browsed.
+This is useful to avoid displaying unnecessary garbage buffers
+when using `diredc-browse-mode'. See also the related
+customization variables `diredc-browse-exclude-coding-systems'
+and `diredc-browse-exclude-helper'."
+  :type '(repeat coding-system)
+  :group 'diredc)
+
+(defcustom diredc-browse-exclude-helper
+  ;; FIXME: Only tested for (eq system-type 'gnu/linux). Please submit
+  ;;        corrections or additions.
+  (list
+    (list 'gnu          "/usr/bin/file" "-b" "\\<text\\>" "/usr/bin/file" "-b" "\\<ELF\\>")
+    (list 'gnu/linux    "/usr/bin/file" "-b" "\\<text\\>" "/usr/bin/file" "-b" "\\<ELF\\>")
+    (list 'gnu/kfreebsd "/usr/bin/file" "-b" "\\<text\\>" "/usr/bin/file" "-b" "\\<ELF\\>")
+    (list 'darwin       "/usr/bin/file" "-b" "\\<text\\>" "/usr/bin/file" "-b" "\\<ELF\\>")
+    (list 'cygwin       "/usr/bin/file" "-b" "\\<text\\>" "/usr/bin/file" "-b" "\\<ELF\\>")
+    (list 'ms-dos       "" "" "" "" "" "")
+    (list 'windows-nt   "" "" "" "" "" ""))
+  "External helper programs to determine files not to be browsed.
+This is useful to avoid displaying unnecessary garbage buffers
+when using `diredc-browse-mode'. See also the related
+customization variables `diredc-browse-exclude-file-extensions'
+and `diredc-browse-exclude-coding-systems.'
+
+Each element of this list is itself a list of one symbol and six
+strings: 1) The emacs variable `system-type' for this element; 2)
+The inclusion helper command; 3) Any parameters for the command;
+4) The regex of the command's desired output; 5) The exclusion
+helper command; 6) Any parameters for the command; 7) The regex
+of the command's desired output.
+
+Mode `diredc-browse-mode' applies the inclusion test, and only if
+that fails applies the exclusion test.
+
+The default value includes all files recognized by the system
+command as \"text\" and excludes all recognized as
+\"ELF\" (executable and linkable)."
+  :type '(repeat (list (sexp   :tag "Emacs system type")
+                 (file :must-match t :tag "Inclusion helper command")
+                 (string :tag "Inclusion command's parameters") ;
+                 (string :tag "Inclusion command's desired output")
+                 (file :must-match t :tag "Exclusion helper command")
+                 (string :tag "Exclusion command's parameters")
+                 (string :tag "Exclusion command's desried output")))
+  :group 'diredc)
+
 (defcustom diredc-bonus-configuration t
   "Supplemental configuration for `diredc' buffers.
 
@@ -1015,13 +1083,19 @@ A hook function for `post-command-hook'. It creates and kills
             (setq diredc-browse--buffer original-win)))
         (setq diredc-browse--tracker (cons new-file browse-buf))
         (set-buffer browse-buf)
+        (setq header-line-format
+          (format "Diredc browse buffer%s"
+                  (if new-file (concat ": " (file-name-nondirectory new-file)) "")))
         (let ((inhibit-read-only t))
           (cond
-           ((and new-file (file-regular-p new-file) (file-readable-p new-file))
-             (condition-case err
-               (insert-file-contents new-file nil nil nil 'replace)
-               (error
-                 (progn
+           ((and new-file
+                 (file-regular-p new-file)
+                 (file-readable-p new-file)
+                 (not (file-symlink-p new-file)))
+             (unless (diredc-browse--exclude new-file)
+               (condition-case err
+                 (insert-file-contents new-file nil nil nil 'replace)
+                 (error
                    (erase-buffer)
                    (insert (concat "diredc browse buffer\n\n Error looking at file: "
                                    (format "%s\n\n %s: %s" new-file (car err) (cdr err))))
@@ -1035,22 +1109,19 @@ A hook function for `post-command-hook'. It creates and kills
            (t
              (erase-buffer)
              (let ((type (car (file-attributes new-file))))
-               (insert
-                 (concat "diredc browse buffer\n\n Looking at "
-                         (cond
+               (insert   (cond
                           ((stringp type)
-                            (format "a symbolic link to:\n\n %s" type))
+                            (format "Looking at a symbolic link to:\n\n   %s" type))
                           (type
-                            (format "a directory"))
+                            (format "Looking at a directory"))
                           (t ;; ie. (eq type nil)
                             (if (not new-file)
-                              "nothing"
-                             (format "an unreadable file"))))))))))
+                              "Looking at nothing"
+                             (format "Looking at an unreadable file")))))))))
         (buffer-disable-undo)
         (view-mode)
         (use-local-map diredc-browse-mode-map)
         (select-window original-win 'norecord)))))
-
 
 
 ;;
@@ -1168,6 +1239,78 @@ If a shell window already exists, select it and return non-nil."
     (when (not done)
       (select-window original-window 'norecord))
     done))
+
+(defun diredc--guess-decoding (filename)
+  "Guess the encoding system to be used to find FILENAME.
+Returns a coding-system symbol. See variables
+`auto-coding-alist', `file-coding-system-alist' and function
+`find-operation-coding-system'."
+  ;; NOTE: See also `mailcap-extension-to-mime' and related features
+  ;; in `mailcap.el'
+  (or (cl-loop
+        for elem in auto-coding-alist
+        when (string-match (car elem) filename)
+        return (cdr elem))
+      (cl-loop for elem in file-coding-system-alist
+        when (string-match (car elem) filename)
+        return
+          (let ((val (cdr elem)))
+            (cond
+             ((consp val) (cdr val))
+             ((functionp val)
+               (if (consp (setq val
+                            (funcall val (list 'insert-file-contents filename))))
+                 (car val)
+                val))
+             (t val))))))
+
+(defun diredc-browse--exclude (filename)
+  "Decide whether to browse readable file FILENAME.
+Reports in the 'diredc browse' buffer any reason not to browse.
+The file is checked against the values of variables
+`diredc-browse-exclude-file-extensions' and
+`diredc-browse-exclude-coding-systems'. If those checks pass,
+variable `diredc-browse-exclude-helper' is used (see there)."
+  (let (ext-match coding-match helper-match)
+    (when (or
+            ;; check file extensions to exclude
+            (setq ext-match
+              (cl-loop for elem in diredc-browse-exclude-file-extensions
+                       when (string-match elem (file-name-extension filename))
+                       return elem))
+            ;; check coding systems to exclude
+            (setq coding-match (memq (diredc--guess-decoding filename)
+                                     diredc-browse-exclude-coding-systems))
+            ;; check exclusion-helpers
+            (setq helper-match
+              (when-let*
+                ((helper (assq system-type diredc-browse-exclude-helper))
+                 (output  (shell-command-to-string
+                            (format "%s %s %s" (nth 1 helper) (nth 2 helper) filename))
+                          ))
+               (if (string-match (nth 3 helper) output)
+                 ;; the inclusion test passes
+                 nil
+                ;; return the result of the exclusion test
+                (and (string-match
+                       (nth 6 helper)
+                       (setq output (condition-case nil
+                         (shell-command-to-string
+                           (format "%s %s %s" (nth 4 helper) (nth 5 helper) filename))
+                         (error ""))))
+                     (match-string 0 output))))))
+      (erase-buffer)
+      (insert
+        (concat "File excluded from being browsed.\n\n Exclusion criteria: "
+          (cond
+           (ext-match
+             (format "filename extension\"%s\".\n\n Reference: variable 'diredc-browse-exclude-file-extensions'" ext-match))
+           (coding-match
+             (format "coding system \"%s\".\n\n Reference: variable 'diredc-browse-exclude-coding-systems'" (car coding-match)))
+           (helper-match
+             (format "property \"%s\".\n\n Reference: variable 'diredc-browse-exclude-helper'" helper-match))
+           (t "")))) ; WARNING: This condition should never be reached
+      t))) ; Return t when exclusion is true
 
 (defun diredc-trash--show-more-file-info--freedesktop ()
   "Internal function for `diredc-mode' 'Trash' file buffers.
@@ -1410,7 +1553,13 @@ additional feature of having the TAB key set to switch the
 selected window back to the calling Dired window.
 
 When called non-interactively, turns the mode on if ARG is
-positive or nil. Otherwise, turns the mode off."
+positive or nil. Otherwise, turns the mode off.
+
+There are several ways to suppress this option for certain files.
+The mode checks each file against variables
+`diredc-browse-exclude-file-extensions' and
+`diredc-browse-exclude-coding-systems'. If those checks pass,
+variable `diredc-browse-exclude-helper' is used (see there)."
   (interactive)
   (when (not (derived-mode-p 'dired-mode))
     (user-error "Not a Dired buffer"))

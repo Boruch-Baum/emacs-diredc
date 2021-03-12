@@ -12,6 +12,8 @@ all file managers, and also some unique features:
      * backward, forward, or to a direct history entry
    * File quick-preview mode
      * inspired by, and similar to, midnight commander's "C-x q"
+     * customizable exclusion criteria to suppress undesirable files
+       (eg. binaries)
    * Current file's supplemental information in minibuffer (optional)
      * eg. output from `getfattr`, `getfacl`, `stat`, `exif`.
    * Multiple panel views
@@ -110,7 +112,8 @@ all file managers, and also some unique features:
  automatically when you either disable the mode or you move point to
  another line in the `dired` buffer. Use `<TAB>` or `S-<TAB>` to
  navigate between the `dired` buffer window and the file preview
- window.
+ window. There are several options for excluding undesirable files
+ (eg. binaries) from preview; see the mode's docstring for details.
 
  The traditional `dired` operations that `find` or `open` a file
  should do so to a separate frame, most likely the one from which
