@@ -1349,8 +1349,7 @@ management."
         (info-file (expand-file-name (diredc--file-name-at-point)))
         (cmd diredc--show-more-file-info-cmd)
         output)
-    (when (and info-file
-               (not (zerop (length cmd))))
+    (when (and info-file (not (zerop (length cmd))))
       (setq output (condition-case nil
                      (shell-command-to-string (format cmd info-file))
                      (error ""))) ; TODO: Report error encountered
@@ -1939,12 +1938,13 @@ operation."
                     (mod (1+ diredc--show-more-file-info-index)
                          (length diredc-show-more-file-info-list))))
                  diredc-show-more-file-info-list)))
-     (diredc--show-more-file-info))
+     (if (zerop (length diredc--show-more-file-info-cmd))
+       (message "Suppressing display of additional file info.")
+     (diredc--show-more-file-info)))
    (; cond: not called-interactively
     (and arg
          (stringp arg))
-     (setq diredc--show-more-file-info-cmd arg)
-     (diredc--show-more-file-info))))
+      (diredc--show-more-file-info))))
 
 (defun diredc-history-mode (&optional arg)
   "Control ability to navigate directory history.

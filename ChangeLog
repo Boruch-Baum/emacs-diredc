@@ -1,5 +1,10 @@
 2021-03-12  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc--show-more-file-info)
+	(diredc-show-more-file-info): Give user feedback when shut off.
+
+2021-03-12  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-browse--hook-function): Control window when
 	maliciously deleted.
 
