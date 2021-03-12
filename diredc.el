@@ -1283,22 +1283,23 @@ variable `diredc-browse-exclude-helper' is used (see there)."
                                      diredc-browse-exclude-coding-systems))
             ;; check exclusion-helpers
             (setq helper-match
-              (when-let*
+              (let*
                 ((helper (assq system-type diredc-browse-exclude-helper))
-                 (output  (shell-command-to-string
-                            (format "%s %s %s" (nth 1 helper) (nth 2 helper) filename))
-                          ))
-               (if (string-match (nth 3 helper) output)
-                 ;; the inclusion test passes
-                 nil
-                ;; return the result of the exclusion test
-                (and (string-match
-                       (nth 6 helper)
-                       (setq output (condition-case nil
-                         (shell-command-to-string
-                           (format "%s %s %s" (nth 4 helper) (nth 5 helper) filename))
-                         (error ""))))
-                     (match-string 0 output))))))
+                 (output (when helper
+                           (shell-command-to-string
+                             (format "%s %s %s" (nth 1 helper) (nth 2 helper) filename)))))
+               (when output
+                 (if (string-match (nth 3 helper) output)
+                   ;; the inclusion test passes
+                   nil
+                  ;; return the result of the exclusion test
+                  (and (string-match
+                         (nth 6 helper)
+                         (setq output (condition-case nil
+                           (shell-command-to-string
+                             (format "%s %s %s" (nth 4 helper) (nth 5 helper) filename))
+                           (error ""))))
+                       (match-string 0 output)))))))
       (erase-buffer)
       (insert
         (concat "File excluded from being browsed.\n\n Exclusion criteria: "

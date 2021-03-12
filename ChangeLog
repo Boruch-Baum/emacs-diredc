@@ -1,3 +1,8 @@
+2021-03-12  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-browse--exclude): Update for Emacs 28
+	compatability: deprecating when-let*.
+
 2021-03-11  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-browse-exclude-file-extensions)
