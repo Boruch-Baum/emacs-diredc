@@ -1056,7 +1056,8 @@ POINT."
 A hook function for `post-command-hook'. It creates and kills
 `view-mode' buffers for `diredc-browse-mode'."
   (unless (or diredc-browse--buffer
-              (minibuffer-window-active-p (selected-window)))
+              (minibuffer-window-active-p (selected-window))
+              (not (string-match "#<frame diredc " (format "%s" (selected-frame)))))
     (let ((original-win (selected-window))
           (new-file (condition-case nil
                       (dired-get-filename nil t)
