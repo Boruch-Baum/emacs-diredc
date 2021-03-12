@@ -1,5 +1,11 @@
 2021-03-12  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-browse-exclude-file-extensions): Add entries
+	for docx and db files.
+	(diredc-browse--exclude): Handle filenames with no extensions.
+
+2021-03-12  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-browse--exclude): Update for Emacs 28
 	compatability: deprecating when-let*.
 

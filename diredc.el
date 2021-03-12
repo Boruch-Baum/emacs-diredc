@@ -658,10 +658,10 @@ is a string that must match an entry in `diredc-shell-list'."
            result)
   :group 'diredc)
 
-(defcustom diredc-browse-exclude-file-extensions nil
+(defcustom diredc-browse-exclude-file-extensions (list "^db$" "^docx$")
   "Regexps for filename extensions of files not to be browsed.
 
-Example: For a tar file, the use form  tar$, not .tar
+Example: For a tar file, the use form  ^tar$, not .tar
 
 This is useful to avoid displaying unnecessary garbage buffers
 when using `diredc-browse-mode'. See also the related
@@ -1271,12 +1271,14 @@ The file is checked against the values of variables
 `diredc-browse-exclude-file-extensions' and
 `diredc-browse-exclude-coding-systems'. If those checks pass,
 variable `diredc-browse-exclude-helper' is used (see there)."
-  (let (ext-match coding-match helper-match)
+  (let ((ext (or (file-name-extension filename)
+                 (file-name-nondirectory filename)))
+        ext-match coding-match helper-match)
     (when (or
             ;; check file extensions to exclude
             (setq ext-match
               (cl-loop for elem in diredc-browse-exclude-file-extensions
-                       when (string-match elem (file-name-extension filename))
+                       when (string-match elem ext)
                        return elem))
             ;; check coding systems to exclude
             (setq coding-match (memq (diredc--guess-decoding filename)
