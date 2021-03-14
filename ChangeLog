@@ -1,3 +1,9 @@
+2021-03-14  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-browse-exclude-helper): Add mimetype support,
+	and exclusion rule for mimetype: binary.
+	(diredc-browse--exclude): Quote shell variables.
+
 2021-03-12  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--show-more-file-info)
