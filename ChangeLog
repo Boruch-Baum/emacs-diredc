@@ -1,3 +1,12 @@
+2021-03-15  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-browse--hook-function): Don't run hook when
+	evaluating customize-variable.
+	(diredc-browse--exclude): Add buttons to describe-variable,
+	customize-variable, and diredc-other-window.
+	(diredc-browse--button-describe-action)
+	(diredc-browse--button-return-action): Define actions for buttons created.
+
 2021-03-14  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-browse-exclude-helper): Add mimetype support,
