@@ -90,6 +90,7 @@
 ;;   dired       -- ... (doh) ...
 ;;   dired-x     -- for dired-guess-default, dired-omit-mode
 ;;   dired-aux   -- for dired-compress-files
+;;   help-mode   -- for help button widget
 ;;   hl-line     -- for hl-line-mode
 ;;   term        -- for term-line-mode, term-send-input
 ;;   view        -- for view-mode
@@ -336,6 +337,7 @@
 (require 'term)      ; term-line-mode, term-send-input
 (require 'view)      ; view-mode
 (require 'autorevert); auto-revert-mode
+(require 'help-mode) ; help-xref button
 
 ;;
 ;;; Suggested
