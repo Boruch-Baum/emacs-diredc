@@ -398,7 +398,8 @@ Create a new symbol `diredc-browse-mode' keymap. Returns a
 keymap."
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map view-mode-map)
-    (define-key map "\t"                        'diredc-other-window)
+    (define-key map "\t"                        'diredc-browse-tab)
+    (define-key map (kbd "<backtab>")           'diredc-browse-backtab)
     (define-key map (kbd "C-x q")               'diredc-browse-quit)
     (define-key map [remap View-quit]           'diredc-browse-quit)
     (define-key map [remap View-kill-and-leave] 'diredc-browse-quit)
@@ -1346,8 +1347,6 @@ variable `diredc-browse-exclude-helper' is used (see there)."
         (make-text-button p1 (1- (point-max))
                           :type 'help-xref
                           'action 'diredc-browse--button-return-action))
-      (local-set-key "\t"              'forward-button)
-      (local-set-key (kbd "<backtab>") 'backward-button)
       t) ; Return t when exclusion is true
     ))
 
@@ -1555,6 +1554,34 @@ directory, select it instead of creating an additional one."
      (set-window-dedicated-p nil t)
      (when (< 1 len)
        (message "Variables d2,f2,t2 not set. (More than two dired buffers visible).")))))
+
+(defun diredc-browse-tab ()
+  "Tab-navigate to the next button or other window.
+This function navigates to the other window only if no buttons
+exist in the current one."
+  (interactive)
+  (condition-case err
+    (forward-button 1)
+    (user-error
+      (goto-char (point-min))
+      (condition-case err
+        (forward-button 1)
+        (user-error
+          (diredc-other-window))))))
+
+(defun diredc-browse-backtab ()
+  "Tab-navigate to the previous button or other window.
+This function navigates to the other window only if no buttons
+exist in the current one."
+  (interactive)
+  (condition-case err
+    (forward-button -1)
+    (user-error
+      (goto-char (point-max))
+      (condition-case err
+        (forward-button -1)
+        (user-error
+          (diredc-other-window))))))
 
 (defun diredc-browse-find ()
   "Quit `diredc-browse-mode', and find the current file."

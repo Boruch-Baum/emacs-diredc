@@ -1,3 +1,11 @@
+2021-03-16  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-browse-tab, diredc-browse-backtab): New
+	composite functions to handle both tab-to-button and
+	tab-to-other-window navigation.
+	(diredc-browse--create-keymap): Use them.
+	(diredc-browse--exclude): Remove old navigation binding.
+
 2021-03-15  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-browse--hook-function): Don't run hook when
