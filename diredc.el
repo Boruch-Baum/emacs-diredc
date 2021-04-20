@@ -742,13 +742,15 @@ does, see function `diredc-bonus-configuration'."
 ;;
 ;;; Buffer-local variables:
 
-(defvar-local diredc-hist--history-list (list (cons (expand-file-name default-directory)
-                                                    (point)))
+(defvar-local diredc-hist--history-list (list (list (expand-file-name default-directory)
+                                                    (point)
+                                                    dired-omit-mode))
   "Internal variable for `diredc-history-mode' minor mode.
 
 A buffer-local list of directories visited. Each element of the
-list is a CONS whose CAR is a directory name and whose CDR is a
-return POINT within that buffer.")
+list contains three elements: 1) a directory name; 2) a return
+POINT within that buffer, and; 3) a state for mode
+`dired-omit-mode'.")
 ;; TODO: Storing a POINT for a return position isn't perfect; it will
 ;; yield 'wrong' results if the buffer's contents change, eg. the `ls'
 ;; display switches change, or entries are added / deleted.
@@ -895,6 +897,14 @@ Internal variable for `diredc'.")
 
 
 ;;
+;;; Functions - inline functions:
+
+(defsubst diredc--set-omit-mode (yes)
+  "Set mode `dired-omit-mode' based upon value of YES."
+  (dired-omit-mode (if yes 1 -1)))
+
+
+;;
 ;;; Functions - advice functions:
 
 (defun diredc--advice--wdired-exit ()
@@ -1031,8 +1041,9 @@ See also: Emacs bug report #44023:
   "Hook function for `dired-mode-hook'."
   (setq diredc-hist--history-position 0
         diredc-hist--history-list
-          (list (cons (expand-file-name dired-directory)
-                      (point)))))
+          (list (list (expand-file-name dired-directory)
+                      (point)
+                      dired-omit-mode))))
 
 (defun diredc--hook-function--post-command ()
   "Internal hook function for `diredc-mode' file buffers.
@@ -1403,8 +1414,8 @@ position."
   ;; TODO: consider standardiing retval. Compare function
   ;; `diredc-hist--prune-deleted-directories'
   (let* ((new-dir (substring-no-properties
-                  (expand-file-name dired-directory)))
-         (new (cons new-dir (point)))
+                    (expand-file-name dired-directory)))
+         (new (list new-dir (point) dired-omit-mode))
          pos2)
     (cons
       ; diredc-hist--history-list
@@ -1457,8 +1468,8 @@ NEW is the new listing switch entry to use."
       (cond
        (hist (reverse hist))
        ((file-directory-p default-directory)
-         (list (cons default-directory 1)))
-       (t (list (cons "/" 1)))))
+         (list (list default-directory 1 dired-omit-mode)))
+       (t (list (list "/" 1 nil)))))
     (setq diredc-hist--history-position pos)))
 
 (defun diredc--abort-on-directory-deleted (dir)
@@ -2059,10 +2070,12 @@ Optionally, navigate prefix argument ARG number of history elements."
          (hist-elem (nth pos hist)))
     (if ovr
       (message "No more directory history!")
-     (setf (cdr (nth diredc-hist--history-position hist)) (point))
+     (setf (nth 1 (nth diredc-hist--history-position hist)) (point))
+     (setf (nth 2 (nth diredc-hist--history-position hist)) dired-omit-mode)
      (find-alternate-file (car hist-elem))
      (set-window-dedicated-p nil t)
-     (goto-char (cdr hist-elem))
+     (goto-char (nth 1 hist-elem))
+     (diredc--set-omit-mode (nth 2 hist-elem))
      (setq diredc-hist--history-list hist
            diredc-hist--history-position pos))))
 
@@ -2115,8 +2128,11 @@ and navigates to that location."
            (message "")))) ; clear echo area (emacs 26) when answer is 'no'
      (when (file-directory-p new-dir)
        (when diredc-history-mode
-         (setf (cdr (nth pos hist)) (point)))
-       (find-alternate-file new-dir)
+         (setf (nth 1 (nth pos hist)) (point))
+         (setf (nth 2 (nth pos hist)) dired-omit-mode))
+       (let ((omit-mode dired-omit-mode))
+         (find-alternate-file new-dir)
+         (diredc--set-omit-mode omit-mode))
        (set-window-dedicated-p nil t)
        (while (and file-to-find
                    (re-search-forward file-to-find nil t))
@@ -2135,7 +2151,8 @@ and navigates to that location."
 
 With optional prefix argument, repeat ARG times."
   (interactive "p")
-  (let ((dir dired-directory))
+  (let ((dir dired-directory)
+        (omit-mode dired-omit-mode))
     (cond
      ((not (file-directory-p dir))
        (diredc--ask-on-directory-deleted dir)
@@ -2148,11 +2165,13 @@ With optional prefix argument, repeat ARG times."
         (let ((hist diredc-hist--history-list)
               (pos  diredc-hist--history-position)
               new)
-          (setf (cdr (nth pos hist)) (point))
+          (setf (nth 1 (nth pos hist)) (point))
+          (setf (nth 2 (nth pos hist)) omit-mode)
           (find-alternate-file dir)
           (setq new (diredc-hist--update-directory-history hist pos)
                 diredc-hist--history-list (car new)
-                diredc-hist--history-position (cdr new)))))
+                diredc-hist--history-position (cdr new))))
+       (diredc--set-omit-mode omit-mode))
      ((zerop arg) (message "Nothing to do!"))
      ((> 0 arg)   (message "tbd"))
      (t
@@ -2162,11 +2181,13 @@ With optional prefix argument, repeat ARG times."
           (let ((hist diredc-hist--history-list)
                 (pos  diredc-hist--history-position)
                 new)
-            (setf (cdr (nth pos hist)) (point))
+            (setf (nth 1 (nth pos hist)) (point))
+            (setf (nth 2 (nth pos hist)) omit-mode)
             (dotimes (_x (max arg 0))
               (when dir
                 (setq dir (file-name-directory (substring dir 0 -1)))))
             (find-alternate-file (or dir "/"))
+            (diredc--set-omit-mode omit-mode)
             (setq new (diredc-hist--update-directory-history hist pos)
                   diredc-hist--history-list (car new)
                   diredc-hist--history-position (cdr new))))
@@ -2175,7 +2196,8 @@ With optional prefix argument, repeat ARG times."
             (when dir
               (setq dir (file-name-directory (substring dir 0 -1)))))
           (find-alternate-file (or dir "/"))))))
-         (set-window-dedicated-p nil t)))
+          (diredc--set-omit-mode omit-mode)
+          (set-window-dedicated-p nil t)))
 
 (defun diredc-hist-select ()
   "Navigate anywhere in the Dired history directly.
@@ -2193,15 +2215,19 @@ for this purpose, see `diredc-hist-select-without-popup'."
                       (not (require 'popup nil 'noerror)))
                 (completing-read "Select: " options nil t nil (cons 'options pos))
                (substring-no-properties
-                 (popup-menu* options :point (point-min) :initial-index pos)))))
+                 (popup-menu* options :point (point-min) :initial-index pos))))
+         hist-elem)
     (when new
-      (setf (cdr (nth pos hist)) (point))
+      (setf (nth 1 (nth pos hist)) (point))
+      (setf (nth 2 (nth pos hist)) dired-omit-mode)
       (find-alternate-file new)
       (set-window-dedicated-p nil t)
       (setq new (diredc-hist--update-directory-history hist pos)
             diredc-hist--history-list (car new)
-            diredc-hist--history-position (cdr new))
-      (goto-char (cdr (nth (cdr new) (car new)))))))
+            diredc-hist--history-position (cdr new)
+            hist-elem (nth (cdr new) (car new)))
+      (diredc--set-omit-mode (nth 2 hist-elem))
+      (goto-char (nth 1 hist-elem)))))
 
 (defun diredc-hist-duplicate (&optional arg)
   "Navigate a second `dired' buffer to a duplicate location.
@@ -2216,31 +2242,42 @@ location of the `dired' buffer in the second window.
 
 Compare with the Midnight Commander feature bound there by
 default to 'M-i'."
+;; NOTE: This function twice uses (user-error "") as an 'undocumented'
+;; alternative to `throw'/`catch' or `defun*'/`return-from'. If that
+;; causes some unexpected side-effect or otherwise bothers you, feel
+;; free to replace them with either of the official methods.
   (interactive)
   (let ((start-buf (current-buffer))
         (wins (window-list))
         (this-dir dired-directory)
-        that-dir old-point win target-win new-buf new-data hist pos dup-found)
+        that-dir old-point win target-win new-buf new-data hist pos dup-found omit-mode)
     (cond
      ((or arg current-prefix-arg) ; Change this window/buffer
        (diredc--ask-on-directory-deleted dired-directory)
        (while (setq win (pop wins))
-         (with-current-buffer (setq new-buf (window-buffer win))
-           (when (eq major-mode 'dired-mode)
-             (if (equal this-dir dired-directory)
-               (setq dup-found t)
-              (setq that-dir dired-directory)
+         (unless (equal start-buf (setq new-buf (window-buffer win)))
+           (with-current-buffer new-buf
+             (when (eq major-mode 'dired-mode)
+               (if (equal this-dir dired-directory)
+                 (setq dup-found t)
+                (setq that-dir dired-directory)
+                (setq wins '(nil)))
               (setq old-point (point))
-              (setq wins '(nil))))))
+              (setq omit-mode dired-omit-mode)))))
        (when (and (not that-dir) dup-found)
-         (user-error "Nothing to do!"))
+         (if (equal omit-mode dired-omit-mode)
+           (user-error "Nothing to do!")
+          (diredc--set-omit-mode omit-mode)
+          (user-error ""))) ; Naughty me!
        (diredc--abort-on-directory-deleted that-dir)
        (when diredc-history-mode
          (diredc-hist--prune-deleted-directories)
          (setq hist diredc-hist--history-list)
          (setq pos  diredc-hist--history-position)
-         (setf (cdr (nth pos hist)) (point)))
+         (setf (nth 1 (nth pos hist)) (point))
+         (setf (nth 2 (nth pos hist)) dired-omit-mode))
        (find-alternate-file that-dir)
+       (diredc--set-omit-mode omit-mode)
        (set-window-dedicated-p nil t)
        (goto-char old-point)
        (when diredc-history-mode
@@ -2251,24 +2288,35 @@ default to 'M-i'."
        (diredc--abort-on-directory-deleted dired-directory)
        (setq old-point (point))
        (while (setq win (pop wins))
-         (setq new-buf (window-buffer win))
-         (with-current-buffer new-buf
-           (when (eq major-mode 'dired-mode)
-             (if (equal this-dir dired-directory)
-               (setq dup-found t)
-              (setq that-dir dired-directory)
-              (setq target-win win)
-              (setq wins '(nil))))))
+         (unless (equal start-buf (setq new-buf (window-buffer win)))
+           (with-current-buffer new-buf
+             (when (eq major-mode 'dired-mode)
+               (if (equal this-dir dired-directory)
+                 (setq dup-found t)
+                (setq that-dir dired-directory)
+                (setq wins '(nil)))
+               (setq omit-mode dired-omit-mode)
+               (setq target-win win)))))
        (when (and (not that-dir) dup-found)
-         (user-error "Nothing to do!"))
+         (if (equal omit-mode dired-omit-mode)
+           (user-error "Nothing to do!")
+          ;; Abbreviated version of the remainder of the function
+          (setq omit-mode dired-omit-mode)
+          (select-window target-win 'norecord)
+          (diredc--set-omit-mode omit-mode)
+          (pop-to-buffer start-buf)
+          (user-error ""))) ; Naughty me!
+       (setq omit-mode dired-omit-mode)
        (select-window target-win 'norecord)
        (diredc--ask-on-directory-deleted dired-directory)
        (when diredc-history-mode
          (diredc-hist--prune-deleted-directories)
          (setq hist diredc-hist--history-list)
          (setq pos  diredc-hist--history-position)
-         (setf (cdr (nth pos hist)) (point)))
+         (setf (nth 1 (nth pos hist)) (point))
+         (setf (nth 2 (nth pos hist)) dired-omit-mode))
        (find-alternate-file this-dir)
+       (diredc--set-omit-mode omit-mode)
        (set-window-dedicated-p nil t)
        (goto-char old-point)
        (when diredc-history-mode
@@ -2277,13 +2325,14 @@ default to 'M-i'."
          (setq diredc-hist--history-position (cdr new-data)))
        (pop-to-buffer start-buf)))))
 
-
 (defun diredc-hist-find-file ()
   "In Dired, visit this file."
   (interactive)
   (if diredc-history-mode
     (diredc-hist-find-alternate-file)
-   (dired-find-file)
+   (let ((omit-mode dired-omit-mode))
+     (dired-find-file)
+     (diredc--set-omit-mode omit-mode))
    (set-window-dedicated-p nil t)))
 
 (defun diredc-hist-find-file-other-window ()
@@ -2291,7 +2340,9 @@ default to 'M-i'."
   (interactive)
   (if diredc-history-mode
     (diredc-hist-find-alternate-file 'other-window)
-   (dired-find-file-other-window)
+   (let ((omit-mode dired-omit-mode))
+     (dired-find-file-other-window)
+     (diredc--set-omit-mode omit-mode))
    (set-window-dedicated-p nil t)))
 
 (defun diredc-hist-find-alternate-file (&optional arg)
@@ -2306,17 +2357,21 @@ the file in another frame."
   ;; TODO: If this is really a wide dired problem, report it to emacs.
   (diredc--abort-on-directory-deleted dired-directory)
   (if (not diredc-history-mode)
-    (dired-find-alternate-file)
+    (let ((omit-mode dired-omit-mode))
+      (dired-find-alternate-file)
+      (diredc--set-omit-mode omit-mode))
    (diredc-hist--prune-deleted-directories)
    (let ((target (substring-no-properties (dired-get-file-for-visit)))
-         hist pos new)
+         (omit-mode dired-omit-mode)
+         hist pos new hist-elem)
      (cond ; whether target is a directory or a file
       ((file-directory-p target) ; a directory
         (cond ; whether to use this window or another one
          ((not arg) ; use this window
            (setq hist diredc-hist--history-list
                  pos  diredc-hist--history-position)
-           (setf (cdr (nth pos hist)) (point))
+           (setf (nth 1 (nth pos hist)) (point))
+           (setf (nth 2 (nth pos hist)) omit-mode)
            (dired-find-alternate-file))
          (t ; open directory in another window
            (let ((other-windows-on-this-frame
@@ -2341,19 +2396,22 @@ the file in another frame."
                    (select-window found)
                    (setq hist diredc-hist--history-list
                          pos  diredc-hist--history-position)
-                   (setf (cdr (nth pos hist)) (point))
+                   (setf (nth 1 (nth pos hist)) (point))
+                   (setf (nth 2 (nth pos hist)) omit-mode)
                    (find-alternate-file target))
                  (t ; no window is a dired window
                    (other-window 1)
                    (dired target)
                    ; maybe instead: look for and use a non-visible dired buffer?
                   )))))))
+        (diredc--set-omit-mode omit-mode)
         (set-window-dedicated-p nil t)
         (setq new (diredc-hist--update-directory-history hist pos)
               diredc-hist--history-list (car new)
-              diredc-hist--history-position (cdr new))
+              diredc-hist--history-position (cdr new)
+              hist-elem (nth (cdr new) (car new)))
 ;;      Not certain it is necessary to goto-char here...
-        (goto-char (cdr (nth (cdr new) (car new)))))
+        (goto-char (nth 1 hist-elem)))
       (t ; target is not a directory, so visit file, in another frame
          (let* ((buf (find-buffer-visiting target))
                 (win (and buf

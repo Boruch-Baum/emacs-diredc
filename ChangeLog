@@ -1,5 +1,19 @@
 2021-04-20  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-hist--history-list): Add dired-omit-mode state
+	to history records.
+	(diredc--set-omit-mode): Inline function to set dired-omit-mode.
+	(diredc-hist--hook-function)
+	(diredc-hist--update-directory-history),
+	(diredc-hist--prune-deleted-directories)
+	(diredc-hist-previous-directory, diredc-hist-change-directory)
+	(diredc-hist-up-directory, diredc-hist-select)
+	(diredc-hist-duplicate, diredc-hist-find-file)
+	(diredc-hist-find-file-other-window)
+	(diredc-hist-find-alternate-file): Use them.
+
+2021-04-20  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-hist-duplicate): Signal when no action to be
 	taken, remove unnecessary set-buffer operations.
 
