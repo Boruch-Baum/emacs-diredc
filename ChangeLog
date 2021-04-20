@@ -1,3 +1,8 @@
+2021-04-20  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-hist-duplicate): Signal when no action to be
+	taken, remove unnecessary set-buffer operations.
+
 2021-03-16  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-browse-tab, diredc-browse-backtab): New
