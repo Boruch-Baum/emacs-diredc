@@ -65,6 +65,7 @@ all file managers, and also some unique features:
 
    Suggested (not part of emacs):
    * popup       -- for popup-menu*
+   * key-assist  -- for key-assist
 
 
 ## Installation:
@@ -87,17 +88,32 @@ all file managers, and also some unique features:
  `diredc` with two side-by-side `dired` windows / buffers. Repeating
  the command will return you to your prior frame / window / buffer.
  Subsequent use of the command continues to toggle back and forth
- to/from the named `diredc` frame. Navigation from one `dired` panel
- to another can be accomplished using `<TAB>` or `S-<TAB>`. As long
- as you are in `diredc` mode, navigating to new directories should
- not accumulate additional `dired` buffers and your directory
- navigation history for each panel should be remembered. If ever you
- find that the frame configuration has become botched, or you
- somehow accumulate or have lost `dired` buffers, Run M-x
- `diredc-recover`. You can also cleanly kill all `dired` buffers and
- the `diredc` frame using `C-q` (M-x `diredc-quit`). And, if you
- want to use `dired` without the `diredc` features, run M-x
- `diredc-mode` to toggle the mode off.
+ to/from the named `diredc` frame.
+
+ In addition to the usual Emacs keybinding help, diredc provides two
+ combination keybinding cheat-sheets and command launchers, both
+ using optional dependency package `key-assist`. You can also
+ interactively call M-x `key-assist <RET> <RET>` to view an
+ exhaustive `dired` keybinding listing. A separate `key-assist` is
+ provided for trash-related functions because it also displays the
+ current trash state statistics.
+
+     h                        `diredc-key-assist`
+     C-<delete> ?             `diredc-trash-key-assist`
+     ?                        `diredc-summary`
+     C-h m                    `describe-mode`
+
+
+ Navigation from one `dired` panel to another can be accomplished
+ using `<TAB>` or `S-<TAB>`. As long as you are in `diredc` mode,
+ navigating to new directories should not accumulate additional
+ `dired` buffers and your directory navigation history for each panel
+ should be remembered. If ever you find that the frame configuration
+ has become botched, or you somehow accumulate or have lost `dired`
+ buffers, Run M-x `diredc-recover`. You can also cleanly kill all
+ `dired` buffers and the `diredc` frame using `C-q` (M-x
+ `diredc-quit`). And, if you want to use `dired` without the `diredc`
+ features, run M-x `diredc-mode` to toggle the mode off.
 
  As mentioned above, each `dired` panel now "remembers" its
  navigation history. The history can be traversed sequentially
@@ -190,10 +206,10 @@ all file managers, and also some unique features:
 ## Configuration
 
  You can browse and edit this mode's list of `defcustom`s using "M-x
- `customize-group` diredc", but there isn't too much to be found
+ `customize-group` `diredc`", but there isn't too much to be found
  there. Separately, you might want to redefine the default
  keybindings, but otherwise there is nothing really important about
- `diredc' itself to configure.
+ `diredc` itself to configure.
 
  `dired` mode itself, however, is a complex and highly configurable
  package that has been under development for over 25 years. That's a
@@ -210,10 +226,10 @@ all file managers, and also some unique features:
  `diredc-bonus-configuration`, but because it's controlled by
  `hl-line-mode`; you can independently toggle the feature
  per-buffer, and you can change the highlighting colors using "M-x
- `customize-face` hl-line". The colorization of the chmod bits are
+ `customize-face` `hl-line`". The colorization of the chmod bits are
  also set as part of `diredc-bonus-configuration`; you can find
  their definitions and edit them using  "M-x
- `customize-group` diredc".
+ `customize-group` `diredc`".
 
 
 ## Extra Features:
@@ -245,7 +261,7 @@ all file managers, and also some unique features:
  *] When `diredc-hist-mode` is disabled, the following functions
     continue to operate, but without updating the history records,
     so you can use them as your default `dired` functions even if
-    you don`t always want to use `diredc-hist-mode`.
+    you don't always want to use `diredc-hist-mode`.
 
       `diredc-hist-change-directory`
       `diredc-hist-up-directory`
@@ -307,7 +323,9 @@ all file managers, and also some unique features:
     * More ...
   * https://github.com/Boruch-Baum/emacs-w3m
 
-* Crossword [![MELPA](https://melpa.org/packages/crossword-badge.svg)](https://melpa.org/#/crossword)
+* Crossword
+  [![MELPA](https://melpa.org/packages/crossword-badge.svg)](https://melpa.org/#/crossword)
+  [![MELPA Stable](https://stable.melpa.org/packages/crossword-badge.svg)](https://stable.melpa.org/#/crossword)
   * Download and play crossword puzzles, in Emacs!
   * https://github.com/Boruch-Baum/emacs-crossword
 

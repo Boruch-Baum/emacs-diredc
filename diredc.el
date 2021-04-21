@@ -8,7 +8,7 @@
 ;; Keywords: files
 ;; Package: diredc
 ;; Version: 1.0
-;; Package-Requires: ((emacs "26.1"))
+;; Package-Requires: ((emacs "26.1") (key-assist "1.0"))
 ;;
 ;;   (emacs "24.1") for: split-window-right, window-normalize-frame
 ;;   (emacs "24.3") for: lexical-binding, user-error, cl-lib, defvar-local
@@ -98,6 +98,7 @@
 ;; Suggested (not part of Emacs):
 ;;
 ;;   popup       -- for popup-menu*
+;;   key-assist  -- for key-assist
 
 ;;
 ;;; Installation:
@@ -121,17 +122,31 @@
 ;; `diredc' with two side-by-side `dired' windows / buffers. Repeating
 ;; the command will return you to your prior frame / window / buffer.
 ;; Subsequent use of the command continues to toggle back and forth
-;; to/from the named `diredc' frame. Navigation from one `dired' panel
-;; to another can be accomplished using '<TAB>' or 'S-<TAB>'. As long
-;; as you are in `diredc' mode, navigating to new directories should
-;; not accumulate additional `dired' buffers and your directory
-;; navigation history for each panel should be remembered. If ever you
-;; find that the frame configuration has become botched, or you
-;; somehow accumulate or have lost `dired' buffers, Run M-x
-;; `diredc-recover'. You can also cleanly kill all `dired' buffers and
-;; the `diredc' frame using `C-q' (M-x `diredc-quit'). And, if you
-;; want to use `dired' without the `diredc' features, run M-x
-;; `diredc-mode' to toggle the mode off.
+;; to/from the named `diredc' frame.
+;;
+;; In addition to the usual Emacs keybinding help, diredc provides two
+;; combination keybinding cheat-sheets and command launchers, both
+;; using optional dependency package `key-assist'. You can also
+;; interactively call M-x `key-assist' <RET> <RET> to view an
+;; exhaustive `dired' keybinding listing. A separate `key-assist' is
+;; provided for trash-related functions because it also displays the
+;; current trash state statistics.
+;;
+;;     h                        `diredc-key-assist'
+;;     C-<delete> ?             `diredc-trash-key-assist'
+;;     ?                        `diredc-summary'
+;;     C-h m                    `describe-mode'
+;;
+;; Navigation from one `dired' panel to another can be accomplished
+;; using '<TAB>' or 'S-<TAB>'. As long as you are in `diredc' mode,
+;; navigating to new directories should not accumulate additional
+;; `dired' buffers and your directory navigation history for each
+;; panel should be remembered. If ever you find that the frame
+;; configuration has become botched, or you somehow accumulate or have
+;; lost `dired' buffers, Run M-x `diredc-recover'. You can also
+;; cleanly kill all `dired' buffers and the `diredc' frame using `C-q'
+;; (M-x `diredc-quit'). And, if you want to use `dired' without the
+;; `diredc' features, run M-x `diredc-mode' to toggle the mode off.
 ;;
 ;; As mentioned above, each `dired' panel now 'remembers' its
 ;; navigation history. The history can be traversed sequentially
@@ -183,7 +198,7 @@
 ;;
 ;;     C-k                      `diredc-trash-quick-delete'
 ;;
-;;     C-<delete> ?             `diredc-trash-assistant'
+;;     C-<delete> ?             `diredc-trash-key-assist'
 ;;
 ;; A limitation in `dired' is its inability to natively present a
 ;; file's supplemental information, such as its possible extended
@@ -343,6 +358,7 @@
 ;;; Suggested
 ;; (require 'popup)  ; popup-menu*
 (declare-function popup-menu* "ext:popup.el")
+(require 'key-assist nil t) ; key-assist
 
 
 ;;
@@ -355,6 +371,8 @@ Returns a keymap."
     (set-keymap-parent map dired-mode-map)
     (define-key map (kbd "C-q")       'diredc-exit) ; defalias diredc-quit
     (define-key map (kbd "q")         'diredc-do-not-quit-window)
+    (define-key map (kbd "?")         'diredc-summary)
+    (define-key map (kbd "h")         'diredc-key-assist)
     (define-key map "\t"              'diredc-other-window)
     (define-key map (kbd "<backtab>") 'diredc-other-window) ; No directionality
     (define-key map [remap dired-find-file]
@@ -381,7 +399,7 @@ Returns a keymap."
     (define-key map (kbd "'")         'diredc-shell)
     (define-key map (kbd "C-c !")     'diredc-shell)
     (define-key map (kbd "C-k")       'diredc-trash-quick-delete)
-    (define-key map (kbd "C-<delete> ?") 'diredc-trash-assistant)
+    (define-key map (kbd "C-<delete> ?") 'diredc-trash-key-assist)
     (define-key map (kbd "C-<delete> SPC") 'diredc-trash-toggle)
     (define-key map (kbd "C-<delete> <insertchar>") 'diredc-trash-toggle)
     (define-key map (kbd "C-<delete> j") 'diredc-trash-view) ; jump to files-dir
@@ -1667,9 +1685,25 @@ variable `diredc-browse-exclude-helper' is used (see there)."
           (set-window-dedicated-p nil t)))
       (select-window w 'norecord)))))
 
+(defun diredc-summary ()
+  "Modified dired keybinding cheat message, to include diredc.
+Compare with `dired-summary'."
+  (interactive)
+  (message
+    "d-elete, u-ndelete, x-punge, f-ind, o-ther window, R-ename, C-opy, h-diredc help"))
+
+(defun diredc-key-assist ()
+  "Minibuffer cheatsheet and launcher for diredc functions.
+There also exist `diredc-trash-key-assist' for trash-specific
+functions (\\[diredc-trash-key-assist])."
+  (interactive)
+  (unless (require 'key-assist nil t)
+    (user-error "Requires package 'key-assist'"))
+  (key-assist "diredc"))
+
 (defun diredc-trash-assistant ()
   "Minibuffer cheatsheet and launcher for diredc-trash functions."
-  ;; This was the inspiration for `key-assist.el'
+  ;; This was the inspiration for package `key-assist.el'
   (interactive)
   (let ((zz (lambda (x)
               (let (shortest)
@@ -1700,6 +1734,31 @@ variable `diredc-browse-exclude-helper' is used (see there)."
                     (completing-read prompt choices nil t nil 'choices)
                     choices :test 'equal))))
     (funcall (cadr (nth choice options)))))
+
+(defun diredc-trash-key-assist ()
+  "Minibuffer cheatsheet and launcher for diredc-trash functions."
+  ;; This can deprecate function `diredc-trash-assistant'. However,
+  ;; when using package `ivy', only the final line of the prompt is
+  ;; visible.
+  (interactive)
+  (if (not (require 'key-assist nil t))
+    (diredc-trash-assistant)
+   (let* ((zz (lambda (x) (list (car x)
+                                (concat (key-assist--get-keybinding (car x))
+                                        "\t"
+                                        (cadr x)))))
+          (prompt (concat (diredc-trash-info) "\nSelect: "))
+          (spec (mapcar
+                  zz
+                  (list
+                    (list 'diredc-trash-toggle   (if delete-by-moving-to-trash
+                                                   "Switch to using deletion"
+                                                  "Switch to using trash"))
+                    (list 'diredc-trash-view     "Jump to trash files dir")
+                    (list 'diredc-trash-info     "Report trash size")
+                    (list 'diredc-trash-empty    "Empty the trash")
+                    (list 'diredc-trash-restore  "Restore file at point")))))
+     (key-assist spec prompt t))))
 
 (defun diredc-trash-toggle ()
   "Toggle between using 'trash' or 'delete'."

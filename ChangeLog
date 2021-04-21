@@ -1,5 +1,11 @@
 2021-04-20  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-summary, diredc-key-assist)
+	(diredc-trash-key-assist): New help functions.
+	(diredc--create-keymap): Assign keybindings for them.
+
+2021-04-20  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-hist--history-list): Add dired-omit-mode state
 	to history records.
 	(diredc--set-omit-mode): Inline function to set dired-omit-mode.
