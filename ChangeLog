@@ -1,3 +1,9 @@
+2021-04-22  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-async-processes-are-persistent): New defcustom.
+	(diredc--advice--dired-run-shell-command): Use it.
+	(diredc-mode): Use the advice function.
+
 2021-04-20  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-summary, diredc-key-assist)

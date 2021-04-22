@@ -59,6 +59,8 @@
 ;;     * empty the trash, along with its administrative overhead
 ;;     * view trash summary information
 ;;   * Navigate 'up' n parent directories
+;;   * Launch persistent asynchronous processes for files
+;;     * Processes will survive even after exiting Emacs.
 ;;   * Quick shell window
 ;;     * choose your default shell / terminal emulation mode
 ;;     * choose your default shell program
@@ -168,6 +170,18 @@
 ;; The traditional `dired' operations that 'find' or 'open' a file
 ;; should do so to a separate frame, most likely the one from which
 ;; you came to the `diredc' frame.
+;;
+;; The traditional `dired' feature to perform arbitrary asynchronous
+;; operations on a file or set of files has been enhanced to make
+;; those processes persistent, to survive even after exiting Emacs.
+;; Thus, with the default keybinding, you can press '&' <RET> and have
+;; the selected file(s) launched in the system-default external
+;; application. Do be advised, though, that this comes at the expense
+;; of losing the processes' *Async Shell Command* buffer and its log
+;; of STDOUT / STDERR for the processes. The former, non-persistent
+;; behavior can be opted for at run-time by prefixing the command with
+;; a SPACE (eg. "& xdg-open") or can be made default by modifying
+;; variable `diredc-async-processes-are-persistent'.
 ;;
 ;; The display format of `dired' buffers can be "hot-swapped" using
 ;; 'M-t' (M-x `diredc-display-toggle'). Use 'C-u M't' to select from
@@ -744,6 +758,20 @@ command as \"text\" and excludes all recognized as
                  (string :tag "Exclusion command's desried output")))
   :group 'diredc)
 
+(defcustom diredc-async-processes-are-persistent t
+  "Whether spawned asynchronous processes out-live Emacs.
+When non-NIL, asynchronous processes spawned via
+`dired-do-async-shell-command' will survive even after exiting
+Emacs. However, because *Async Shell Command* buffers will not be
+spawned, STDOUT and STDERR for the process will be lost.
+
+Even when this variable is non-NIL, the non-persistent behavior
+can be chosen at run-time by prefixing the process command with
+a SPACE, thus spawning an *Async Shell Command* buffer and
+logging there STDOUT and STDERR for the process."
+  :type 'boolean
+  :group 'diredc)
+
 (defcustom diredc-bonus-configuration t
   "Supplemental configuration for `diredc' buffers.
 
@@ -934,7 +962,7 @@ Internal variable for `diredc'.")
 (defun diredc--advice--shell-guess-fallback (oldfun files)
   "Offer universal fallback suggested command(s) for `dired-do-shell-command'.
 
-OLDFUN is function `dired-guess-default'. FILES are are defined
+OLDFUN is function `dired-guess-default'. FILES are defined
 there.
 
 Usage: (advice-add 'dired-guess-default
@@ -1033,6 +1061,40 @@ See also: Emacs bug report #44023:
       (dired--align-all-files))
     (set-buffer old-buf)
     buffer))
+
+(defun diredc--advice--dired-run-shell-command (oldfun command)
+  "Optionally allow spawned asynchronous processes to out-live Emacs.
+See variable `diredc-async-processes-are-persistent'.
+
+OLDFUN is function `dired-run-shell-command'. COMMAND is an entire
+shell command string. For asynchronous commands, COMMAND ends
+\"&wait&\" without a space prior.
+
+Usage: (advice-add 'dired-run-shell-command
+                   :around #'diredc--advice--dired-run-shell-command)"
+;; NOTE: The advised function is reached via `dired-do-shell-command'
+;; which calls it indirectly via `dired-bunch-files' if `on-each' (ie.
+;; apply the function separately for each of a list of files).
+;; Regardless, the command and file-list are passed through
+;; `dired-shell-stuff-it' prior.
+  (if (or (not diredc-async-processes-are-persistent)
+          (string-match "^ " command)
+          (not (string-match "&wait&$" command)))
+    (apply oldfun (list command))
+   (setq command (concat " " ; avoids adding command to shell history
+                         (substring command 0 (match-beginning 0))
+                         " & disown"))
+   (let ((buf (shell))
+         (kill-buffer-query-functions nil))
+     (delete-window)
+;;   (bury-buffer)
+     (with-current-buffer buf
+       (insert command)
+       (comint-send-input)
+       (sit-for 0.5 'nodisp)
+       (kill-buffer)))
+   ;; Return nil for sake of nconc in `dired-bunch-files'.
+   nil))
 
 ;;
 ;;; Functions - hook functions:
@@ -2658,6 +2720,8 @@ turn the mode on; Otherwise, turn it off."
                  :around #'diredc--advice--dired-internal-noselect)
      (advice-add 'dired-guess-default
                  :around #'diredc--advice--shell-guess-fallback)
+     (advice-add 'dired-run-shell-command
+                 :around #'diredc--advice--dired-run-shell-command)
      (dolist (buf dired-buffers)
        (if (not (buffer-live-p (cdr buf)))
          (setq dired-buffers (remove buf dired-buffers))
@@ -2672,6 +2736,8 @@ turn the mode on; Otherwise, turn it off."
      ;; dired-frame.el)
      (advice-remove 'dired-guess-default
                     #'diredc--advice--shell-guess-fallback)
+     (advice-remove 'dired-run-shell-command
+                    #'diredc--advice--dired-run-shell-command)
      (dolist (buf dired-buffers)
        (if (not (buffer-live-p (cdr buf)))
          (setq dired-buffers (remove buf dired-buffers))

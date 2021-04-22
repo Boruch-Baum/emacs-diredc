@@ -28,6 +28,8 @@ all file managers, and also some unique features:
      * empty the trash, along with its administrative overhead
      * view trash summary information
    * Navigate "up" n parent directories ("^" or C-u ^")
+   * Launch persistent asynchronous processes for files
+     * Processes will survive even after exiting Emacs.
    * Quick shell window
      * choose your default shell / terminal emulation mode
      * choose your default shell program
@@ -137,6 +139,18 @@ all file managers, and also some unique features:
  The traditional `dired` operations that `find` or `open` a file
  should do so to a separate frame, most likely the one from which
  you came to the `diredc` frame.
+
+ The traditional `dired' feature to perform arbitrary asynchronous
+ operations on a file or set of files has been enhanced to make
+ those processes persistent, to survive even after exiting Emacs.
+ Thus, with the default keybinding, you can press '&' <RET> and have
+ the selected file(s) launched in the system-default external
+ application. Do be advised, though, that this comes at the expense
+ of losing the processes' *Async Shell Command* buffer and its log
+ of STDOUT / STDERR for the processes. The former, non-persistent
+ behavior can be opted for at run-time by prefixing the command with
+ a SPACE (eg. "& xdg-open") or can be made default by modifying
+ variable `diredc-async-processes-are-persistent'.
 
  The display format of `dired` buffers can be "hot-swapped" using
  `M-t` (M-x `diredc-display-toggle`). Use `C-u M-t` to select from
