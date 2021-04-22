@@ -1,6 +1,8 @@
 [![MELPA](https://melpa.org/packages/diredc-badge.svg)](https://melpa.org/#/diredc) [![MELPA Stable](https://stable.melpa.org/packages/diredc-badge.svg)](https://stable.melpa.org/#/diredc)
 # diredc - extensions to emacs dired-mode
 
+   * Current users! See the NEWS.org file for the new features...
+
 This package extends emacs' `dired-mode` with features found in almost
 all file managers, and also some unique features:
 

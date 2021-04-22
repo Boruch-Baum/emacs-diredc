@@ -1,0 +1,21 @@
+* diredc NEWS
+** 2021-04
+
++ Asynchronous processes by default survive even after exiting Emacs.
+
+  + See defcustom 'diredc-async-processes-are-persistent' and
+    discussion in README
+
++ New help functions bound by default to "?", "? h", and "C-DEL ?"
+
+  + Required installation of external package 'key-assist' (MELPA, Github)
+
++ The state of 'dired-omit-mode' is remembered when navigating.
+
+** 2021-03
+
++ Quick-browse mode can be configured to exclude files by their
+  extensions, coding-systems, or mime-type.
+
+  + See defcustoms: 'diredc-browse-exclude-file-extensions' and
+    'diredc-browse-exclude-coding-systems'
