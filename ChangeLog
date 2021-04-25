@@ -1,5 +1,10 @@
 2021-04-25  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-do-async-shell-command): Guarantee return to
+	correct diredc window.
+
+2021-04-25  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-do-async-shell-command): New function.
 	(diredc--create-keymap): Set keybinding for it.
 

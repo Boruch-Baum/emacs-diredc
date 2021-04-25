@@ -2171,15 +2171,17 @@ ARG is the prefix-arg."
       (dired-read-shell-command "& on %s: " current-prefix-arg files)
       current-prefix-arg
       files)))
-  (cond
-   ((string-match-p "^[ \t]+$" command)
-     (setq command (format " %s &"
-                     (diredc--advice--shell-guess-fallback
-                       'dired-guess-default
-                       file-list))))
-   ((not (string-match-p "&[ \t]*\\'" command))
-     (setq command (concat command " &"))))
-  (dired-do-shell-command command arg file-list))
+  (let ((win (selected-window)))
+    (cond
+     ((string-match-p "^[ \t]+$" command)
+       (setq command (format " %s &"
+                       (diredc--advice--shell-guess-fallback
+                         'dired-guess-default
+                         file-list))))
+     ((not (string-match-p "&[ \t]*\\'" command))
+       (setq command (concat command " &"))))
+    (dired-do-shell-command command arg file-list)
+    (select-window win)))
 
 (defun diredc-history-mode (&optional arg)
   "Control ability to navigate directory history.
