@@ -960,6 +960,9 @@ Internal variable for `diredc'.")
   "Ensure correct keymap when returning from wdired."
   (when diredc-mode
     (diredc-bonus-configuration 'dired-mode-hook)
+    (when diredc-history-mode
+      (diredc--set-omit-mode
+        (nth 2 (nth diredc-hist--history-position diredc-hist--history-list))))
     (use-local-map diredc-mode-map)))
 
 (defun diredc--advice--shell-guess-fallback (oldfun files)
@@ -1575,6 +1578,9 @@ This is a simple wrapper for `wdired-mode'. See there for
 details."
   (interactive)
   (diredc--abort-on-directory-deleted dired-directory)
+  (when diredc-history-mode
+    (setf (nth 2 (nth diredc-hist--history-position diredc-hist--history-list))
+          dired-omit-mode))
   (wdired-change-to-wdired-mode))
 
 (defun diredc-shell-kill ()

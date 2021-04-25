@@ -1,5 +1,10 @@
 2021-04-24  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-wdired): Record state of dired-omit-mode
+	(diredc--advice--wdired-exit): Use it.
+
+2021-04-24  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-trash-empty): clear minibuffer message upon
 	completeion.
 
