@@ -149,8 +149,9 @@ all file managers, and also some unique features:
  of losing the processes' *Async Shell Command* buffer and its log
  of STDOUT / STDERR for the processes. The former, non-persistent
  behavior can be opted for at run-time by prefixing the command with
- a SPACE (eg. "& xdg-open") or can be made default by modifying
- variable `diredc-async-processes-are-persistent'.
+ a SPACE (eg. " foo") or for the default command simply enter just a
+ SPACE. The former, non-persistent behavior can be made default by
+ modifying variable `diredc-async-processes-are-persistent`.
 
  The display format of `dired` buffers can be "hot-swapped" using
  `M-t` (M-x `diredc-display-toggle`). Use `C-u M-t` to select from

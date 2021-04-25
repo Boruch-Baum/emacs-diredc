@@ -1,3 +1,8 @@
+2021-04-25  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-do-async-shell-command): New function.
+	(diredc--create-keymap): Set keybinding for it.
+
 2021-04-24  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-wdired): Record state of dired-omit-mode

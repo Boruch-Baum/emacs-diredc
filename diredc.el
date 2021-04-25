@@ -180,8 +180,9 @@
 ;; of losing the processes' *Async Shell Command* buffer and its log
 ;; of STDOUT / STDERR for the processes. The former, non-persistent
 ;; behavior can be opted for at run-time by prefixing the command with
-;; a SPACE (eg. "& xdg-open") or can be made default by modifying
-;; variable `diredc-async-processes-are-persistent'.
+;; a SPACE (eg. " foo") or for the default command simply enter just a
+;; SPACE. The former, non-persistent behavior can be made default by
+;; modifying variable `diredc-async-processes-are-persistent'.
 ;;
 ;; The display format of `dired' buffers can be "hot-swapped" using
 ;; 'M-t' (M-x `diredc-display-toggle'). Use 'C-u M't' to select from
@@ -414,6 +415,7 @@ Returns a keymap."
     (define-key map (kbd "E")         'diredc-wdired)
     (define-key map (kbd "e")         'diredc-wdired)
     (define-key map (kbd "'")         'diredc-shell)
+    (define-key map (kbd "&")         'diredc-do-async-shell-command)
     (define-key map (kbd "C-c !")     'diredc-shell)
     (define-key map (kbd "C-k")       'diredc-trash-quick-delete)
     (define-key map (kbd "C-<delete> ?") 'diredc-trash-key-assist)
@@ -769,9 +771,10 @@ Emacs. However, because *Async Shell Command* buffers will not be
 spawned, STDOUT and STDERR for the process will be lost.
 
 Even when this variable is non-NIL, the non-persistent behavior
-can be chosen at run-time by prefixing the process command with
-a SPACE, thus spawning an *Async Shell Command* buffer and
-logging there STDOUT and STDERR for the process."
+can be chosen at run-time by prefixing the process command with a
+SPACE, thus spawning an *Async Shell Command* buffer and logging
+there STDOUT and STDERR for the process. See
+`diredc-do-async-shell-command'."
   :type 'boolean
   :group 'diredc)
 
@@ -1070,7 +1073,8 @@ See also: Emacs bug report #44023:
 
 (defun diredc--advice--dired-run-shell-command (oldfun command)
   "Optionally allow spawned asynchronous processes to out-live Emacs.
-See variable `diredc-async-processes-are-persistent'.
+See variable `diredc-async-processes-are-persistent' and function
+`diredc-do-async-shell-command'.
 
 OLDFUN is function `dired-run-shell-command'. COMMAND is an entire
 shell command string. For asynchronous commands, COMMAND ends
@@ -1099,7 +1103,7 @@ Usage: (advice-add 'dired-run-shell-command
        (comint-send-input)
        (sit-for 0.5 'nodisp)
        (kill-buffer)))
-   ;; Return nil for sake of nconc in `dired-bunch-files'.
+   ;; Return nil for sake of `nconc' in `dired-bunch-files'.
    nil))
 
 ;;
@@ -2150,6 +2154,32 @@ operation."
     (and arg
          (stringp arg))
       (diredc--show-more-file-info))))
+
+(defun diredc-do-async-shell-command (command &optional arg file-list)
+  "Run a shell COMMAND on the marked files FILE-LIST asynchronously.
+
+Like `dired-do-async-shell-command', but entering a 'blank' is
+interpreted as (concat \" \" default-command). Doing so allows
+overriding a setting of `diredc-async-processes-are-persistent'
+non-NIL.
+
+ARG is the prefix-arg."
+  (interactive
+   (let ((files (dired-get-marked-files t current-prefix-arg nil nil t)))
+     (list
+      ;; Want to give feedback whether this file or marked files are used:
+      (dired-read-shell-command "& on %s: " current-prefix-arg files)
+      current-prefix-arg
+      files)))
+  (cond
+   ((string-match-p "^[ \t]+$" command)
+     (setq command (format " %s &"
+                     (diredc--advice--shell-guess-fallback
+                       'dired-guess-default
+                       file-list))))
+   ((not (string-match-p "&[ \t]*\\'" command))
+     (setq command (concat command " &"))))
+  (dired-do-shell-command command arg file-list))
 
 (defun diredc-history-mode (&optional arg)
   "Control ability to navigate directory history.
