@@ -370,9 +370,12 @@
 
 ;;
 ;;; Suggested
-;; (require 'popup)  ; popup-menu*
+(require 'popup nil t)
 (declare-function popup-menu* "ext:popup.el")
-(require 'key-assist nil t) ; key-assist
+
+(require 'key-assist nil t)
+(declare-function key-assist                 "ext:key-assist.el")
+(declare-function key-assist--get-keybinding "ext:key-assist.el")
 
 
 ;;
@@ -1653,11 +1656,11 @@ directory, select it instead of creating an additional one."
 This function navigates to the other window only if no buttons
 exist in the current one."
   (interactive)
-  (condition-case err
+  (condition-case nil
     (forward-button 1)
     (user-error
       (goto-char (point-min))
-      (condition-case err
+      (condition-case nil
         (forward-button 1)
         (user-error
           (diredc-other-window))))))
@@ -1667,11 +1670,11 @@ exist in the current one."
 This function navigates to the other window only if no buttons
 exist in the current one."
   (interactive)
-  (condition-case err
+  (condition-case ()
     (forward-button -1)
     (user-error
       (goto-char (point-max))
-      (condition-case err
+      (condition-case nil
         (forward-button -1)
         (user-error
           (diredc-other-window))))))
