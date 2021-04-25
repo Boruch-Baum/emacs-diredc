@@ -1,3 +1,8 @@
+2021-04-24  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-trash-empty): clear minibuffer message upon
+	completeion.
+
 2021-04-22  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-async-processes-are-persistent): New defcustom.

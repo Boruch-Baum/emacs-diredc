@@ -1851,8 +1851,8 @@ functions (\\[diredc-trash-key-assist])."
                           diredc-trash-expunged-dir))
          (when (file-writable-p dir)
            (dired-delete-file dir 'always)
-           (dired-create-directory dir)))
-       (diredc-trash-info)))))
+           (dired-create-directory dir))))))
+  (message ""))
 
 (defun diredc-trash-info ()
   "Report size of trash and number of files.
