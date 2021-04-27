@@ -1,3 +1,9 @@
+2021-04-27  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--advice--shell-guess-fallback): Handle all
+	input options (emacs bug 48071)
+	(diredc-do-async-shell-command): Validate input (emacs bug 48072).
+
 2021-04-25  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-do-async-shell-command): Guarantee return to

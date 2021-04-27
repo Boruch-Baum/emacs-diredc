@@ -977,7 +977,7 @@ there.
 Usage: (advice-add 'dired-guess-default
                    :around #'diredc--advice--shell-guess-fallback)
 
-This advice addresses the issues in Emacs bug report and patch 48071
+This advice addresses the issues in Emacs bug report and patch #48071
 (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48071) and also
 implements diredc feature `diredc-shell-guess-fallback'."
   (let* ((case-fold-search dired-guess-shell-case-fold-search)
@@ -2181,7 +2181,7 @@ ARG is the prefix-arg."
       current-prefix-arg
       files)))
   ;; These two validation checks address the issues in Emacs bug
-  ;; report and patch 48072:
+  ;; report and patch #48072:
   ;; (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48072)
   (when (string-empty-p command)
     (user-error "No command entered. Nothing to do!"))
