@@ -1114,6 +1114,41 @@ Usage: (advice-add 'dired-run-shell-command
        (kill-buffer)))
    ;; Return nil for sake of `nconc' in `dired-bunch-files'.
    nil))
+
+(defun diredc--advice--dired-read-shell-command (oldfun prompt arg files)
+  "Validate input to `dired-read-shell-command'.
+OLDFUN is function `dired-read-shell-command'. PROMPT, ARG, and
+FILES are described there.
+
+Inputs must be non-empty and valid commands on the host system.
+These two validation checks address the issues in Emacs bug
+report and patch #48072
+\(http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48072).
+
+Note that function `diredc-do-async-shell-command' still needs to
+locally define `dired-read-shell-command'. See there."
+  (minibuffer-with-setup-hook
+      (lambda ()
+        (setq-local dired-aux-files files)
+        (setq-local minibuffer-default-add-function
+                    #'minibuffer-default-add-dired-shell-commands))
+    (setq prompt (format prompt (dired-mark-prompt arg files)))
+    (let (command)
+      (setq command
+        (if (functionp 'dired-guess-shell-command)
+          (dired-mark-pop-up nil 'shell files
+                             'dired-guess-shell-command prompt files)
+         (dired-mark-pop-up nil 'shell files
+                            'read-shell-command prompt nil nil)))
+      ;; Validation checks of #48072:
+      (when (string-empty-p command)
+        (user-error "No command entered. Nothing to do!"))
+      (unless (executable-find
+                (if (string-match " " command)
+                  (substring command 0 (match-beginning 0))
+                 command))
+        (user-error "Not a valid command!"))
+      command)))
 
 ;;
 ;;; Functions - hook functions:
@@ -2175,25 +2210,57 @@ non-NIL.
 ARG is the prefix-arg."
   (interactive
    (let ((files (dired-get-marked-files t current-prefix-arg nil nil t)))
+     (cl-flet
+       ;; We are re-defining `dired-read-shell-command' from
+       ;; `dired-aux.el' because even if/when emacs bug #48072 is
+       ;; addressed, we need to allow a SPACE command to allow
+       ;; overriding a `diredc-async-processes-are-persistent' value
+       ;; of non-NIL.
+       ;;
+       ;; See elsewhere in this file for an advice function to address
+       ;; the bug for a non-asynchronous command.
+       ((dired-read-shell-command (prompt arg files)
+          (minibuffer-with-setup-hook
+              (lambda ()
+                (setq-local dired-aux-files files)
+                (setq-local minibuffer-default-add-function
+                            #'minibuffer-default-add-dired-shell-commands))
+            (setq prompt (format prompt (dired-mark-prompt arg files)))
+            (let (command)
+              (setq command
+                (if (functionp 'dired-guess-shell-command)
+                  (dired-mark-pop-up nil 'shell files
+                                     'dired-guess-shell-command prompt files)
+                 (dired-mark-pop-up nil 'shell files
+                                    'read-shell-command prompt nil nil)))
+           ;; These two validation checks address the issues in Emacs
+           ;; bug report and patch #48072:
+           ;; (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48072)
+              (when (string-empty-p command)
+                (user-error "No command entered. Nothing to do!"))
+           ;; For diredc, we need to allow a SPACE command to allow
+           ;; overriding a `diredc-async-processes-are-persistent'
+           ;; value of non-NIL.
+           ;; (unless (executable-find command)
+              (unless (or (string-match-p "^[ \t]+$" command)
+                          (executable-find
+                            (if (string-match " " command)
+                              (substring command 0 (match-beginning 0))
+                             command)))
+                (user-error "Not a valid command!"))
+              command))))
      (list
       ;; Want to give feedback whether this file or marked files are used:
       (dired-read-shell-command "& on %s: " current-prefix-arg files)
       current-prefix-arg
-      files)))
-  ;; These two validation checks address the issues in Emacs bug
-  ;; report and patch #48072:
-  ;; (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48072)
-  (when (string-empty-p command)
-    (user-error "No command entered. Nothing to do!"))
-  (unless (executable-find command)
-    (user-error "Not a valid command!"))
+      files))))
   (let ((win (selected-window)))
     (cond
      ((string-match-p "^[ \t]+$" command)
        (setq command (format " %s &"
-                       (diredc--advice--shell-guess-fallback
-                         'dired-guess-default
-                         file-list))))
+                       (car (diredc--advice--shell-guess-fallback
+                            'dired-guess-default
+                            file-list)))))
      ((not (string-match-p "&[ \t]*\\'" command))
        (setq command (concat command " &"))))
     (dired-do-shell-command command arg file-list)
@@ -2779,6 +2846,8 @@ turn the mode on; Otherwise, turn it off."
                  :around #'diredc--advice--shell-guess-fallback)
      (advice-add 'dired-run-shell-command
                  :around #'diredc--advice--dired-run-shell-command)
+     (advice-add 'dired-read-shell-command
+                 :around #'diredc--advice--dired-read-shell-command)
      (dolist (buf dired-buffers)
        (if (not (buffer-live-p (cdr buf)))
          (setq dired-buffers (remove buf dired-buffers))
@@ -2795,6 +2864,8 @@ turn the mode on; Otherwise, turn it off."
                     #'diredc--advice--shell-guess-fallback)
      (advice-remove 'dired-run-shell-command
                     #'diredc--advice--dired-run-shell-command)
+     (advice-remove 'dired-read-shell-command
+                    #'diredc--advice--dired-read-shell-command)
      (dolist (buf dired-buffers)
        (if (not (buffer-live-p (cdr buf)))
          (setq dired-buffers (remove buf dired-buffers))
