@@ -977,24 +977,33 @@ there.
 Usage: (advice-add 'dired-guess-default
                    :around #'diredc--advice--shell-guess-fallback)
 
-This advice could easily be replace by making the following
-trivial change in the advised function `dired-guess-default':
-
+This advice addresses the issues in Emacs bug report and patch 48071
+(http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48071) and also
+implements diredc feature `diredc-shell-guess-fallback'."
+  (let* ((case-fold-search dired-guess-shell-case-fold-search)
+         ;; Prepend the user's alist to the default alist.
          (alist (append dired-guess-shell-alist-user
                         dired-guess-shell-alist-default
-                        diredc-shell-guess-fallback))"
-  (let ((inner-result (apply oldfun (if (listp files) (list files))))
-        ;; The variables and their names are meant to be identical to
-        ;; the internals of the advised function, to simplify
-        ;; maintenance if the advised function should change.
-        (cmds diredc-shell-guess-fallback)
-        (file (if (listp files) (car files) files)))
-    (or inner-result
-        ;; Perform the final operation of the advised function, but
-        ;; using `diredc-shell-guess-fallback'
-        (if (cdr cmds)
-  	  (delete-dups (mapcar (lambda (cmd) (eval cmd `((file . ,file)))) cmds))
-         (eval (car cmds) `((file . ,file)))))))
+                        (list (list ".*" (car diredc-shell-guess-fallback)))))
+         (flist files)
+         elt regexp cmds)
+    (cl-loop
+      for elt in alist
+      do (setq regexp (car elt))
+         (cl-loop
+           for file in files
+           always (string-match-p regexp file)
+           finally
+             (cl-loop
+               for cmd in (cdr elt) do
+               (unless (stringp cmd)
+                 (setq cmd (condition-case nil
+                             (funcall cmd `((file . ,file)))
+                             (error nil))))
+               (and (stringp cmd)
+                    (executable-find cmd)
+                    (push cmd cmds)))))
+    (nreverse (delete-dups cmds))))
 
 (defun diredc--advice--dired-internal-noselect (_oldfun dir-or-list &optional switches mode)
   "Diredc advice to function `dired-internal-noselect'.
