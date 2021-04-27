@@ -2180,6 +2180,13 @@ ARG is the prefix-arg."
       (dired-read-shell-command "& on %s: " current-prefix-arg files)
       current-prefix-arg
       files)))
+  ;; These two validation checks address the issues in Emacs bug
+  ;; report and patch 48072:
+  ;; (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48072)
+  (when (string-empty-p command)
+    (user-error "No command entered. Nothing to do!"))
+  (unless (executable-find command)
+    (user-error "Not a valid command!"))
   (let ((win (selected-window)))
     (cond
      ((string-match-p "^[ \t]+$" command)
