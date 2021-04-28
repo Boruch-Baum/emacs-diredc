@@ -1,5 +1,14 @@
 2021-04-27  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc--advice--dired-run-shell-command): Divide up
+	multiple commands for proper comint-send-input.
+	(diredc--advice--dired-read-shell-command)
+	(diredc-do-async-shell-command)
+	(diredc--advice--shell-guess-fallback): Improve regex for
+	executable-find.
+
+2021-04-27  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc--advice--shell-guess-fallback): Handle all
 	input options (emacs bug 48071)
 	(diredc-do-async-shell-command): Validate input (emacs bug 48072).
