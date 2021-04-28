@@ -1116,7 +1116,9 @@ Usage: (advice-add 'dired-run-shell-command
        (bury-buffer)
       (delete-window))
      (with-current-buffer buf
-       (insert (pop cmds) suffix)
+       (when cmds
+         (setq command (pop cmds)))
+       (insert command suffix)
        (comint-send-input)
        (while (setq command (pop cmds))
          (insert cmd command suffix)
