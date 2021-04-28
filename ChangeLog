@@ -6,6 +6,7 @@
 	(diredc--advice--dired-read-shell-command): New advice, for
 	synchronous calls.
 	(diredc-mode): Use it.
+	(diredc--advice--dired-run-shell-command): Change regex.
 
 2021-04-25  Boruch Baum  <boruch_baum@gmx.com>
 

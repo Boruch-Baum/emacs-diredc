@@ -1098,7 +1098,7 @@ Usage: (advice-add 'dired-run-shell-command
 ;; `dired-shell-stuff-it' prior.
   (if (or (not diredc-async-processes-are-persistent)
           (string-match "^ " command)
-          (not (string-match "&wait&$" command)))
+          (not (string-match "&$" command)))
     (apply oldfun (list command))
    (setq command (concat " " ; avoids adding command to shell history
                          (substring command 0 (match-beginning 0))
