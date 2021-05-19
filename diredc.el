@@ -499,25 +499,26 @@ may be and whatever they may be called."
   "The 'Trash' directory with the 'expunged' information.")
 
 (defconst diredc-face-chmod-font-lock-dir   'diredc-face-chmod-font-lock-dir
-  "Definition for face.
-This constant is required for how we apply `font-lock' keywords.")
+  "Face definition for how we apply `font-lock' keywords.
+Applicable when variable `diredc-bonus-configuration' is non-nil.")
 
 (defconst diredc-face-chmod-font-lock-read  'diredc-face-chmod-font-lock-read
-  "Definition for face.
-This constant is required for how we apply `font-lock' keywords.")
+  "Face definition for how we apply `font-lock' keywords.
+Applicable when variable `diredc-bonus-configuration' is non-nil.")
 
 (defconst diredc-face-chmod-font-lock-write 'diredc-face-chmod-font-lock-write
-  "Definition for face.
-This constant is required for how we apply `font-lock' keywords.")
+  "Face definition for how we apply `font-lock' keywords.
+Applicable when variable `diredc-bonus-configuration' is non-nil.")
 
 (defconst diredc-face-chmod-font-lock-exec  'diredc-face-chmod-font-lock-exec
-  "Definition for face.
-This constant is required for how we apply `font-lock' keywords.")
+  "Face definition for how we apply `font-lock' keywords.
+Applicable when variable `diredc-bonus-configuration' is non-nil.")
 
 (defconst diredc--chmod-font-lock-regex
   " \\([d-]\\)\\([r-]\\)\\([w-]\\)\\([x-]\\)\\([r-]\\)\\([w-]\\)\\([x-]\\)\\([r-]\\)\\([w-]\\)\\([x-]\\) "
   "Regexp to identify alphanumeric permission mode strings.
-This constant is used to colorize the string, using `font-lock'.")
+This constant is used to colorize the string, using `font-lock',
+when variable `diredc-bonus-configuration' is non-nil.")
 
 (defconst diredc--chmod-font-lock-keyword
   (list
@@ -532,26 +533,31 @@ This constant is used to colorize the string, using `font-lock'.")
           '(8 diredc-face-chmod-font-lock-read)
           '(9 diredc-face-chmod-font-lock-write)
           '(10 diredc-face-chmod-font-lock-exec)))
-  "Diredc `font-lock' keyword definition for chmod strings.")
+  "Diredc `font-lock' keyword definition for chmod strings.
+Applicable when variable `diredc-bonus-configuration' is non-nil.")
 
 
 ;;
 ;;; Customization faces:
 
 (defface diredc-face-chmod-font-lock-dir   '((t :foreground "cyan"))
-  "Face for chmod directory bits in dired buffers."
+  "Face for chmod directory bits in dired buffers.
+Applicable when variable `diredc-bonus-configuration' is non-nil."
   :group 'diredc)
 
 (defface diredc-face-chmod-font-lock-read  '((t :foreground "blue"))
-  "Face for chmod readable bits in dired buffers."
+  "Face for chmod readable bits in dired buffers.
+Applicable when variable `diredc-bonus-configuration' is non-nil."
   :group 'diredc)
 
 (defface diredc-face-chmod-font-lock-write '((t :foreground "yellow"))
-  "Face for chmod writable bits in dired buffers."
+  "Face for chmod writable bits in dired buffers.
+Applicable when variable `diredc-bonus-configuration' is non-nil."
   :group 'diredc)
 
 (defface diredc-face-chmod-font-lock-exec  '((t :foreground "red"))
-  "Face for chmod executable bits in dired buffers."
+  "Face for chmod executable bits in dired buffers.
+Applicable when variable `diredc-bonus-configuration' is non-nil."
   :group 'diredc)
 
 
@@ -2718,6 +2724,11 @@ When variable `diredc-bonus-configuration' is non-nil, enables
 those options that the `diredc' developer feels are sane and
 desirable for a newcomer to `dired'. CALLER should be the calling
 function context, either `diredc-mode' or `dired-mode-hook'."
+  ;; NOTE: I do *NOT* want to make this a mode, ie. subject to
+  ;;       real-time toggling. The only reason for the existence of
+  ;;       defcustom variable `diredc-bonus-configuration' is to
+  ;;       respect a user's desire not to have all these extra
+  ;;       features imposed upon regular `dired'.
   (when diredc-bonus-configuration
     (cond
      ((eq caller 'dired-mode-hook)
