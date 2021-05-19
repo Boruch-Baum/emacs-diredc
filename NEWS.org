@@ -1,4 +1,12 @@
 * diredc NEWS
+** 2021-05
+
++ New feature to hot-swap dired buffers, bound by default to "M-u"
+
+  + Inspired by midnight commander's "C-u", but performs a true and
+    complete swap, including buffer histories. Operates also on
+    diredc-browse buffers.
+
 ** 2021-04
 
 + Asynchronous processes by default survive even after exiting Emacs.

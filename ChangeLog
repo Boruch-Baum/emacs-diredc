@@ -1,3 +1,9 @@
+2021-05-19  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-swap-windows): New feature.
+	(diredc--create-keymap, diredc-browse--create-keymap): Bind it.
+	(diredc--swap-browse-buffer): Support for new feature.
+
 2021-04-27  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--advice--dired-run-shell-command): Divide up

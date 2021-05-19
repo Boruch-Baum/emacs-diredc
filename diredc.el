@@ -53,6 +53,9 @@
 ;;     * inspired by, and similar to, midnight commander's "M-t"
 ;;       * superior configurability
 ;;       * directly choose a specific panel view, or toggle to next
+;;   * Swap panels (use "M-u")
+;;     * inspired by, and similar to, midnight commander's "C-u"
+;;       * a TRUE and complete swap (including history entries)
 ;;   * Trash management
 ;;     * per xfreedesktop standard
 ;;     * restore trashed files to their original locations
@@ -190,6 +193,9 @@
 ;; variable `diredc-display--listing-switches-list'. Four views are
 ;; provided by default, all long-format but with different file
 ;; block-sizes (byte, Kb, Mb), and several other differences.
+;;
+;; The `diredc' buffers themselves can also be "hot-swapped", using
+;; 'M-u' (M-x `diredc-swap-windows').
 ;;
 ;; While emacs does have a native defcustom variable
 ;; `delete-by-moving-to-trash' to control whether to "really" delete
@@ -405,6 +411,7 @@ Returns a keymap."
     (define-key map (kbd "C-<left>")  'diredc-hist-previous-directory)
     (define-key map (kbd "C-<right>") 'diredc-hist-next-directory)
     (define-key map (kbd "=")         'diredc-hist-duplicate)
+    (define-key map (kbd "M-u")       'diredc-swap-windows)
     (define-key map (kbd "C-x q")     'diredc-browse-mode)
     (define-key map (kbd "M-t")       'diredc-display-toggle)
     (define-key map (kbd "C-c ?")     'diredc-show-more-file-info)
@@ -439,6 +446,7 @@ keymap."
     (set-keymap-parent map view-mode-map)
     (define-key map "\t"                        'diredc-browse-tab)
     (define-key map (kbd "<backtab>")           'diredc-browse-backtab)
+    (define-key map (kbd "M-u")                 'diredc-swap-windows)
     (define-key map (kbd "C-x q")               'diredc-browse-quit)
     (define-key map [remap View-quit]           'diredc-browse-quit)
     (define-key map [remap View-kill-and-leave] 'diredc-browse-quit)
@@ -960,6 +968,16 @@ Internal variable for `diredc'.")
 (defsubst diredc--set-omit-mode (yes)
   "Set mode `dired-omit-mode' based upon value of YES."
   (dired-omit-mode (if yes 1 -1)))
+
+(defsubst diredc--swap-browse-buffer (w1 w2)
+  "Swap browse-buffer window IDs.
+This is an internal function for `diredc', meant to be called by
+function `diredc-swap-windows'."
+  (when diredc-browse--buffer
+    (setq diredc-browse--buffer
+      (cond ((eq diredc-browse--buffer w2) w1)
+            ((eq diredc-browse--buffer w1) w2)
+            (t (error "Diredc browse buffer window mis-match"))))))
 
 
 ;;
@@ -1822,6 +1840,33 @@ variable `diredc-browse-exclude-helper' is used (see there)."
           (setq diredc-browse--tracker '(nil . nil))
           (set-window-dedicated-p nil t)))
       (select-window w 'norecord)))))
+
+(defun diredc-swap-windows ()
+  "Swap `diredc' buffers.
+This feature is only supported when the `diredc' frame is
+displaying only two buffers. It performs a true and complete
+swap, including buffer histories."
+  (interactive)
+  (unless (string-match "^#<frame diredc "
+                        (format "%s" (window-normalize-frame nil)))
+    (user-error "Not in a diredc frame."))
+  (unless (= 2 (length (window-list)))
+    (user-error "Not swapping. Too many windows open on frame."))
+  (let (w1 w2 b1 b2)
+    (setq w1 (selected-window)
+          w2 (next-window)
+          b1 (current-buffer))
+    (select-window w2 'no-record)
+    (setq b2 (current-buffer))
+    (set-window-dedicated-p nil nil)
+    (switch-to-buffer b1 nil 'force-same-window)
+    (set-window-dedicated-p nil t)
+    (diredc--swap-browse-buffer w1 w2)
+    (select-window w1 'no-record)
+    (set-window-dedicated-p nil nil)
+    (switch-to-buffer b2 nil 'force-same-window)
+    (set-window-dedicated-p nil t)
+    (diredc--swap-browse-buffer w1 w2)))
 
 (defun diredc-summary ()
   "Modified dired keybinding cheat message, to include diredc.

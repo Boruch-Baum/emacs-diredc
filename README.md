@@ -22,6 +22,9 @@ all file managers, and also some unique features:
      * inspired by, and similar to, midnight commander's "M-t"
        * superior configurability
        * directly choose a specific panel view, or toggle to next
+   * Swap panels (use "M-u")
+     * inspired by, and similar to, midnight commander's "C-u"
+       * a TRUE and complete swap (including history entries)
    * Trash management
      * per xfreedesktop standard
      * restore trashed files to their original locations
@@ -159,6 +162,9 @@ all file managers, and also some unique features:
  variable `diredc-display--listing-switches-list`. Four views are
  provided by default, all long-format but with different file
  block-sizes (byte, Kb, Mb), and several other differences.
+
+ The `diredc` buffers themselves can also be "hot-swapped", using
+ 'M-u' (M-x `diredc-swap-windows`).
 
  While emacs does have a native defcustom variable
  `delete-by-moving-to-trash` to control whether to "really" delete
