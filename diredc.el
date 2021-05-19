@@ -18,18 +18,18 @@
 
 ;; This file is NOT part of GNU Emacs.
 
-;; This is free software: you can redistribute it and/or modify it
-;; under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
+;; This is free software: you can redistribute it and/or modify it under
+;; the terms of the GNU General Public License as published by the Free
+;; Software Foundation, either version 3 of the License, or (at your
+;; option) any later version.
 
-;; This software is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; This software is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+;; Public License for more details.
 
-;; You should have received a copy of the GNU General Public License
-;; along with this software.  If not, see <https://www.gnu.org/licenses/>.
+;; You should have received a copy of the GNU General Public License along
+;; with this software. If not, see <https://www.gnu.org/licenses/>.
 
 ;;
 ;;; Commentary:
@@ -83,6 +83,7 @@
 ;;   * toggle display of "hidden" or "undesirable" files (dired-omit mode)
 ;;   * auto-refresh buffers (auto-revert-mode)
 ;;   * highlight current line (hl-line-mode)
+;;     * current buffer highlights with a unique face.
 ;;   * don't wrap long lines (toggle-truncate-lines)
 ;;   * to disable:
 ;;     * option 1: M-x customize-variable diredc-bonus-configuration
@@ -124,85 +125,85 @@
 ;;; Operation:
 ;;
 ;; Running `diredc' an initial time creates and selects a frame named
-;; `diredc' with two side-by-side `dired' windows / buffers. Repeating
-;; the command will return you to your prior frame / window / buffer.
-;; Subsequent use of the command continues to toggle back and forth
-;; to/from the named `diredc' frame.
+;; `diredc' with two side-by-side `dired' windows / buffers. Repeating the
+;; command will return you to your prior frame / window / buffer.
+;; Subsequent use of the command continues to toggle back and forth to/from
+;; the named `diredc' frame.
 ;;
 ;; In addition to the usual Emacs keybinding help, diredc provides two
-;; combination keybinding cheat-sheets and command launchers, both
-;; using optional dependency package `key-assist'. You can also
-;; interactively call M-x `key-assist' <RET> <RET> to view an
-;; exhaustive `dired' keybinding listing. A separate `key-assist' is
-;; provided for trash-related functions because it also displays the
-;; current trash state statistics.
+;; combination keybinding cheat-sheets and command launchers, both using
+;; optional dependency package `key-assist'. You can also interactively
+;; call M-x `key-assist' <RET> <RET> to view an exhaustive `dired'
+;; keybinding listing. A separate `key-assist' is provided for
+;; trash-related functions because it also displays the current trash state
+;; statistics.
 ;;
 ;;     h                        `diredc-key-assist'
 ;;     C-<delete> ?             `diredc-trash-key-assist'
 ;;     ?                        `diredc-summary'
 ;;     C-h m                    `describe-mode'
 ;;
-;; Navigation from one `dired' panel to another can be accomplished
-;; using '<TAB>' or 'S-<TAB>'. As long as you are in `diredc' mode,
-;; navigating to new directories should not accumulate additional
-;; `dired' buffers and your directory navigation history for each
-;; panel should be remembered. If ever you find that the frame
-;; configuration has become botched, or you somehow accumulate or have
-;; lost `dired' buffers, Run M-x `diredc-recover'. You can also
-;; cleanly kill all `dired' buffers and the `diredc' frame using `C-q'
-;; (M-x `diredc-quit'). And, if you want to use `dired' without the
-;; `diredc' features, run M-x `diredc-mode' to toggle the mode off.
+;; Navigation from one `dired' panel to another can be accomplished using
+;; '<TAB>' or 'S-<TAB>'. As long as you are in `diredc' mode, navigating to
+;; new directories should not accumulate additional `dired' buffers and
+;; your directory navigation history for each panel should be remembered.
+;; If ever you find that the frame configuration has become botched, or you
+;; somehow accumulate or have lost `dired' buffers, Run M-x
+;; `diredc-recover'. You can also cleanly kill all `dired' buffers and the
+;; `diredc' frame using `C-q' (M-x `diredc-quit'). And, if you want to use
+;; `dired' without the `diredc' features, run M-x `diredc-mode' to toggle
+;; the mode off.
 ;;
-;; As mentioned above, each `dired' panel now 'remembers' its
-;; navigation history. The history can be traversed sequentially
-;; backward 'C-<left>' or forward 'C-<right>' without losing elements,
-;; and can be viewed and traversed non-sequentially using 'C-u /'. Use
-;; '/' to directly navigate to a directory not 'nearby'.
+;; As mentioned above, each `dired' panel now 'remembers' its navigation
+;; history. The history can be traversed sequentially backward 'C-<left>'
+;; or forward 'C-<right>' without losing elements, and can be viewed and
+;; traversed non-sequentially using 'C-u /'. Use '/' to directly navigate
+;; to a directory not 'nearby'.
 ;;
 ;; A 'file preview' mode can be entered or exited using 'C-x q' (M-x
-;; `diredc-browse-mode'). In that mode, whenever a `dired' buffer's
-;; POINT is on a file's line, that file will be opened on the other
-;; pane, in read-only emacs `view-mode' (see there for the navigation
-;; and other features of that mode). The `view-mode' buffer is deleted
-;; automatically when you either disable the mode or you move point to
-;; another line in the `dired' buffer. Use '<TAB>' or 'S-<TAB>' to
-;; navigate between the `dired' buffer window and the file preview
-;; window. There are several options for excluding undesirable files
-;; (eg. binaries) from preview; see the mode's docstring for details.
+;; `diredc-browse-mode'). In that mode, whenever a `dired' buffer's POINT
+;; is on a file's line, that file will be opened on the other pane, in
+;; read-only emacs `view-mode' (see there for the navigation and other
+;; features of that mode). The `view-mode' buffer is deleted automatically
+;; when you either disable the mode or you move point to another line in
+;; the `dired' buffer. Use '<TAB>' or 'S-<TAB>' to navigate between the
+;; `dired' buffer window and the file preview window. There are several
+;; options for excluding undesirable files (eg. binaries) from preview; see
+;; the mode's docstring for details.
 ;;
-;; The traditional `dired' operations that 'find' or 'open' a file
-;; should do so to a separate frame, most likely the one from which
-;; you came to the `diredc' frame.
+;; The traditional `dired' operations that 'find' or 'open' a file should
+;; do so to a separate frame, most likely the one from which you came to
+;; the `diredc' frame.
 ;;
 ;; The traditional `dired' feature to perform arbitrary asynchronous
-;; operations on a file or set of files has been enhanced to make
-;; those processes persistent, to survive even after exiting Emacs.
-;; Thus, with the default keybinding, you can press '&' <RET> and have
-;; the selected file(s) launched in the system-default external
-;; application. Do be advised, though, that this comes at the expense
-;; of losing the processes' *Async Shell Command* buffer and its log
-;; of STDOUT / STDERR for the processes. The former, non-persistent
-;; behavior can be opted for at run-time by prefixing the command with
-;; a SPACE (eg. " foo") or for the default command simply enter just a
-;; SPACE. The former, non-persistent behavior can be made default by
-;; modifying variable `diredc-async-processes-are-persistent'.
+;; operations on a file or set of files has been enhanced to make those
+;; processes persistent, to survive even after exiting Emacs. Thus, with
+;; the default keybinding, you can press '&' <RET> and have the selected
+;; file(s) launched in the system-default external application. Do be
+;; advised, though, that this comes at the expense of losing the processes'
+;; *Async Shell Command* buffer and its log of STDOUT / STDERR for the
+;; processes. The former, non-persistent behavior can be opted for at
+;; run-time by prefixing the command with a SPACE (eg. " foo") or for the
+;; default command simply enter just a SPACE. The former, non-persistent
+;; behavior can be made default by modifying variable
+;; `diredc-async-processes-are-persistent'.
 ;;
-;; The display format of `dired' buffers can be "hot-swapped" using
-;; 'M-t' (M-x `diredc-display-toggle'). Use 'C-u M't' to select from
-;; available display formats, and customize the list using defcustom
-;; variable `diredc-display--listing-switches-list'. Four views are
-;; provided by default, all long-format but with different file
-;; block-sizes (byte, Kb, Mb), and several other differences.
+;; The display format of `dired' buffers can be "hot-swapped" using 'M-t'
+;; (M-x `diredc-display-toggle'). Use 'C-u M't' to select from available
+;; display formats, and customize the list using defcustom variable
+;; `diredc-display--listing-switches-list'. Four views are provided by
+;; default, all long-format but with different file block-sizes (byte, Kb,
+;; Mb), and several other differences.
 ;;
-;; The `diredc' buffers themselves can also be "hot-swapped", using
-;; 'M-u' (M-x `diredc-swap-windows').
+;; The `diredc' buffers themselves can also be "hot-swapped", using 'M-u'
+;; (M-x `diredc-swap-windows').
 ;;
 ;; While emacs does have a native defcustom variable
-;; `delete-by-moving-to-trash' to control whether to "really" delete
-;; files, `diredc' allows one or more trashed items to be restored,
-;; allows the trash to be emptied, and conveniently present trash
-;; statistics. Here are the relevant commands and their default
-;; keybindings. See each's docstring for more details:
+;; `delete-by-moving-to-trash' to control whether to "really" delete files,
+;; `diredc' allows one or more trashed items to be restored, allows the
+;; trash to be emptied, and conveniently present trash statistics. Here are
+;; the relevant commands and their default keybindings. See each's
+;; docstring for more details:
 ;;
 ;;     C-<delete> SPC           `diredc-trash-toggle'
 ;;     C-<delete> <insertchar>  `diredc-trash-toggle'
@@ -221,14 +222,13 @@
 ;;
 ;;     C-<delete> ?             `diredc-trash-key-assist'
 ;;
-;; A limitation in `dired' is its inability to natively present a
-;; file's supplemental information, such as its possible extended
-;; access control list or extended file attributes. `diredc' allows
-;; this and more to be presented in the minibuffer echo area as you
-;; navigate a `diredc' buffer. Use M-x `diredc-show-more-file-info' to
-;; toggle through the default possibilities, or customize the
-;; `diredc-show-more-file-info-list' to present the metadata of your
-;; choice.
+;; A limitation in `dired' is its inability to natively present a file's
+;; supplemental information, such as its possible extended access control
+;; list or extended file attributes. `diredc' allows this and more to be
+;; presented in the minibuffer echo area as you navigate a `diredc' buffer.
+;; Use M-x `diredc-show-more-file-info' to toggle through the default
+;; possibilities, or customize the `diredc-show-more-file-info-list' to
+;; present the metadata of your choice.
 ;;
 ;;     C-c ?     `diredc-show-more-file-info'
 ;;
@@ -238,16 +238,15 @@
 ;;     C-c + j   `diredc-bookmark-jump'
 ;;     C-c + e   `diredc-bookmark-edit'
 ;;
-;; Emacs has a nifty mode to "edit" a `dired' buffer, bringing the
-;; power of emacs to the application of renaming files. `diredc' just
-;; gives you the little bit of extra help with convenient keybindings
-;; `E' and `e' to enter the mode. If you're happy with your edits, you
-;; apply them and exit the mode with `C-c C-c', or abort your editing
-;; session with `C-c C-k'.
+;; Emacs has a nifty mode to "edit" a `dired' buffer, bringing the power of
+;; emacs to the application of renaming files. `diredc' just gives you the
+;; little bit of extra help with convenient keybindings `E' and `e' to
+;; enter the mode. If you're happy with your edits, you apply them and exit
+;; the mode with `C-c C-c', or abort your editing session with `C-c C-k'.
 ;;
-;; The `diredc-shell' command opens up any type of emacs shell or
-;; terminal emulator window and pre-seeds it with useful `dired'
-;; values (see section 'Extra Features', below).
+;; The `diredc-shell' command opens up any type of emacs shell or terminal
+;; emulator window and pre-seeds it with useful `dired' values (see section
+;; 'Extra Features', below).
 ;;
 ;;     '         `diredc-shell'
 ;;     C-c !     `diredc-shell'
@@ -260,48 +259,48 @@
 ;;; Configuration
 ;;
 ;; You can browse and edit this mode's list of `defcustom's using "M-x
-;; `customize-group' diredc", but there isn't too much to be found
-;; there. Separately, you might want to redefine the default
-;; keybindings, but otherwise there is nothing really important about
-;; `diredc' itself to configure.
+;; `customize-group' diredc", but there isn't too much to be found there.
+;; Separately, you might want to redefine the default keybindings, but
+;; otherwise there is nothing really important about `diredc' itself to
+;; configure.
 ;;
 ;; `dired' mode itself, however, is a complex and highly configurable
-;; package that has been under development for over 25 years. That's a
-;; long time for options to accumulate and for opinions to multiply.
-;; The `diredc' developer (ahem: me) has considerately imposed his
-;; preferences upon you by default, in a way trivial to over-ride. If
-;; you don't want them, toggle the value of defcustom
-;; `diredc-bonus-configuration' to nil, an the settings will revert
-;; upon selecting new buffers. The bonus customization features are
-;; listed above, in the 'Commentary' section, or you could peek at the
-;; source code of function `diredc-bonus-configuration'.
+;; package that has been under development for over 25 years. That's a long
+;; time for options to accumulate and for opinions to multiply. The
+;; `diredc' developer (ahem: me) has considerately imposed his preferences
+;; upon you by default, in a way trivial to over-ride. If you don't want
+;; them, toggle the value of defcustom `diredc-bonus-configuration' to nil,
+;; an the settings will revert upon selecting new buffers. The bonus
+;; customization features are listed above, in the 'Commentary' section, or
+;; you could peek at the source code of function
+;; `diredc-bonus-configuration'.
 ;;
 ;; The colorization for each buffer's selected line is set as part of
 ;; `diredc-bonus-configuration', but because it's controlled by
-;; `hl-line-mode'; you can independently toggle the feature
-;; per-buffer, and you can change the highlighting colors using "M-x
-;; `customize-face' hl-line". The colorization of the chmod bits are
-;; also set as part of `diredc-bonus-configuration'; you can find
-;; their definitions and edit them using  "M-x
-;; `customize-group' diredc".
+;; `hl-line-mode'; you can independently toggle the feature per-buffer, and
+;; you can change the highlighting colors using "M-x `customize-face'" for
+;; faces `hl-line' and `diredc-hl-current-buffer'. The colorization of the
+;; chmod bits are also set as part of `diredc-bonus-configuration'; you can
+;; find their definitions and edit them using "M-x `customize-group'
+;; diredc".
 
 ;;; Extra Features:
 ;;
-;; *] Navigating to a parent directory with `dired-up-directory'
-;;    (default: `^') can use the prefix-argument to navigate multiple
-;;    levels in one operation.
+;; *] Navigating to a parent directory with `dired-up-directory' (default:
+;;    `^') can use the prefix-argument to navigate multiple levels in one
+;;    operation.
 ;;
 ;; *] Use `dired-hist-change-directory' (default: `/') to jump to a
 ;;    location not nearby without losing the current dired buffer's
 ;;    history.
 ;;
-;; *] Use the `prefix-argument' with `diredc-hist-change-directory' to
-;;    have `diredc-hist-select' display all elements of the Dired
-;;    buffer's history and allow you to jump directly to any of them.
+;; *] Use the `prefix-argument' with `diredc-hist-change-directory' to have
+;;    `diredc-hist-select' display all elements of the Dired buffer's
+;;    history and allow you to jump directly to any of them.
 ;;
 ;; *] Use `diredc-hist-duplicate' (default: `=') to either navigate to
-;;    another `dired' buffer to your current one's directory, or with
-;;    the `prefix-argument' to navigate your current `dired' buffer to
+;;    another `dired' buffer to your current one's directory, or with the
+;;    `prefix-argument' to navigate your current `dired' buffer to
 ;;    another's directory.
 ;;
 ;; *] Modify data structure `diredc-recover-schemes' to apply your own
@@ -311,10 +310,10 @@
 ;;    REGION to quick-delete the selected files. Use the prefix-arg to
 ;;    toggle between "trashing" or deleting.
 ;;
-;; *] When `diredc-hist-mode' is disabled, the following functions
-;;    continue to operate, but without updating the history records,
-;;    so you can use them as your default `dired' functions even if
-;;    you don't always want to use `diredc-hist-mode'.
+;; *] When `diredc-hist-mode' is disabled, the following functions continue
+;;    to operate, but without updating the history records, so you can use
+;;    them as your default `dired' functions even if you don't always want
+;;    to use `diredc-hist-mode'.
 ;;
 ;;      `diredc-hist-change-directory'
 ;;      `diredc-hist-up-directory'
@@ -323,8 +322,8 @@
 ;;      `diredc-hist-find-file-other-window'
 ;;      `diredc-hist-find-alternate-file'
 ;;
-;; *] `diredc' passes to the shell/terminal-emulator instance the
-;;    following shell variables:
+;; *] `diredc' passes to the shell/terminal-emulator instance the following
+;;    shell variables:
 ;;
 ;;      $d1 - this `diredc' windows's directory name
 ;;      $d2 - directory name of other visible `diredc' window
@@ -333,33 +332,24 @@
 ;;      $t1 - this `diredc' window's list of tagged file names
 ;;      $t2 - list of tagged file names  of other visible `diredc' window
 ;;
-;;    If the selected shell supports array variables, then $t1 and $t2
-;;    will be set as such; Otherwise, elements will be quoted and
-;;    delimited with a space.
+;;    If the selected shell supports array variables, then $t1 and $t2 will
+;;    be set as such; Otherwise, elements will be quoted and delimited with
+;;    a space.
 
 ;; *) universal fallback guess shell command(s)
 
 ;;
 ;;; Compatibility
 ;;
-;; This package has been tested under debian linux emacs version 26.1.
-;; The main compatibility issue to be aware of is that this suite
-;; needs to modify[1] a single line in function
-;; `dired-internal-no-select' of the standard emacs file `dired.el'
-;; This was accomplished by advising a wrapper function
-;; `diredc--advice--dired-internal-noselect' around the original. If
-;; that function ever changes, that advice function and this suite
-;; will need to account for that.
+;; This package has been tested under debian linux emacs version 26.1. The
+;; main compatibility issue to be aware of is that this suite needs to
+;; modify[1] a single line in function `dired-internal-no-select' of the
+;; standard emacs file `dired.el' This was accomplished by advising a
+;; wrapper function `diredc--advice--dired-internal-noselect' around the
+;; original. If that function ever changes, that advice function and this
+;; suite will need to account for that.
 ;;
-;; [1] emacs bug #44023:
-;;     https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44023"
-
-;;
-;; Known limitations
-;;
-;; *] Line highlighting of the non-selected `diredc' buffer is limited
-;;    by package `hl-line' to be the same face as that of the selected
-;;    buffer.
+;; [1] emacs bug #44023: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44023"
 
 
 ;;
@@ -566,6 +556,12 @@ Applicable when variable `diredc-bonus-configuration' is non-nil."
 (defface diredc-face-chmod-font-lock-exec  '((t :foreground "red"))
   "Face for chmod executable bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
+  :group 'diredc)
+
+(defface diredc-hl-current-buffer '((t :inherit 'hl-line :bold t))
+  "Face for current line in selected buffer.
+Applicable when variable `diredc-bonus-configuration' is non-nil.
+See also `hl-line-mode'."
   :group 'diredc)
 
 
@@ -845,6 +841,12 @@ manipulate it directly. See function `diredc-browse-mode'.")
 (defvar-local diredc-shell--bufwin nil
   "Internal variable for `diredc-shell'.
 Window from which the current `diredc-shell' buffer was created.")
+
+(defvar-local diredc--hl-cookie nil
+  "Internal variable for `diredc-bonus-configuration'.
+When non-nil, contains a face-remapping cookie for the current
+buffer's `hl-line' face. See function
+`face-remap-add-relative'.")
 
 
 ;;
@@ -1309,6 +1311,26 @@ A hook function for `post-command-hook'. It creates and kills
         (view-mode)
         (use-local-map diredc-browse-mode-map)
         (select-window original-win 'norecord)))))
+
+(defun diredc--window-state-change-hook-function (fram)
+  "Internal function for mode `diredc-mode'.
+When variable `diredc-bonus-configuration' is non-nil, this
+function allows the current line of the selected `diredc' buffer
+to be highlighted in a face independent of face `hl-line'. See
+face `diredc-hl-current-buffer'."
+   (when (and diredc-mode diredc-bonus-configuration
+            (string-match "^#<frame diredc "
+                          (format "%s" (window-normalize-frame nil))))
+     (let* ((win-list (window-list fram)))
+       (with-selected-window (pop win-list)
+         (unless diredc--hl-cookie
+           (setq-local diredc--hl-cookie
+             (face-remap-add-relative 'hl-line 'diredc-hl-current-buffer)))
+         (dolist (win win-list)
+           (select-window win 'no-record)
+           (when diredc--hl-cookie
+             (face-remap-remove-relative diredc--hl-cookie)
+             (setq diredc--hl-cookie nil)))))))
 
 
 ;;
@@ -2909,6 +2931,7 @@ turn the mode on; Otherwise, turn it off."
    (diredc-mode
      (setq diredc-allow-duplicate-buffers t)
      (add-hook 'dired-mode-hook  'diredc--hook-function t)
+     (add-to-list 'window-state-change-functions 'diredc--window-state-change-hook-function)
      (advice-add 'dired-internal-noselect
                  :around #'diredc--advice--dired-internal-noselect)
      (advice-add 'dired-guess-default
@@ -2926,6 +2949,9 @@ turn the mode on; Otherwise, turn it off."
      (message "Diredc-mode enabled in all Dired buffers."))
    (t
      (remove-hook 'dired-mode-hook 'diredc--hook-function)
+     (setq window-state-change-functions
+       (delq 'diredc--window-state-change-hook-function
+             window-state-change-functions))
      ;; Do not set `diredc-allow-duplicate-buffers' to NIL, because it
      ;; may be required by other minor modes or features (eg.
      ;; dired-frame.el)

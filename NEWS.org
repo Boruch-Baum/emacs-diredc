@@ -1,6 +1,11 @@
 * diredc NEWS
 ** 2021-05
 
++ New feature to fontify the current line of the current diredc buffer
+  independently of the selected line of the 'other' diredc buffer.
+
+  + Ref: face diredc-hl-current-buffer
+
 + New feature to hot-swap dired buffers, bound by default to "M-u"
 
   + Inspired by midnight commander's "C-u", but performs a true and
