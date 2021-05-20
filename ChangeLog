@@ -1,3 +1,16 @@
+2021-05-20  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-bonus-configuration): Suppress display of
+	\*Async Shell Command* buffers.
+	(diredc--advice--dired-run-shell-command): Use function
+	start-process-shell-command instead of shell-command.
+	(diredc-browse--create-keymap): keybinding for diredc-exit
+	while in browse buffer.
+	(diredc--match-command): New defsubst.
+	(diredc--advice--shell-guess-fallback)
+	(diredc--advice--dired-read-shell-command)
+	(diredc-do-async-shell-command): Minor code improvements
+
 2021-05-19  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-browse-mode): Improve exit handling.

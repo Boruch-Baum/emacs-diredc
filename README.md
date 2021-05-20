@@ -68,6 +68,7 @@ all file managers, and also some unique features:
    * dired-aux  -- for dired-compress-files
    * help-mode  -- for help button widget
    * hl-line    -- for hl-line-mode
+   * subr       -- for string-match-p
    * term       -- for term-line-mode, term-send-input
    * view       -- for view-mode
 

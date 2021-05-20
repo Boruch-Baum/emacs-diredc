@@ -98,6 +98,7 @@
 ;;   dired-aux   -- for dired-compress-files
 ;;   help-mode   -- for help button widget
 ;;   hl-line     -- for hl-line-mode
+;;   subr        -- for string-match-p
 ;;   term        -- for term-line-mode, term-send-input
 ;;   view        -- for view-mode
 ;;
@@ -444,6 +445,7 @@ keymap."
     (define-key map [remap View-quit-all]       'diredc-browse-quit)
     (define-key map [remap View-exit]           'diredc-browse-find)
     (define-key map [remap View-exit-and-edit]  'diredc-browse-find)
+    (define-key map (kbd "C-q")                 'diredc-exit) ; defalias diredc-quit
     map))
 
 (defvar diredc-browse-mode-map (diredc-browse--create-keymap))
@@ -967,6 +969,11 @@ Internal variable for `diredc'.")
 ;;
 ;;; Functions - inline functions:
 
+(defsubst diredc--match-command (cmd)
+  "Match a command from  a `shell-command' string.
+This is mainly here to ensure uniformity of the regexp."
+  (string-match "^ *\\([^ ]+\\)" cmd))
+
 (defsubst diredc--set-omit-mode (yes)
   "Set mode `dired-omit-mode' based upon value of YES."
   (dired-omit-mode (if yes 1 -1)))
@@ -1028,8 +1035,8 @@ implements diredc feature `diredc-shell-guess-fallback'."
                              (error nil))))
                (and (stringp cmd)
                     (executable-find
-                      (if (string-match "^ *\\([^ ]+\\) " cmd)
-                        (substring cmd (match-beginning 1) (match-end 1))
+                      (if (diredc--match-command cmd)
+                        (match-string 1 cmd)
                        cmd))
                     (push cmd cmds)))))
     (nreverse (delete-dups cmds))))
@@ -1114,8 +1121,9 @@ See also: Emacs bug report #44023:
 See variable `diredc-async-processes-are-persistent' and function
 `diredc-do-async-shell-command'.
 
-OLDFUN is function `dired-run-shell-command'. COMMAND is an entire
-shell command string. For asynchronous commands, COMMAND ends
+OLDFUN is function `dired-run-shell-command' and is never called
+by this advice. COMMAND is an entire shell command string. For
+asynchronous commands, `dired' prepares COMMAND to end with
 \"&wait&\" without a space prior.
 
 Usage: (advice-add 'dired-run-shell-command
@@ -1125,39 +1133,54 @@ Usage: (advice-add 'dired-run-shell-command
 ;; apply the function separately for each of a list of files).
 ;; Regardless, the command and file-list are passed through
 ;; `dired-shell-stuff-it' prior.
-  (if (or (not diredc-async-processes-are-persistent)
-          (string-match "^ " command)
-          (not (string-match "&wait&$" command)))
-    (apply oldfun (list command))
-   (setq command (concat (substring command 0 (match-beginning 0))))
-   (let* ((win (selected-window))
-          (buf (shell))
-          (kill-buffer-query-functions nil)
-          (cmd (when (string-match "^ *\\([^ ]+ \\)" command)
-                 (match-string 1 command)))
-          (separator (when cmd (concat "&" cmd)))
-          (cmds (when separator (split-string command separator)))
-          (suffix " & disown"))
-     (if (eq win (selected-window))
-       (bury-buffer)
-      (delete-window))
-     (with-current-buffer buf
-       (when cmds
-         (setq command (pop cmds)))
-       (insert command suffix)
-       (comint-send-input)
-       (while (setq command (pop cmds))
-         (insert cmd command suffix)
-         (comint-send-input))
-       (sit-for 0.3 'nodisp)
-       (kill-buffer)))
+  (cond
+   ((or (not diredc-async-processes-are-persistent)
+        (string-match "^ " command)
+        (not (string-match "&wait&$" command)))
+   ;; NOTE: This condition is itself a rewrite of the advised function, to
+   ;;       use function `start-process-shell-command' instead of `shell-command'.
+   ;;       (defun dired-run-shell-command (command)
+     (let ((command (list (replace-regexp-in-string "&wait&$" " " command)))
+           (handler (find-file-name-handler
+                      (directory-file-name default-directory)
+                      'shell-command)) ; <- May need to be start-process?
+           (proc-name "*Async Shell Command*")
+           (proc-buf  (get-buffer-create "*Async Shell Command*")))
+       (if handler
+         (apply handler 'start-process-shell-command proc-name proc-buf command)
+        (apply 'start-process-shell-command proc-name proc-buf command))))
+   (t ; Using diredc's home-made persistent async process feature
+     (setq command (replace-regexp-in-string "&wait&$" " " command))
+     (let* ((win (selected-window))
+            (buf (shell))
+            (kill-buffer-query-functions nil)
+            (cmd (when (diredc--match-command command)
+                   (match-string 1 command)))
+            (separator (when cmd (concat " & " cmd)))
+            (cmds (when separator (split-string command separator)))
+            (suffix " & disown"))
+       (if (eq win (selected-window))
+         (bury-buffer)
+        (delete-window)
+        (select-window win 'no-record))
+       (with-current-buffer buf
+         (when cmds
+           (setq command (pop cmds)))
+         (insert command suffix)
+         (comint-send-input)
+         (while (setq command (pop cmds))
+           (insert cmd command suffix)
+           (comint-send-input))
+         (sit-for 0.3 'nodisp)
+         (kill-buffer)))))
    ;; Return nil for sake of `nconc' in `dired-bunch-files'.
-   nil))
+   nil)
 
 (defun diredc--advice--dired-read-shell-command (oldfun prompt arg files)
   "Validate input to `dired-read-shell-command'.
-OLDFUN is function `dired-read-shell-command'. PROMPT, ARG, and
-FILES are described there.
+OLDFUN is function `dired-read-shell-command', which is never
+called by this advice. PROMPT, ARG, and FILES are described
+there.
 
 Inputs must be non-empty and valid commands on the host system.
 These two validation checks address the issues in Emacs bug
@@ -1180,14 +1203,15 @@ locally define `dired-read-shell-command'. See there."
          (dired-mark-pop-up nil 'shell files
                             'read-shell-command prompt nil nil)))
       ;; Validation checks of #48072:
-      (when (string-empty-p command)
+      (when (string= "" command)
         (user-error "No command entered. Nothing to do!"))
       (unless (executable-find
-                (if (string-match "^ *\\([^ ]+\\) " command)
-                  (substring command (match-beginning 1) (match-end 1))
+                (if (diredc--match-command command)
+                  (match-string 1 command)
                  command))
         (user-error "Not a valid command!"))
       command)))
+
 
 ;;
 ;;; Functions - hook functions:
@@ -2360,7 +2384,7 @@ ARG is the prefix-arg."
            ;; These two validation checks address the issues in Emacs
            ;; bug report and patch #48072:
            ;; (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48072)
-              (when (string-empty-p command)
+              (when  (string= "" command)
                 (user-error "No command entered. Nothing to do!"))
            ;; For diredc, we need to allow a SPACE command to allow
            ;; overriding a `diredc-async-processes-are-persistent'
@@ -2368,8 +2392,8 @@ ARG is the prefix-arg."
            ;; (unless (executable-find command)
               (unless (or (string-match-p "^[ \t]+$" command)
                           (executable-find
-                            (if (string-match "^ *\\([^ ]+\\) " command)
-                              (substring command (match-beginning 1) (match-end 1))
+                            (if (diredc--match-command command)
+                              (match-string 1 command)
                              command)))
                 (user-error "Not a valid command!"))
               command))))
@@ -2378,17 +2402,18 @@ ARG is the prefix-arg."
       (dired-read-shell-command "& on %s: " current-prefix-arg files)
       current-prefix-arg
       files))))
-  (let ((win (selected-window)))
-    (cond
-     ((string-match-p "^[ \t]+$" command)
-       (setq command (format " %s &"
-                       (car (diredc--advice--shell-guess-fallback
-                            'dired-guess-default
-                            file-list)))))
-     ((not (string-match-p "&[ \t]*\\'" command))
-       (setq command (concat command " &"))))
-    (dired-do-shell-command command arg file-list)
-    (select-window win)))
+  (cond
+   ((string-match-p "^[ \t]+$" command)
+     ;; no command entered, guess fallback
+     (setq command (format " %s &"
+                     (car (diredc--advice--shell-guess-fallback
+                          'dired-guess-default
+                          file-list)))))
+   ((not (string-match-p "&[ \t]*\\'" command))
+     ;; command entered, but without " &" suffix
+     (setq command (concat command " &"))))
+  (dired-do-shell-command command arg file-list))
+
 
 (defun diredc-history-mode (&optional arg)
   "Control ability to navigate directory history.
@@ -2852,6 +2877,8 @@ function context, either `diredc-mode' or `dired-mode-hook'."
          dired-omit-files "^\\.?#\\|^\\..*"
          dired-omit-verbose nil
          dired-guess-shell-case-fold-search t)
+       (add-to-list 'display-buffer-alist
+         '("\\*Async Shell Command\\*.*" display-buffer-no-window nil))
        ;; variable of package dired-aux
        (add-to-list 'dired-compress-files-alist '("\\.gz\\'" . "gzip -k %i"))
        (add-to-list 'dired-compress-files-alist '("\\.xz\\'" . "xz -k %i"))))))
