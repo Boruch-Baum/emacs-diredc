@@ -10,7 +10,7 @@
 ;; Version: 1.0
 ;; Package-Requires: ((emacs "26.1") (key-assist "1.0"))
 ;;
-;;   (emacs "24.1") for: split-window-right, window-normalize-frame
+;;   (emacs "24.1") for: split-window-right
 ;;   (emacs "24.3") for: lexical-binding, user-error, cl-lib, defvar-local
 ;;   (emacs "24.4") for: advice-remove
 ;;   (emacs "25.1") for: save-mark-and-excursion
@@ -834,7 +834,7 @@ The value is the `diredc' WINDOW from which the buffer was
 created.")
 
 (defvar-local diredc-browse-mode nil
-  "Whether a `diredc-mode' is browsing files at POINT.
+  "Whether a `diredc-mode' buffer is browsing files at POINT.
 This is an internal variable for `diredc-mode' buffers. Do not
 manipulate it directly. See function `diredc-browse-mode'.")
 
@@ -1320,7 +1320,7 @@ to be highlighted in a face independent of face `hl-line'. See
 face `diredc-hl-current-buffer'."
    (when (and diredc-mode diredc-bonus-configuration
             (string-match "^#<frame diredc "
-                          (format "%s" (window-normalize-frame nil))))
+                          (format "%s" (window-frame))))
      (let* ((win-list (window-list fram)))
        (with-selected-window (pop win-list)
          (unless diredc--hl-cookie
@@ -1665,16 +1665,43 @@ NEW is the new listing switch entry to use."
        (t (list (list "/" 1 nil)))))
     (setq diredc-hist--history-position pos)))
 
+(defun diredc--find-another-diredc-buffer (buf)
+  "Find a live dired buffer other than BUF.
+BUF is expected to be a live dired buffer."
+  (if (= 1 (length dired-buffers))
+    ;; This is an error condition; let's be nice and recover from it.
+    (dired "~")
+   (let ((result (cdr (nth 0 dired-buffers))))
+     (when (eq buf result)
+       (setq result (cdr (nth 1 dired-buffers))))
+      result)))
+  ;; NOTE: The above might not return expected / desired results when
+  ;; there exist many dired buffers, possibly spread across many
+  ;; non-diredc frames. The following may end up being more robust for
+  ;; those cases.
+  ;; (let ((bufs (buffer-list (window-frame (selected-window))))
+  ;;       found result)
+  ;;   (while (and (not found) (setq result (pop bufs)))
+  ;;     (with-current-buffer result
+  ;;       (when (and (eq major-mode 'dired-mode)
+  ;;                  (not (eq result buf)))
+  ;;         (setq found t
+  ;;               bufs nil))))
+  ;;   (when found result)))
+
 (defun diredc--abort-on-directory-deleted (dir)
+  "Report a user error for a deleted directory."
   (unless (file-directory-p dir)
     (user-error "This diredc buffer %s describes a directory that has been deleted!" dir)))
 
 (defun diredc--ask-on-directory-deleted (dir)
+  "Prompt when attempting to operate on a deleted directory."
   (unless (file-directory-p dir)
     (unless (yes-or-no-p
 	      (format "This diredc buffer %s describes a directory that has been deleted!
 Continue anyway? " dir))
       (user-error "Operation aborted"))))
+
 
 ;;
 ;;; Interactive functions:
@@ -1835,8 +1862,11 @@ The mode checks each file against variables
 `diredc-browse-exclude-coding-systems'. If those checks pass,
 variable `diredc-browse-exclude-helper' is used (see there)."
   (interactive)
-  (when (not (derived-mode-p 'dired-mode))
-    (user-error "Not a Dired buffer"))
+  (when (not diredc-mode)
+    (user-error "Not in Diredc mode"))
+  (unless (or (eq major-mode 'dired-mode)
+              (eq (current-buffer) (cdr diredc-browse--tracker)))
+    (user-error "Not a Diredc buffer"))
   (cond
    ((called-interactively-p 'interactive)
      (setq diredc-browse-mode (not diredc-browse-mode)))
@@ -1850,18 +1880,26 @@ variable `diredc-browse-exclude-helper' is used (see there)."
     (diredc-browse--hook-function))
    (t
     (remove-hook 'post-command-hook 'diredc-browse--hook-function)
-    (let ((w (selected-window))
-          (browse-buf (cdr diredc-browse--tracker)))
-      (when (buffer-live-p browse-buf)
-        (pop-to-buffer browse-buf nil 'norecord)
-        (set-window-dedicated-p nil nil)
-        (kill-buffer browse-buf))
-      (dolist (x (window-list))
-        (select-window x 'norecord)
-        (when (eq major-mode 'dired-mode)
-          (setq diredc-browse--tracker '(nil . nil))
-          (set-window-dedicated-p nil t)))
-      (select-window w 'norecord)))))
+    (let ((orig-win (selected-window))
+          (browse-buf (cdr diredc-browse--tracker)) ; TODO buffer-live-p
+          (target-buf ; The dired buffer to replace the browse buffer
+            (diredc--find-another-diredc-buffer
+              (if (not diredc-browse--buffer) ; cur-buf is not the browse buffer
+                (current-buffer)
+               (setq diredc-browse-mode nil)
+               (window-buffer diredc-browse--buffer))))
+          wins target-win kill-win)
+      (setq wins (get-buffer-window-list browse-buf))
+      (setq target-win (pop wins))
+      (while (setq kill-win (pop wins))
+        (delete-window kill-win))
+      (select-window target-win 'no-record)
+      (set-window-dedicated-p nil nil)
+      (kill-buffer browse-buf)
+      (switch-to-buffer target-buf 'no-record 'force-same-window)
+      (set-window-dedicated-p nil t)
+      (setq diredc-browse--tracker '(nil . nil))
+      (select-window orig-win 'norecord)))))
 
 (defun diredc-swap-windows ()
   "Swap `diredc' buffers.
@@ -1869,12 +1907,12 @@ This feature is only supported when the `diredc' frame is
 displaying only two buffers. It performs a true and complete
 swap, including buffer histories."
   (interactive)
-  (unless (string-match "^#<frame diredc "
-                        (format "%s" (window-normalize-frame nil)))
-    (user-error "Not in a diredc frame."))
+  (unless (string-match "^#<frame diredc " (format "%s" (window-frame)))
+    (user-error "Not in a diredc frame"))
   (unless (= 2 (length (window-list)))
-    (user-error "Not swapping. Too many windows open on frame."))
-  (let (w1 w2 b1 b2)
+    (user-error "Not swapping. Too many windows open on frame"))
+  (let (switch-to-buffer-preserve-window-point
+        w1 w2 b1 b2)
     (setq w1 (selected-window)
           w2 (next-window)
           b1 (current-buffer))
@@ -2748,7 +2786,7 @@ the file in another frame."
                 (win (and buf
                           (get-buffer-window buf t))))
            (cond
-            ((and win (equal (window-frame win) (window-normalize-frame nil)))
+            ((and win (equal (window-frame win) (window-frame)))
              ; file is already viewable in current frame, so select it in
              ; another frame
               (if (> 1 (length (frame-list)))
@@ -2977,7 +3015,7 @@ If no `diredc' frame exists, create one with a dual-window layout."
   (unless diredc-mode
     (diredc-mode 1))
   (cond
-   ((string-match "^#<frame diredc " (format "%s" (window-normalize-frame nil)))
+   ((string-match "^#<frame diredc " (format "%s" (window-frame)))
      (other-frame 1)
      (redraw-frame))
    (t

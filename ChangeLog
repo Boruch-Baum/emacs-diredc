@@ -1,5 +1,15 @@
 2021-05-19  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-browse-mode): Improve exit handling.
+	(diredc--find-another-diredc-buffer): New helper function.
+	(diredc--window-state-change-hook-function, diredc-swap-windows)
+	(diredc-hist-find-alternate-file, diredc): Replace function
+	window-normalize-frame with window-frame.
+	(diredc-swap-windows): Ensure variable
+	switch-to-buffer-preserve-window-point nil.
+
+2021-05-19  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-hl-current-buffer): New face for hl-line-mode
 	only for current-buffer.
 	(diredc--hl-cookie): New variable to track remapped face hl-line.
