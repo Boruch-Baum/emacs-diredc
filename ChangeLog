@@ -1,5 +1,12 @@
 2021-05-23  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc--chmod-font-lock-regex): Account for links,
+	suid, guid, temp.
+	(diredc-browse-mode): Bugfixes for closing diredc-browse-mode.
+	(diredc-exit): Change where closing  diredc-browse-mode.
+
+2021-05-23  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (dired-aux-files)
 	(diredc--advice--shell-guess-fallback)
 	(diredc--advice--dired-run-shell-command)

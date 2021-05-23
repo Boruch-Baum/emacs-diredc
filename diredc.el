@@ -526,7 +526,7 @@ Applicable when variable `diredc-bonus-configuration' is non-nil.")
 Applicable when variable `diredc-bonus-configuration' is non-nil.")
 
 (defconst diredc--chmod-font-lock-regex
-  " \\([d-]\\)\\([r-]\\)\\([w-]\\)\\([x-]\\)\\([r-]\\)\\([w-]\\)\\([x-]\\)\\([r-]\\)\\([w-]\\)\\([x-]\\) "
+  " \\([dl-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\) "
   "Regexp to identify alphanumeric permission mode strings.
 This constant is used to colorize the string, using `font-lock',
 when variable `diredc-bonus-configuration' is non-nil.")
@@ -1903,7 +1903,8 @@ variable `diredc-browse-exclude-helper' is used (see there)."
   (interactive)
   (when (not diredc-mode)
     (user-error "Not in Diredc mode"))
-  (unless (or (eq major-mode 'dired-mode)
+  (unless (or (equal arg -1)
+              (eq major-mode 'dired-mode)
               (eq (current-buffer) (cdr diredc-browse--tracker)))
     (user-error "Not a Diredc buffer"))
   (cond
@@ -1934,8 +1935,10 @@ variable `diredc-browse-exclude-helper' is used (see there)."
         (delete-window kill-win))
       (select-window target-win 'no-record)
       (set-window-dedicated-p nil nil)
-      (kill-buffer browse-buf)
-      (switch-to-buffer target-buf 'no-record 'force-same-window)
+      (when (buffer-live-p browse-buf)
+        (kill-buffer browse-buf))
+      (when (buffer-live-p target-buf)
+        (switch-to-buffer target-buf 'no-record 'force-same-window))
       (set-window-dedicated-p nil t)
       (setq diredc-browse--tracker '(nil . nil))
       (select-window orig-win 'norecord)))))
@@ -2909,7 +2912,6 @@ function context, either `diredc-mode' or `dired-mode-hook'."
 This function does not change any `dired' settings or global
 modes."
   (interactive)
-  (diredc-browse-mode -1)
   (while (condition-case nil
            (or (select-frame-by-name "diredc") t)
            (error nil))
@@ -2917,6 +2919,7 @@ modes."
       (delete-frame)
       (error ; this happens when all frames were named 'dired'
         (set-frame-name "F1")))) ; emacs default first frame name
+  (diredc-browse-mode -1)
   (dolist (buf (buffer-list))
     (set-buffer buf)
     (when (or (eq major-mode 'dired-mode)
