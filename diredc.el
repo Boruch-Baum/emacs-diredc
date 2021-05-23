@@ -285,6 +285,7 @@
 ;; find their definitions and edit them using "M-x `customize-group'
 ;; diredc".
 
+;;
 ;;; Extra Features:
 ;;
 ;; *] Navigating to a parent directory with `dired-up-directory' (default:
@@ -340,15 +341,25 @@
 ;; *) universal fallback guess shell command(s)
 
 ;;
+;;; Feedback:
+;;
+;; It's best to contact me by opening an 'issue' on the program's github
+;; repository (see above) or, distant second-best, by direct e-mail.
+;;
+;; Code contributions are welcome and github starring is appreciated.
+;;
+
+;;
 ;;; Compatibility
 ;;
-;; This package has been tested under debian linux emacs version 26.1. The
-;; main compatibility issue to be aware of is that this suite needs to
-;; modify[1] a single line in function `dired-internal-no-select' of the
-;; standard emacs file `dired.el' This was accomplished by advising a
-;; wrapper function `diredc--advice--dired-internal-noselect' around the
-;; original. If that function ever changes, that advice function and this
-;; suite will need to account for that.
+;; This package has been tested under debian linux emacs version 26
+;; and 27. The main compatibility issue to be aware of is that this
+;; suite needs to modify[1] a single line in function
+;; `dired-internal-no-select' of the standard emacs file `dired.el'
+;; This was accomplished by advising a wrapper function
+;; `diredc--advice--dired-internal-noselect' around the original. If
+;; that function ever changes, that advice function and this suite
+;; will need to account for that.
 ;;
 ;; [1] emacs bug #44023: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44023"
 
@@ -850,6 +861,11 @@ When non-nil, contains a face-remapping cookie for the current
 buffer's `hl-line' face. See function
 `face-remap-add-relative'.")
 
+(defvar-local dired-aux-files nil
+  "Variable requiring definition for package `dired-aux'.
+It is used by function `dired-read-shell-command' which `diredc'
+advises with function `diredc--advice--dired-read-shell-command'.")
+
 
 ;;
 ;;; Global variables:
@@ -1001,11 +1017,11 @@ function `diredc-swap-windows'."
         (nth 2 (nth diredc-hist--history-position diredc-hist--history-list))))
     (use-local-map diredc-mode-map)))
 
-(defun diredc--advice--shell-guess-fallback (oldfun files)
+(defun diredc--advice--shell-guess-fallback (_oldfun files)
   "Offer universal fallback suggested command(s) for `dired-do-shell-command'.
 
-OLDFUN is function `dired-guess-default'. FILES are defined
-there.
+OLDFUN is function `dired-guess-default', which is never called by this advice.
+FILES are defined there.
 
 Usage: (advice-add 'dired-guess-default
                    :around #'diredc--advice--shell-guess-fallback)
@@ -1018,8 +1034,7 @@ implements diredc feature `diredc-shell-guess-fallback'."
          (alist (append dired-guess-shell-alist-user
                         dired-guess-shell-alist-default
                         (list (list ".*" (car diredc-shell-guess-fallback)))))
-         (flist files)
-         elt regexp cmds)
+         regexp cmds)
     (cl-loop
       for elt in alist
       do (setq regexp (car elt))
@@ -1116,7 +1131,7 @@ See also: Emacs bug report #44023:
     (set-buffer old-buf)
     buffer))
 
-(defun diredc--advice--dired-run-shell-command (oldfun command)
+(defun diredc--advice--dired-run-shell-command (_oldfun command)
   "Optionally allow spawned asynchronous processes to out-live Emacs.
 See variable `diredc-async-processes-are-persistent' and function
 `diredc-do-async-shell-command'.
@@ -1176,7 +1191,7 @@ Usage: (advice-add 'dired-run-shell-command
    ;; Return nil for sake of `nconc' in `dired-bunch-files'.
    nil)
 
-(defun diredc--advice--dired-read-shell-command (oldfun prompt arg files)
+(defun diredc--advice--dired-read-shell-command (_oldfun prompt arg files)
   "Validate input to `dired-read-shell-command'.
 OLDFUN is function `dired-read-shell-command', which is never
 called by this advice. PROMPT, ARG, and FILES are described
@@ -1501,7 +1516,7 @@ Returns a coding-system symbol. See variables
   "Perform `describe-variable' for the variable at BUTTON."
   (describe-variable (button-get button 'var)))
 
-(defun diredc-browse--button-return-action (button)
+(defun diredc-browse--button-return-action (_button)
   "Navigate away from the diredc-browse window of BUTTON."
   (diredc-other-window))
 
@@ -1514,7 +1529,7 @@ The file is checked against the values of variables
 variable `diredc-browse-exclude-helper' is used (see there)."
   (let ((ext (or (file-name-extension filename)
                  (file-name-nondirectory filename)))
-        ext-match coding-match helper-match)
+        ext-match coding-match helper-match browse-binary)
     (when (or
             ;; check file extensions to exclude
             (setq ext-match

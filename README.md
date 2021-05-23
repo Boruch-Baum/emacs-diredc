@@ -312,16 +312,23 @@ all file managers, and also some unique features:
  *) universal fallback guess shell command(s)
 
 
+## Feedback:
+
+ * It's best to contact me by opening an 'issue' on the program's github
+   repository (see above) or, distant second-best, by direct e-mail.
+
+ * Code contributions are welcome and github starring is appreciated.
+
+
 ## Compatibility
 
- This package has been tested under debian linux emacs version 26.1 and
- a recent snapshot of emacs 28.0. The main compatibility issue to be
- aware of is that this suite needs to modify[1] a single line in
- function `dired-internal-no-select` of the standard emacs file
- `dired.el`. This was accomplished by advising a wrapper function
- `diredc--advice--dired-internal-noselect` around the original. If that
- function ever changes, that advice function and this suite will need to
- account for that.
+ This package has been tested under debian linux emacs version 26 and
+ 27. The main compatibility issue to be aware of is that this suite needs
+ to modify[1] a single line in function `dired-internal-no-select` of the
+ standard emacs file `dired.el`. This was accomplished by advising a
+ wrapper function `diredc--advice--dired-internal-noselect` around the
+ original. If that function ever changes, that advice function and this
+ suite will need to account for that.
 
  [1] emacs bug #44023: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44023"
 

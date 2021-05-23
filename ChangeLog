@@ -1,3 +1,12 @@
+2021-05-23  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (dired-aux-files)
+	(diredc--advice--shell-guess-fallback)
+	(diredc--advice--dired-run-shell-command)
+	(diredc--advice--dired-read-shell-command)
+	(diredc-browse--button-return-action, diredc-browse--exclude):
+	Suppress byte compiler warnings.
+
 2021-05-20  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-bonus-configuration): Suppress display of
