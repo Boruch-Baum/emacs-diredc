@@ -1,5 +1,11 @@
 2021-05-23  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc--hist-guess-restore-point): New feature, for
+	direct navigation operations.
+	(diredc-hist-change-directory, diredc-hist-up-directory):Use it.
+
+2021-05-23  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc--chmod-font-lock-regex): Account for links,
 	suid, guid, temp.
 	(diredc-browse-mode): Bugfixes for closing diredc-browse-mode.

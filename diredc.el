@@ -1636,6 +1636,39 @@ management."
         (message "%s: No output." (substring cmd 0 (string-match " "cmd)))
        (message "%s" output)))))
 
+(defun diredc--hist-guess-restore-point (hist pos)
+  "Fetch POINT of an adjoining matching history entry.
+This function is called in cases of 'direct' navigation, because
+the user may have asked to directly navigate to a directory that
+could have been done by either `diredc-hist-next-directory' or
+`diredc-hist-previous-directory' for which the history stack has
+a restore POINT.
+
+HIST is a copy of the buffer's history stack, variable
+`diredc-hist--history-list', and POS is a copy the current position
+within it, variable `diredc-hist--history-position'."
+  ;; NOTE: The structure of the `cond' in this function is based upon
+  ;; that of function `diredc-hist--update-directory-history'. The two
+  ;; functions (currently) check the same places, but for different
+  ;; purpose and result.
+  ;; TODO: Consider being more lenient, and checking any entry in
+  ;; HIST, even if it's not adjoining. The issue then would be is two
+  ;; matches exist, which to choose.
+  (let ((dir (expand-file-name dired-directory))
+        pos2)
+    (cond
+     ((= 1 (length hist))
+       (when (equal dir (caar hist))
+         (nth 1 (car hist))))
+     ((equal dir (car (nth pos hist)))
+       (nth 1 (nth pos hist)))
+     ((and (< 0 pos)
+           (equal dir (car (nth (setq pos2 (1- pos)) hist))))
+       (nth 1 (nth pos2 hist)))
+     ((and (> (length hist) (setq pos2 (1+ pos)))
+           (equal dir (car (nth pos2 hist))))
+       (nth 1 (nth pos2 hist))))))
+
 (defun diredc-hist--update-directory-history (hist pos)
   "Internal function to update a `dired' buffer's history record.
 
@@ -1643,8 +1676,9 @@ HIST should be a buffer's `diredc-hist--history-list' value. POS
 should be a buffer's `diredc-hist--history-position' value.
 Returns a CONS whose CAR is the new list and whose CDR is the new
 position."
-  ;; TODO: consider standardiing retval. Compare function
+  ;; TODO: consider standardizing retval. Compare function
   ;; `diredc-hist--prune-deleted-directories'
+  ;; NOTE: See note for function `diredc--hist-guess-restore-point'.
   (let* ((new-dir (substring-no-properties
                     (expand-file-name dired-directory)))
          (new (list new-dir (point) dired-omit-mode))
@@ -2521,7 +2555,7 @@ and navigates to that location."
   (if (and diredc-history-mode
            current-prefix-arg)
     (diredc-hist-select)
-   (let (file-to-find new-file new-hist hist pos)
+   (let (file-to-find new-file new-hist hist pos restore-point)
      (when diredc-history-mode
        (setq hist diredc-hist--history-list
              pos  diredc-hist--history-position))
@@ -2544,6 +2578,10 @@ and navigates to that location."
          (setf (nth 2 (nth pos hist)) dired-omit-mode))
        (let ((omit-mode dired-omit-mode))
          (find-alternate-file new-dir)
+         (diredc--set-omit-mode omit-mode)
+         (when (setq restore-point
+                 (diredc--hist-guess-restore-point hist pos))
+           (goto-char restore-point))
          (diredc--set-omit-mode omit-mode))
        (set-window-dedicated-p nil t)
        (while (and file-to-find
@@ -2574,12 +2612,15 @@ With optional prefix argument, repeat ARG times."
        (if (not diredc-history-mode)
          (find-alternate-file dir)
         (diredc-hist--prune-deleted-directories)
-        (let ((hist diredc-hist--history-list)
-              (pos  diredc-hist--history-position)
-              new)
+        (let* ((hist diredc-hist--history-list)
+               (pos  diredc-hist--history-position)
+               restore-point new)
           (setf (nth 1 (nth pos hist)) (point))
           (setf (nth 2 (nth pos hist)) omit-mode)
           (find-alternate-file dir)
+          (when (setq restore-point
+                  (diredc--hist-guess-restore-point hist pos))
+            (goto-char restore-point))
           (setq new (diredc-hist--update-directory-history hist pos)
                 diredc-hist--history-list (car new)
                 diredc-hist--history-position (cdr new))))
@@ -2590,15 +2631,18 @@ With optional prefix argument, repeat ARG times."
        (cond
         (diredc-history-mode
           (diredc-hist--prune-deleted-directories)
-          (let ((hist diredc-hist--history-list)
-                (pos  diredc-hist--history-position)
-                new)
+          (let* ((hist diredc-hist--history-list)
+                 (pos  diredc-hist--history-position)
+                 restore-point new)
             (setf (nth 1 (nth pos hist)) (point))
             (setf (nth 2 (nth pos hist)) omit-mode)
             (dotimes (_x (max arg 0))
               (when dir
                 (setq dir (file-name-directory (substring dir 0 -1)))))
             (find-alternate-file (or dir "/"))
+            (when (setq restore-point
+                    (diredc--hist-guess-restore-point hist pos))
+              (goto-char restore-point))
             (diredc--set-omit-mode omit-mode)
             (setq new (diredc-hist--update-directory-history hist pos)
                   diredc-hist--history-list (car new)
