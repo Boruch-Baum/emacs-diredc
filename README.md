@@ -22,6 +22,8 @@ all file managers, and also some unique features:
      * inspired by, and similar to, midnight commander's "M-t"
        * superior configurability
        * directly choose a specific panel view, or toggle to next
+   * Extensive and easy-to-use sort options
+     * including options not in 'ls': sort by chmod, owner, group
    * Swap panels (use "M-u")
      * inspired by, and similar to, midnight commander's "C-u"
        * a TRUE and complete swap (including history entries)
@@ -145,7 +147,7 @@ all file managers, and also some unique features:
  do so to a separate frame, most likely the one from which you came to
  the `diredc` frame.
 
- The traditional `dired' feature to perform arbitrary asynchronous
+ The traditional `dired` feature to perform arbitrary asynchronous
  operations on a file or set of files has been enhanced to make those
  processes persistent, to survive even after exiting Emacs. Thus, with
  the default keybinding, you can press '&' <RET> and have the selected
@@ -164,6 +166,9 @@ all file managers, and also some unique features:
  `diredc-display--listing-switches-list`. Four views are provided by
  default, all long-format but with different file block-sizes (byte, Kb,
  Mb), and several other differences.
+
+ The traditional `dired` sort feature has been greatly enhanced with a
+ clearer UI and many more sorting options.
 
  The `diredc` buffers themselves can also be "hot-swapped", using 'M-u'
  (M-x `diredc-swap-windows`).

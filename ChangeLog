@@ -1,5 +1,26 @@
 2021-05-23  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-sort-or-edit): New feature with many more
+	sorting options.
+	(diredc--create-keymap): Bind a key for it.
+	(diredc--sort-options): Data structure for it.
+	(diredc-sort-prefix-ascending, diredc-sort-suffix-ascending)
+	(diredc-sort-prefix-descending, diredc-sort-suffix-descending):
+	Defcustoms for it.
+	(diredc--sort-columns-regexp): Definition of special case for
+	sorting by chmod, owner, group.
+	(diredc--lc-collate-original-value, diredc-mode): Save original
+	value of LC_COLLATE.
+	(diredc-restore-collation, diredc-mode): Restore it when done.
+	(diredc--sort-option-special): Save state of special case.
+	(diredc--sort-special): Perform the special sort.
+	(diredc-hist-change-directory, diredc-hist-up-directory)
+	(diredc-hist-find-file, diredc-hist-find-alternate-file)
+	(diredc-hist-previous-directory): Make the special sort persist
+	when changing directories.
+
+2021-05-23  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc--hist-guess-restore-point): New feature, for
 	direct navigation operations.
 	(diredc-hist-change-directory, diredc-hist-up-directory):Use it.

@@ -1,6 +1,13 @@
 * diredc NEWS
 ** 2021-05
 
++ New feature to add many sorting options to diredc buffers.
+
+  + All "ls" sort options, plus LC_COLLATE modification, plus sorting
+    by chmod, owner, or group.
+
+  + Improve UI for ease-of-use.
+
 + New feature to fontify the current line of the current diredc buffer
   independently of the selected line of the 'other' diredc buffer.
 

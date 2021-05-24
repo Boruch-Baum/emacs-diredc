@@ -53,6 +53,8 @@
 ;;     * inspired by, and similar to, midnight commander's "M-t"
 ;;       * superior configurability
 ;;       * directly choose a specific panel view, or toggle to next
+;;   * Extensive and easy-to-use sort options
+;;     * including options not in 'ls': sort by chmod, owner, group
 ;;   * Swap panels (use "M-u")
 ;;     * inspired by, and similar to, midnight commander's "C-u"
 ;;       * a TRUE and complete swap (including history entries)
@@ -195,6 +197,9 @@
 ;; `diredc-display--listing-switches-list'. Four views are provided by
 ;; default, all long-format but with different file block-sizes (byte, Kb,
 ;; Mb), and several other differences.
+;;
+;; The traditional `dired' sort feature has been greatly enhanced with a
+;; clearer UI and many more sorting options.
 ;;
 ;; The `diredc' buffers themselves can also be "hot-swapped", using 'M-u'
 ;; (M-x `diredc-swap-windows').
@@ -423,6 +428,7 @@ Returns a keymap."
 ;   (define-key map (kbd "C-c + v")   'diredc-vc-jump) ; TODO: Not certain I want this...
     (define-key map (kbd "E")         'diredc-wdired)
     (define-key map (kbd "e")         'diredc-wdired)
+    (define-key map (kbd "s")         'diredc-sort-or-edit)
     (define-key map (kbd "'")         'diredc-shell)
     (define-key map (kbd "&")         'diredc-do-async-shell-command)
     (define-key map (kbd "C-c !")     'diredc-shell)
@@ -546,6 +552,37 @@ when variable `diredc-bonus-configuration' is non-nil.")
           '(10 diredc-face-chmod-font-lock-exec)))
   "Diredc `font-lock' keyword definition for chmod strings.
 Applicable when variable `diredc-bonus-configuration' is non-nil.")
+
+(defconst diredc--sort-options
+;;    prompt                  sort=   reverse  up  LC_COLLATE  column
+  '(("none"                  "none"      nil   nil   nil       nil)
+    ("name (a-z)"            nil         nil   t     nil       nil)
+    ("name (z-a)"            nil         t     nil   nil       nil)
+    ("name (A-Za-z)"         nil         nil   t     t         nil)
+    ("name (z-aZ-A)"         nil         t     nil   t         nil)
+    ("size (decreasing)"     "size"      nil   nil   nil       nil)
+    ("size (increasing)"     "size"      t     t     nil       nil)
+    ("time (newest first)"   "time"      nil   nil   nil       nil)
+    ("time (oldest first)"   "time"      t     t     nil       nil)
+    ("version (decreasing)"  "version"   nil   nil   nil       nil)
+    ("version (increasing)"  "version"   t     t     nil       nil)
+    ("chmod (a-z)"           "chmod"     nil   t     nil       "\\1")
+    ("chmod (z-a)"           "chmod"     t     t     nil       "\\1")
+    ("owner (a-z)"           "owner"     nil   t     nil       "\\3")
+    ("owner (z-a)"           "owner"     t     t     nil       "\\3")
+    ("group (a-z)"           "group"     nil   t     nil       "\\4")
+    ("group (z-a)"           "group"     t     t     nil       "\\4")
+    ("extension (a-z)"       "extension" nil   t     nil       nil)
+    ("extension (z-a)"       "extension" t     nil   nil       nil)
+    ("extension (A-Za-z)"    "extension" nil   t     t         nil)
+    ("extension (Z-Az-a)"    "extension" t     nil   t         nil))
+  "List of options for function `diredc-sort-or-edit'.
+See there and your version of 'man(1) ls'.")
+
+(defconst diredc--sort-columns-regexp
+  "^  \\([-ldrwxgst]\\{10\\}\\) +\\([^ ]+\\) +\\([^ ]+\\) +\\([^ ]+\\).*$"
+  "Description of `diredc' line that we will parse for sorting by
+  chmod, owner, or group. See function `diredc-sort-or-edit'.")
 
 
 ;;
@@ -813,6 +850,43 @@ does, see function `diredc-bonus-configuration'."
   :type 'boolean
   :group 'diredc)
 
+
+(defcustom diredc-sort-prefix-ascending  ""
+  "Mode line indicator for sort direction.
+This is one of a set of four related customizable variables:
+`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
+`diredc-sort-prefix-descending', and
+`diredc-sort-suffix-descending'."
+  :type 'string
+  :group 'diredc)
+
+(defcustom diredc-sort-suffix-ascending  "↑"
+  "Mode line indicator for sort direction.
+This is one of a set of four related customizable variables:
+`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
+`diredc-sort-prefix-descending', and
+`diredc-sort-suffix-descending'."
+  :type 'string
+  :group 'diredc)
+
+(defcustom diredc-sort-prefix-descending ""
+  "Mode line indicator for sort direction.
+This is one of a set of four related customizable variables:
+`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
+`diredc-sort-prefix-descending', and
+`diredc-sort-suffix-descending'."
+  :type 'string
+  :group 'diredc)
+
+(defcustom diredc-sort-suffix-descending "↓"
+  "Mode line indicator for sort direction.
+This is one of a set of four related customizable variables:
+`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
+`diredc-sort-prefix-descending', and
+`diredc-sort-suffix-descending'."
+  :type 'string
+  :group 'diredc)
+
 
 ;;
 ;;; Buffer-local variables:
@@ -865,6 +939,12 @@ buffer's `hl-line' face. See function
   "Variable requiring definition for package `dired-aux'.
 It is used by function `dired-read-shell-command' which `diredc'
 advises with function `diredc--advice--dired-read-shell-command'.")
+
+(defvar-local diredc--sort-option-special nil
+  "Whether the sort option uses 'ls' switches or a `diredc' method.
+If the sort option uses a `diredc' method, then the value is the
+method entry in variable `diredc--sort-options'. Otherwise, it
+should be NIL.")
 
 
 ;;
@@ -980,6 +1060,10 @@ Internal variable for `diredc'. An integer, beginning at zero.")
 (defvar diredc--show-more-file-info-cmd ""
   "Current command string to be used to show additional file info.
 Internal variable for `diredc'.")
+
+(defvar diredc--lc-collate-original-value nil
+  "The original value of environment variable `LC_COLLATE'.
+As found by `diredc' when started.")
 
 
 ;;
@@ -1395,6 +1479,29 @@ other Emacs functions."
     (dired-file-name-at-point)
     (error nil)))
 
+(defun diredc--sort-special (method)
+  "Perform a sort on a `diredc' buffer.
+This function handles sort methods that `dired' can't off-load to
+the shell's `ls'. METHOD is an entry in variable
+`diredc--sort-options' whose `column' value is non-NIL."
+  (when (< 1 (length dired-subdir-alist))
+    (user-error "Not supported for Dired buffers with sub-dirs"))
+  (save-mark-and-excursion
+    (save-match-data
+      (goto-char (point-min))
+      (unless (re-search-forward diredc--sort-columns-regexp nil t)
+        (user-error "Incompatible Dired listing format"))
+      (goto-char (point-min))
+      (read-only-mode -1)
+      (sort-regexp-fields
+        (nth 2 method)
+        diredc--sort-columns-regexp
+        (nth 5 method)
+        (line-beginning-position 3)
+        (point-max))
+      (read-only-mode)))
+  (setq diredc--sort-option-special method))
+
 (defun diredc-shell--array-variable (program val)
   "Internal function for use with variable `diredc-shell-list'.
 PROGRAM is the shell executable to run, and VAL is the list of
@@ -1778,6 +1885,95 @@ Continue anyway? " dir))
 
 ;;
 ;;; Interactive functions:
+
+(defun diredc-restore-collation ()
+  "Restore environment variable LC_COLLATE to its original setting.
+This could possibly come in handy if you regret that you used
+function `diredc-sort-or-edit' in a way that modified that environment
+variable. You could also manually use function `setenv' to your
+preference."
+  (interactive)
+  (setenv "LC_COLLATE" diredc--lc-collate-original-value))
+
+(defun diredc-sort-or-edit (&optional method)
+  "Sort a `diredc' buffer by METHOD.
+Interactively, prompts the user for METHOD, offering the choices
+of the CARs of variable `diredc--sort-options' (see there).
+Programmatically, if arguments are not provided, defaults to sort
+by name, ascending.
+
+Note that the sorting options for chmod, owner, and group are
+fragile in the sense that they expect the `diredc' buffer to be
+presenting its first four fields in classic 'ls -l' format.
+
+With a prefix argument, allows the user to manually edit the
+current listing switches instead. See variable
+`dired-listing-switches', and compare with function
+`dired-sort-toggle-or-edit'.
+
+Some of the available sort methods change the environment
+variable `LC_COLLATE', which you might want set differently for
+your Emacs use outside of `diredc'. If you find yourself in such
+a situation, evaluating function `diredc-reset-collation' will
+restore the variable to how it was found. This will be performed
+automatically for you upon exiting `diredc', and you can of
+course at any time manually play with function `setenv'.
+
+This function modifies the mode line to reflect the sort order.
+You can customize the sort-direction indications. See variables
+`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
+`diredc-sort-prefix-descending', and
+`diredc-sort-suffix-descending'."
+  (interactive
+    (let (minibuffer-history method)
+      (unless (eq major-mode 'dired-mode)
+        (user-error "Not a Dired buffer"))
+      (unless diredc-mode
+        (user-error "Diredc not enabled"))
+      (when dired-sort-inhibit
+        (error "Cannot sort this Dired buffer"))
+      (unless current-prefix-arg
+        (while (or (not method)
+                   (zerop (length method)))
+          (setq method
+            (completing-read "Sort method: "
+                             (mapcar 'car diredc--sort-options)
+                             nil t))))
+      (list method)))
+  (cond
+   (current-prefix-arg
+     (dired-sort-other
+       (read-string "ls switches (must contain -l): " dired-actual-switches))
+     (setq mode-name "Dired")
+     (revert-buffer))
+   (t
+     (setq method (or (assoc (or method "name (a-z)") diredc--sort-options)
+                      (error "Improper diredc sort method requested: %s" method)))
+     (cond
+      ((nth 5 method) ; ie. chmod/owner/group
+        (diredc--sort-special method))
+      (t ; ie. using ls switches for sorting buffer
+        (setq dired-listing-switches
+          (concat
+            (replace-regexp-in-string "\\( --reverse\\)?\\( --sort=[^ ]+\\)?$"
+                                      "" dired-listing-switches)
+            (when (nth 2 method) " --reverse")
+            (when (nth 1 method) (format " --sort=%s" (nth 1 method)))))
+        (setq dired-actual-switches dired-listing-switches)
+        (setenv "LC_COLLATE" (when (nth 4 method) "C"))
+        (revert-buffer)))
+     (setq mode-name
+       (if (equal (nth 1 method) "none")
+         "Dired"
+        (format "Dired by %s%s%s"
+                (if (nth 3 method)
+                  diredc-sort-prefix-ascending
+                 diredc-sort-prefix-descending)
+                (or (nth 1 method) "name")
+                (if (nth 3 method)
+                  diredc-sort-suffix-ascending
+                 diredc-sort-suffix-descending))))))
+  (force-mode-line-update))
 
 (defun diredc-wdired ()
   "Modify directory contents by editing the `dired' buffer.
@@ -2513,7 +2709,8 @@ Optionally, navigate prefix argument ARG number of history elements."
                   (when (< req 0)   (setq req 0))))
          (hist diredc-hist--history-list)
          (pos  (min max req)) ; i don't think pos is necessary anymore, use req instead
-         (hist-elem (nth pos hist)))
+         (hist-elem (nth pos hist))
+         (special-sort diredc--sort-option-special))
     (if ovr
       (message "No more directory history!")
      (setf (nth 1 (nth diredc-hist--history-position hist)) (point))
@@ -2522,6 +2719,8 @@ Optionally, navigate prefix argument ARG number of history elements."
      (set-window-dedicated-p nil t)
      (goto-char (nth 1 hist-elem))
      (diredc--set-omit-mode (nth 2 hist-elem))
+     (when special-sort
+       (diredc--sort-special special-sort))
      (setq diredc-hist--history-list hist
            diredc-hist--history-position pos))))
 
@@ -2576,13 +2775,15 @@ and navigates to that location."
        (when diredc-history-mode
          (setf (nth 1 (nth pos hist)) (point))
          (setf (nth 2 (nth pos hist)) dired-omit-mode))
-       (let ((omit-mode dired-omit-mode))
+       (let ((omit-mode dired-omit-mode)
+             (special-sort diredc--sort-option-special))
          (find-alternate-file new-dir)
-         (diredc--set-omit-mode omit-mode)
          (when (setq restore-point
                  (diredc--hist-guess-restore-point hist pos))
            (goto-char restore-point))
-         (diredc--set-omit-mode omit-mode))
+         (diredc--set-omit-mode omit-mode)
+         (when special-sort
+           (diredc--sort-special special-sort)))
        (set-window-dedicated-p nil t)
        (while (and file-to-find
                    (re-search-forward file-to-find nil t))
@@ -2602,7 +2803,8 @@ and navigates to that location."
 With optional prefix argument, repeat ARG times."
   (interactive "p")
   (let ((dir dired-directory)
-        (omit-mode dired-omit-mode))
+        (omit-mode dired-omit-mode)
+        (special-sort diredc--sort-option-special))
     (cond
      ((not (file-directory-p dir))
        (diredc--ask-on-directory-deleted dir)
@@ -2624,7 +2826,9 @@ With optional prefix argument, repeat ARG times."
           (setq new (diredc-hist--update-directory-history hist pos)
                 diredc-hist--history-list (car new)
                 diredc-hist--history-position (cdr new))))
-       (diredc--set-omit-mode omit-mode))
+       (diredc--set-omit-mode omit-mode)
+       (when special-sort
+         (diredc--sort-special special-sort)))
      ((zerop arg) (message "Nothing to do!"))
      ((> 0 arg)   (message "tbd"))
      (t
@@ -2644,6 +2848,8 @@ With optional prefix argument, repeat ARG times."
                     (diredc--hist-guess-restore-point hist pos))
               (goto-char restore-point))
             (diredc--set-omit-mode omit-mode)
+            (when special-sort
+              (diredc--sort-special special-sort))
             (setq new (diredc-hist--update-directory-history hist pos)
                   diredc-hist--history-list (car new)
                   diredc-hist--history-position (cdr new))))
@@ -2653,6 +2859,8 @@ With optional prefix argument, repeat ARG times."
               (setq dir (file-name-directory (substring dir 0 -1)))))
           (find-alternate-file (or dir "/"))))))
           (diredc--set-omit-mode omit-mode)
+          (when special-sort
+            (diredc--sort-special special-sort))
           (set-window-dedicated-p nil t)))
 
 (defun diredc-hist-select ()
@@ -2786,20 +2994,28 @@ default to 'M-i'."
   (interactive)
   (if diredc-history-mode
     (diredc-hist-find-alternate-file)
-   (let ((omit-mode dired-omit-mode))
+   (let ((omit-mode dired-omit-mode)
+         (special-sort diredc--sort-option-special))
      (dired-find-file)
-     (diredc--set-omit-mode omit-mode))
-   (set-window-dedicated-p nil t)))
+     (when (eq major-mode 'dired-mode)
+       (diredc--set-omit-mode omit-mode)
+       (when special-sort
+         (diredc--sort-special special-sort))
+       (set-window-dedicated-p nil t)))))
 
 (defun diredc-hist-find-file-other-window ()
   "In Dired, visit this file or directory in another window."
   (interactive)
   (if diredc-history-mode
     (diredc-hist-find-alternate-file 'other-window)
-   (let ((omit-mode dired-omit-mode))
+   (let ((omit-mode dired-omit-mode)
+         (special-sort diredc--sort-option-special))
      (dired-find-file-other-window)
-     (diredc--set-omit-mode omit-mode))
-   (set-window-dedicated-p nil t)))
+     (when (eq major-mode 'dired-mode)
+       (diredc--set-omit-mode omit-mode)
+       (when special-sort
+         (diredc--sort-special special-sort))
+       (set-window-dedicated-p nil t)))))
 
 (defun diredc-hist-find-alternate-file (&optional arg)
   "Navigate the Dired window to the selected directory or file.
@@ -2813,12 +3029,18 @@ the file in another frame."
   ;; TODO: If this is really a wide dired problem, report it to emacs.
   (diredc--abort-on-directory-deleted dired-directory)
   (if (not diredc-history-mode)
-    (let ((omit-mode dired-omit-mode))
+    (let ((omit-mode dired-omit-mode)
+          (special-sort diredc--sort-option-special))
       (dired-find-alternate-file)
-      (diredc--set-omit-mode omit-mode))
+      (when (eq major-mode 'dired-mode)
+        (diredc--set-omit-mode omit-mode)
+        (when special-sort
+          (diredc--sort-special special-sort))
+        (set-window-dedicated-p nil t)))
    (diredc-hist--prune-deleted-directories)
    (let ((target (substring-no-properties (dired-get-file-for-visit)))
          (omit-mode dired-omit-mode)
+         (special-sort diredc--sort-option-special)
          hist pos new hist-elem)
      (cond ; whether target is a directory or a file
       ((file-directory-p target) ; a directory
@@ -2861,6 +3083,8 @@ the file in another frame."
                    ; maybe instead: look for and use a non-visible dired buffer?
                   )))))))
         (diredc--set-omit-mode omit-mode)
+        (when special-sort
+          (diredc--sort-special special-sort))
         (set-window-dedicated-p nil t)
         (setq new (diredc-hist--update-directory-history hist pos)
               diredc-hist--history-list (car new)
@@ -2886,8 +3110,7 @@ the file in another frame."
               (if (< 1 (length (frame-list)))
                 (select-frame (next-frame))
                (make-frame-command))
-              (find-file target))))))))
-  (set-window-dedicated-p nil t))
+              (find-file target)))))))))
 
 (defun diredc-other-window ()
   "Select another `diredc' window, if one exists.
@@ -2928,7 +3151,8 @@ function context, either `diredc-mode' or `dired-mode-hook'."
        (setq truncate-lines t
              directory-free-space-args "-Pm" ; show total/available space in MB
              ;; TODO: WARNING: `directory-free-space-args' becomes obsolete as
-             ;; of 27.1 and is ignored, as Emacs uses `file-system-info' instead
+             ;; of 27.1 and is ignored, as Emacs uses `file-system-info' instead.
+             ;; But, we want to support older emacsen for a while.
              dired-dwim-target t)            ; dual pane awareness
        (dired-omit-mode)
        (auto-revert-mode)
@@ -3056,7 +3280,8 @@ turn the mode on; Otherwise, turn it off."
     (diredc-history-mode (if diredc-mode 1 -1)))
   (cond
    (diredc-mode
-     (setq diredc-allow-duplicate-buffers t)
+     (setq diredc-allow-duplicate-buffers t
+           diredc--lc-collate-original-value (getenv "LC_COLLATE"))
      (add-hook 'dired-mode-hook  'diredc--hook-function t)
      (add-to-list 'window-state-change-functions 'diredc--window-state-change-hook-function)
      (advice-add 'dired-internal-noselect
@@ -3093,6 +3318,7 @@ turn the mode on; Otherwise, turn it off."
          (setq dired-buffers (remove buf dired-buffers))
         (with-current-buffer (cdr buf)
           (use-local-map dired-mode-map))))
+     (diredc-restore-collation)
      (message "Diredc-mode disabled in all Dired buffers."))))
 
 ;;;###autoload
