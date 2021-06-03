@@ -616,6 +616,30 @@ Applicable when variable `diredc-bonus-configuration' is non-nil.
 See also `hl-line-mode'."
   :group 'diredc)
 
+(defface diredc-header-line
+ '((((class color) (background light))
+       (:background "white"))
+   (((class color) (background dark))
+       (:background "black")))
+  "Face remapping for the header line."
+  :group 'diredc)
+
+(defface diredc-header-*-marks
+ '((((class color) (background light))
+       (:foreground "blue"))
+   (((class color) (background dark))
+       (:foreground "brightcyan")))
+  "Face for default marks' summary in header line."
+  :group 'diredc)
+
+(defface diredc-header-D-marks
+ '((((class color) (background light))
+       (:foreground "darkred" :bold t))
+   (((class color) (background dark))
+       (:foreground "color-197")))
+  "Face for deletion marks' summary in header line."
+  :group 'diredc)
+
 
 ;;
 ;;; Customization variables:
@@ -886,6 +910,20 @@ This is one of a set of four related customizable variables:
 `diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
 `diredc-sort-prefix-descending', and
 `diredc-sort-suffix-descending'."
+  :type 'string
+  :group 'diredc)
+
+(defcustom diredc-header-line t
+  "Whether to display a header line.
+This will summarize the number and size of marked items."
+  :type 'boolean
+  :group 'diredc)
+
+(defcustom diredc-thousands-separator ","
+  "How to divide long numbers for readability.
+This is in lieu of getting the information from environment
+variable LC_NUMERIC."
+  ;; ref: https://lists.gnu.org/archive/html/emacs-devel/2021-06/msg00139.html
   :type 'string
   :group 'diredc)
 
@@ -1324,18 +1362,21 @@ locally define `dired-read-shell-command'. See there."
   (cond
    (diredc-mode
      (use-local-map diredc-mode-map)
+     (setq header-line-format (if diredc-header-line "  Diredc:" ""))
+     (if diredc-header-line (push (cons 'header-line 'diredc-header-line)
+                                  face-remapping-alist))
      (diredc-bonus-configuration 'dired-mode-hook)
-     (advice-add 'wdired-finish-edit :after #'diredc--advice--wdired-exit)
+     (advice-add 'wdired-finish-edit   :after #'diredc--advice--wdired-exit)
      (advice-add 'wdired-abort-changes :after #'diredc--advice--wdired-exit)
-     (advice-add 'wdired-exit :after #'diredc--advice--wdired-exit)
+     (advice-add 'wdired-exit          :after #'diredc--advice--wdired-exit)
      (add-hook 'post-command-hook
-               'diredc--hook-function--post-command t))
+               #'diredc--hook-function--post-command))
    (t ; not diredc-mode
-     (advice-remove 'wdired-finish-edit #'diredc--advice--wdired-exit)
+     (advice-remove 'wdired-finish-edit   #'diredc--advice--wdired-exit)
      (advice-remove 'wdired-abort-changes #'diredc--advice--wdired-exit)
-     (advice-remove 'wdired-exit #'diredc--advice--wdired-exit)
+     (advice-remove 'wdired-exit          #'diredc--advice--wdired-exit)
      (remove-hook 'post-command-hook
-                  'diredc--hook-function--post-command))))
+                  #'diredc--hook-function--post-command))))
 
 (defun diredc-hist--hook-function ()
   "Hook function for `dired-mode-hook'."
@@ -1352,17 +1393,18 @@ A hook function for `post-command-hook', to display additional
 file information in the minibuffer area for the current file at
 POINT."
   (cond
-   ((minibuffer-window-active-p (selected-window))
-     t)
-   ((not (eq major-mode 'dired-mode))
-     (remove-hook 'post-command-hook
-                  'diredc--hook-function--post-command))
-   ((equal (expand-file-name dired-directory)
-           diredc-trash-files-dir)
-     (diredc-trash--show-more-file-info--freedesktop))
-   ((diredc--file-name-at-point)
-     (diredc--show-more-file-info))
-   (t t)))
+   ((or (minibuffer-window-active-p (selected-window))
+        (not (eq major-mode 'dired-mode))))
+   (t
+     (if diredc-header-line
+       (diredc--report-counts-and-sizes)
+      (setq header-line-format nil))
+     (cond
+      ((equal (expand-file-name dired-directory)
+              diredc-trash-files-dir)
+        (diredc-trash--show-more-file-info--freedesktop))
+      ((diredc--file-name-at-point)
+        (diredc--show-more-file-info))))))
 
 (defun diredc-browse--hook-function ()
   "Internal function for `diredc-browse-mode' minor mode.
@@ -1462,6 +1504,108 @@ face `diredc-hl-current-buffer'."
 
 ;;
 ;;; Functions:
+
+(defun diredc--thousands (num)
+  "Return a readable string for integer NUM.
+Delimits the number by variable `diredc-thousands-separator'.
+Used by function `diredc--report-counts-and-sizes'."
+  ;; ref: https://lists.gnu.org/archive/html/emacs-devel/2021-06/msg00139.html
+  (setq num (number-to-string num))
+  (while (string-match "\\(.*[0-9]\\)\\([0-9][0-9][0-9].*\\)" num)
+  (setq num
+    (concat
+      (match-string 1 num)
+      diredc-thousands-separator
+      (match-string 2 num))))
+    num)
+
+(defun diredc--mark-msg (label file-count dir-count link-count size units1 units2)
+  "Returns summary of mark count and size.
+For use of function `diredc--report-counts-and-sizes' in setting
+variable `header-line-format'."
+  (unless (and (zerop file-count)
+               (zerop dir-count)
+               (zerop link-count))
+    (format " [%s: %s%s%s] "
+      label
+      (if (zerop file-count) ""
+        (format "%s file%s (%s %s%sytes)"
+                (diredc--thousands file-count)
+                (if (= 1 file-count) "" "s")
+                (diredc--thousands size)
+                units1 units2))
+      (if (zerop dir-count)  ""
+        (format "%s%s dir%s"
+                (if (zerop file-count) "" ", ")
+                (diredc--thousands dir-count)
+                (if (= 1 dir-count) "" "s")))
+      (if (zerop link-count) ""
+        (format "%s%s link%s"
+                (if (and (zerop file-count)
+                         (zerop dir-count)) "" ", ")
+                (diredc--thousands link-count)
+                (if (= 1 link-count) "" "s"))))))
+
+(defun diredc--report-counts-and-sizes ()
+  "Get total size of marked files.
+This differs from `dired-number-of-marked-files' in that: 1) the
+count of files, directories, and links are itemized; 2) the sizes
+of links and directories are not reported; 3) the units of size
+respects that of the dired listing, and; 4) the result is posted
+to the header line.
+
+This function is fragile in the sense that it expects the
+`diredc' buffer to be presenting its first five fields in classic
+'ls -l' format.
+
+This function does not attempt to calculate the actual size of
+directories (eg. by using shell command `du') because that can
+many seconds for large subdirectory trees, and this function is
+meant to be called as part of a `post-command-hook'. For that
+feature, see interactive function `diredc-du'."
+  ;; TODO: This can be performed as a summary for a directory, listing
+  ;;       number of files (and sizes) by extension
+  (let ((atoms ;; compare: diredc--sort-columns-regexp
+         "^\\([*D]\\) \\([-ld]\\)\\([-rwxgst]\\{9\\}\\) +\\([^ ]+\\) +\\([^ ]+\\) +\\([^ ]+\\) +\\([0-9]+\\)\\([KMGTPEZY]\\)?\\(B\\)?.*$")
+        (m-file-count 0) (m-link-count 0) (m-dir-count 0) (m-size 0)
+        (d-file-count 0) (d-link-count 0) (d-dir-count 0) (d-size 0)
+        (units1 "") (units2 "b")
+        m-msg d-msg)
+    (save-mark-and-excursion
+      (goto-char (point-min))
+      (while (re-search-forward atoms nil t)
+        (when (match-string 8)
+          (setq units1 (match-string 8))
+          (when (match-string 9)
+            (setq units2 (match-string 9))))
+        (cond
+         ((equal "*" (match-string 1))
+           (cond
+            ((equal "-" (match-string 2))
+              (setq m-file-count (1+ m-file-count))
+              (setq m-size  (+ m-size (string-to-number (or (match-string 7) 0)))))
+            ((equal "d" (match-string 2))
+              (setq m-dir-count (1+ m-dir-count)))
+            ((equal "l" (match-string 2))
+              (setq m-link-count (1+ m-link-count)))))
+         (t ; (equal "D" (match-string 1))
+           (cond
+            ((equal "-" (match-string 2))
+              (setq d-file-count (1+ d-file-count))
+              (setq d-size  (+ d-size (string-to-number (or (match-string 7) 0)))))
+            ((equal "d" (match-string 2))
+              (setq d-dir-count (1+ d-dir-count)))
+            ((equal "l" (match-string 2))
+              (setq d-link-count (1+ d-link-count))))))))
+    (setq m-msg
+      (diredc--mark-msg "*" m-file-count m-dir-count m-link-count m-size units1 units2))
+    (setq d-msg
+      (diredc--mark-msg "D" d-file-count d-dir-count d-link-count d-size units1 units2))
+    (setq header-line-format
+      (concat "  Diredc: "
+      ;;      (if (or m-msg d-msg) "Marks: " "")
+              (propertize (or m-msg "") 'face 'diredc-header-*-marks)
+              (propertize (or d-msg "") 'face 'diredc-header-D-marks)))))
 
 (defun diredc--decode-hexlated-string (str)
   "Convert hexlated string STR to human-readable, with charset coding support.
@@ -2150,10 +2294,10 @@ variable `diredc-browse-exclude-helper' is used (see there)."
     (setq diredc-browse-mode t)))
   (cond
    (diredc-browse-mode
-    (add-hook 'post-command-hook 'diredc-browse--hook-function t)
+    (add-hook 'post-command-hook #'diredc-browse--hook-function)
     (diredc-browse--hook-function))
    (t
-    (remove-hook 'post-command-hook 'diredc-browse--hook-function)
+    (remove-hook 'post-command-hook #'diredc-browse--hook-function)
     (let ((orig-win (selected-window))
           (browse-buf (cdr diredc-browse--tracker)) ; TODO buffer-live-p
           (target-buf ; The dired buffer to replace the browse buffer
@@ -2711,10 +2855,10 @@ See functions `diredc-hist-previous-directory',
   (cond
    (diredc-history-mode
      (setq diredc-allow-duplicate-buffers t)
-     (add-hook 'dired-mode-hook  'diredc-hist--hook-function t)
+     (add-hook 'dired-mode-hook  #'diredc-hist--hook-function)
      (message "Diredc-history-mode enabled in all Dired buffers."))
    (t
-     (remove-hook 'dired-mode-hook 'diredc-hist--hook-function)
+     (remove-hook 'dired-mode-hook #'diredc-hist--hook-function)
      ;; Do not set local variables `diredc-hist--history-list' and
      ;; `diredc-hist--history-position' to NIL, so if the mode is
      ;; toggled on again, those values will be remembered.
@@ -3308,7 +3452,7 @@ turn the mode on; Otherwise, turn it off."
    (diredc-mode
      (setq diredc-allow-duplicate-buffers t
            diredc--lc-collate-original-value (getenv "LC_COLLATE"))
-     (add-hook 'dired-mode-hook  'diredc--hook-function t)
+     (add-hook 'dired-mode-hook  #'diredc--hook-function)
      (add-to-list 'window-state-change-functions 'diredc--window-state-change-hook-function)
      (advice-add 'dired-internal-noselect
                  :around #'diredc--advice--dired-internal-noselect)
@@ -3328,7 +3472,7 @@ turn the mode on; Otherwise, turn it off."
      (diredc-bonus-configuration 'diredc-mode)
      (message "Diredc-mode enabled in all Dired buffers."))
    (t
-     (remove-hook 'dired-mode-hook 'diredc--hook-function)
+     (remove-hook 'dired-mode-hook #'diredc--hook-function)
      (setq window-state-change-functions
        (delq 'diredc--window-state-change-hook-function
              window-state-change-functions))

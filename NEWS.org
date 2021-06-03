@@ -1,4 +1,19 @@
 * diredc NEWS
+** 2021-06
+
++ New feature to add a header line to diredc buffers.
+
+  + When entries are either marked or flagged for deletion, the header
+    line displays a tally of the number of files, directories, and
+    links marked / flagged, and the size of the files.
+
++ Improvements to toggling window dedication and diredc features when
+  disabling and re-enabling M-x diredc-mode.
+
++ Allow asynchronous shell commands to over-ride shell aliases (ie.
+  don't interpret a leading '\' as part of a command name for
+  validation purposes).
+
 ** 2021-05
 
 + New feature to add many sorting options to diredc buffers.
