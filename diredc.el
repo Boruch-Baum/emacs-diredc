@@ -442,6 +442,8 @@ Returns a keymap."
     (define-key map (kbd "C-<delete> C-<delete>") 'diredc-trash-empty)
     (define-key map (kbd "C-<delete> x") 'diredc-trash-empty)
     (define-key map (kbd "C-<delete> r") 'diredc-trash-restore)
+    (define-key map [remap beginning-of-buffer] 'diredc-beginning-of-buffer)
+    (define-key map [remap end-of-buffer]       'diredc-end-of-buffer)
     map))
 
 (defvar diredc-mode-map (diredc--create-keymap))
@@ -2497,6 +2499,28 @@ See the defcustom variable `diredc-bookmarks'."
   "Edit the `diredc' bookmarks."
   (interactive)
   (customize-variable 'diredc-bookmarks))
+
+(defun diredc-beginning-of-buffer ()
+  "Move POINT (relative to) beginning of a `diredc' buffer.
+Navigates to the first filename entry in a `diredc' buffer. With
+a PREFIX-ARG, behaves as function `beginning-of-buffer'."
+  (interactive)
+  (if current-prefix-arg
+    (beginning-of-buffer current-prefix-arg)
+   (goto-char (point-min))
+   (forward-line 2))
+  (dired-move-to-filename))
+
+(defun diredc-end-of-buffer ()
+  "Move POINT (relative to) end of a `diredc' buffer.
+Navigates to the final filename entry in a `diredc' buffer. With
+a PREFIX-ARG, behaves as function `end-of-buffer'."
+  (interactive)
+  (if current-prefix-arg
+    (end-of-buffer current-prefix-arg)
+   (goto-char (point-max))
+   (forward-line -1))
+  (dired-move-to-filename))
 
 (defun diredc-display-select ()
   "Change the data presented in the `diredc' buffer.

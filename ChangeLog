@@ -1,5 +1,11 @@
 2021-06-03  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-beginning-of-buffer, diredc-end-of-buffer):
+	New DWIM functions.
+	(diredc--create-keymap): Bind them.
+
+2021-06-03  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc--report-counts-and-sizes): New feature, for
 	displaying summary of marked files in (new) header-line.
 	(diredc-header-line, diredc-header-*-marks)
