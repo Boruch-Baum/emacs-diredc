@@ -1072,7 +1072,9 @@ As found by `diredc' when started.")
 (defsubst diredc--match-command (cmd)
   "Match a command from  a `shell-command' string.
 This is mainly here to ensure uniformity of the regexp."
-  (string-match "^ *\\([^ ]+\\)" cmd))
+  ;; NOTE: The atom \\\\? is to account for a leading '\' used to
+  ;;       over-ride shell-aliases.
+  (string-match "^ *\\\\?\\([^ ]+\\)" cmd))
 
 (defsubst diredc--set-omit-mode (yes)
   "Set mode `dired-omit-mode' based upon value of YES."
