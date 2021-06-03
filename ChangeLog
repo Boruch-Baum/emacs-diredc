@@ -1,3 +1,29 @@
+2021-06-03  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--report-counts-and-sizes): New feature, for
+	displaying summary of marked files in (new) header-line.
+	(diredc-header-line, diredc-header-*-marks)
+	(diredc-header-D-marks): Faces for new feature.
+	(diredc-header-line): defcustom to toggle new feature.
+	(diredc--thousands): Support function, for improved readability.
+	(diredc--mark-msg): New helper function for feature.
+	(diredc-thousands-separator): Option for the support function.
+	(diredc-mode, diredc--hook-function): Make use of header-line
+	consistent.
+	(diredc--hook-function--post-command): Use new feature.
+
+2021-06-02  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--match-command): Allow async shell commands to
+	over-ride shell aliases.
+	(diredc--hook-function, diredc-browse-mode, diredc-history-mode)
+	(diredc-mode): Use #' notation.
+
+2021-06-01  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-mode): Improve toggling of mode features and
+	window-dedication.
+
 2021-05-23  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-sort-or-edit): New feature with many more
