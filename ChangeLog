@@ -1,3 +1,8 @@
+2021-06-06  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--chmod-font-lock-regex): Account for ACL
+	directories.
+
 2021-06-03  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-beginning-of-buffer, diredc-end-of-buffer):

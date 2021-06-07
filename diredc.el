@@ -534,7 +534,7 @@ Applicable when variable `diredc-bonus-configuration' is non-nil.")
 Applicable when variable `diredc-bonus-configuration' is non-nil.")
 
 (defconst diredc--chmod-font-lock-regex
-  " \\([dl-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\) "
+  " \\([dl-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\+? "
   "Regexp to identify alphanumeric permission mode strings.
 This constant is used to colorize the string, using `font-lock',
 when variable `diredc-bonus-configuration' is non-nil.")
