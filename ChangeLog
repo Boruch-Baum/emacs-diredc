@@ -1,3 +1,14 @@
+2021-06-09  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--advice--repeat-over-lines, diredc-mode): Fix
+	Emacs bug #48883: Improper marking.
+
+2021-06-09  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-hist-previous-directory, diredc-hist-change-directory)
+	(diredc-hist-up-directory): Fix navigation to restore-point when
+	dired-omit-mode is not active.
+
 2021-06-06  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--chmod-font-lock-regex): Account for ACL

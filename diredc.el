@@ -2887,8 +2887,8 @@ Optionally, navigate prefix argument ARG number of history elements."
      (setf (nth 2 (nth diredc-hist--history-position hist)) dired-omit-mode)
      (find-alternate-file (car hist-elem))
      (set-window-dedicated-p nil t)
-     (goto-char (nth 1 hist-elem))
      (diredc--set-omit-mode (nth 2 hist-elem))
+     (goto-char (nth 1 hist-elem))
      (when special-sort
        (diredc--sort-special special-sort))
      (setq diredc-hist--history-list hist
@@ -2948,10 +2948,10 @@ and navigates to that location."
        (let ((omit-mode dired-omit-mode)
              (special-sort diredc--sort-option-special))
          (find-alternate-file new-dir)
+         (diredc--set-omit-mode omit-mode)
          (when (setq restore-point
                  (diredc--hist-guess-restore-point hist pos))
            (goto-char restore-point))
-         (diredc--set-omit-mode omit-mode)
          (when special-sort
            (diredc--sort-special special-sort)))
        (set-window-dedicated-p nil t)
@@ -3014,10 +3014,10 @@ With optional prefix argument, repeat ARG times."
               (when dir
                 (setq dir (file-name-directory (substring dir 0 -1)))))
             (find-alternate-file (or dir "/"))
+            (diredc--set-omit-mode omit-mode)
             (when (setq restore-point
                     (diredc--hist-guess-restore-point hist pos))
               (goto-char restore-point))
-            (diredc--set-omit-mode omit-mode)
             (when special-sort
               (diredc--sort-special special-sort))
             (setq new (diredc-hist--update-directory-history hist pos)
