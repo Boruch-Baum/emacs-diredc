@@ -1353,6 +1353,66 @@ locally define `dired-read-shell-command'. See there."
         (user-error "Not a valid command!"))
       command)))
 
+(defun diredc--advice--repeat-over-lines (_oldfun arg function)
+  "Fix Emacs bug #48883 (2021-06-06: improper marking of lines).
+
+_OLDFUN is function `dired-repeat-over-lines', which is never
+called by this advice. ARG is a positive or negative integer
+number of lines on which to operate, and FUNCTION is the
+operation to perform.
+
+Ref: http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48883
+
+The advised function was: 1) operating on directory heading
+lines; 2) operating on the lines for the \"not-real\" files '.'
+and ',,', and; 3) advancing POINT undesirablly. I submitted two
+solutions there. Here in `diredc', in order to limit advising the
+underlying Emacs package, I'm using the version that alters just
+function `dired-repeat-over-lines'. A second version submitted
+there applies the fix by changing also function
+`dired-between-two-lines'."
+  (let ((pos (make-marker)))
+    (beginning-of-line)
+    (cond
+     ((> arg 0)
+       (while (and (> arg 0) (not (eobp)))
+         (setq arg (1- arg))
+         (beginning-of-line)
+       ;;(while (and (not (eobp)) (dired-between-files)) (forward-line 1))
+         (while (and (not (eobp))
+                     (condition-case nil
+                       (not (dired-get-filename))
+                       (error t)))
+           (forward-line 1))
+         (save-excursion
+           (forward-line 1)
+           (move-marker pos (1+ (point))))
+         (unless (eobp)
+           (save-excursion (funcall function))
+           ;; Advance to the next line--actually, to the line that *was* next.
+           ;; (If FUNCTION inserted some new lines in between, skip them.)
+           (goto-char pos)))
+       (when (eobp)
+         (forward-line -1)
+         (dired-move-to-filename)))
+     ((< arg 0)
+       (while (and (< arg 0) (not (bobp)))
+         (setq arg (1+ arg))
+         (forward-line -1)
+       ;;(while (and (not (bobp)) (dired-between-files)) (forward-line -1))
+         (while (and (not (bobp))
+                     (condition-case nil
+                       (not (dired-get-filename))
+                       (error t)))
+           (forward-line -1))
+         (beginning-of-line)
+         (when (condition-case nil
+                 (dired-get-filename)
+                 (error nil))
+           (save-excursion (funcall function))))
+       (move-marker pos nil)
+       (dired-move-to-filename)))))
+
 
 ;;
 ;;; Functions - hook functions:
@@ -3454,6 +3514,8 @@ turn the mode on; Otherwise, turn it off."
            diredc--lc-collate-original-value (getenv "LC_COLLATE"))
      (add-hook 'dired-mode-hook  #'diredc--hook-function)
      (add-to-list 'window-state-change-functions 'diredc--window-state-change-hook-function)
+     (advice-add 'dired-repeat-over-lines
+                 :around #'diredc--advice--repeat-over-lines)
      (advice-add 'dired-internal-noselect
                  :around #'diredc--advice--dired-internal-noselect)
      (advice-add 'dired-guess-default
@@ -3479,6 +3541,8 @@ turn the mode on; Otherwise, turn it off."
      ;; Do not set `diredc-allow-duplicate-buffers' to NIL, because it
      ;; may be required by other minor modes or features (eg.
      ;; dired-frame.el)
+     (advice-remove 'dired-repeat-over-lines
+                    #'diredc--advice--repeat-over-lines)
      (advice-remove 'dired-guess-default
                     #'diredc--advice--shell-guess-fallback)
      (advice-remove 'dired-run-shell-command
