@@ -1423,8 +1423,10 @@ there applies the fix by changing also function
    (diredc-mode
      (use-local-map diredc-mode-map)
      (setq header-line-format (if diredc-header-line "  Diredc:" ""))
-     (if diredc-header-line (push (cons 'header-line 'diredc-header-line)
-                                  face-remapping-alist))
+     (when diredc-header-line
+       (make-local-variable 'face-remapping-alist)
+       (push (cons 'header-line 'diredc-header-line)
+             face-remapping-alist))
      (diredc-bonus-configuration 'dired-mode-hook)
      (advice-add 'wdired-finish-edit   :after #'diredc--advice--wdired-exit)
      (advice-add 'wdired-abort-changes :after #'diredc--advice--wdired-exit)
