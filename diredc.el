@@ -2194,7 +2194,13 @@ details."
   (when diredc-history-mode
     (setf (nth 2 (nth diredc-hist--history-position diredc-hist--history-list))
           dired-omit-mode))
-  (wdired-change-to-wdired-mode))
+  (wdired-change-to-wdired-mode)
+  (setq header-line-format
+    (if diredc-header-line
+      (concat "  Diredc: "
+              (propertize " EDITING!" 'face 'bold)
+              "  C-c C-k to abort;  C-c C-c to accept")
+     "")))
 
 (defun diredc-shell-kill ()
   "Kill the current shell window, buffer, and process."
