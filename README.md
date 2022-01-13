@@ -81,7 +81,12 @@ all file managers, and also some unique features:
 
 ## Installation:
 
- 1) Evaluate or load this file.
+ The easiest way to download and install `diredc` is from within the
+ Emacs package installer, from the [MELPA](https://melpa.org/)
+ repository. If you've never used MELPA, [here's how to get
+ started](https://melpa.org/#/getting-started). Otherwise:
+
+ 1) Evaluate or load the `diredc` elisp file.
 
  2) I recommend defining a global keybinding for function `diredc', with
     a preference for Shift-F11, as follows:
@@ -327,7 +332,7 @@ all file managers, and also some unique features:
 
 ## Compatibility
 
- This package has been tested under debian linux emacs version 26 and
+ This package has been tested under Debian linux Emacs version 26 and
  27. The main compatibility issue to be aware of is that this suite needs
  to modify[1] a single line in function `dired-internal-no-select` of the
  standard emacs file `dired.el`. This was accomplished by advising a
@@ -339,10 +344,10 @@ all file managers, and also some unique features:
 
 ## Colophon
 
-* Copyright © 2020-2021, Boruch Baum <boruch_baum@gmx.com>
+* Copyright © 2020-2022, Boruch Baum <boruch_baum@gmx.com>
 * Author/Maintainer: Boruch Baum <boruch_baum@gmx.com>
 * Homepage: https://github.com/Boruch-Baum/emacs-diredc
-* License: GPL3+
+* SPDX-License-Identifier: GPL-3.0-or-later
 
 ## Some other Emacs software I've published
 
@@ -359,10 +364,25 @@ all file managers, and also some unique features:
   * Download and play crossword puzzles, in Emacs!
   * https://github.com/Boruch-Baum/emacs-crossword
 
+* Cursor-Flash
+  [![MELPA](https://melpa.org/packages/cursor-flash-badge.svg)](https://melpa.org/#/cursor-flash)
+  * Highlight the cursor on buffer/window-switch
+  * https://github.com/Boruch-Baum/emacs-cursor-flash
+
+* Xhair
+  [![MELPA](https://melpa.org/packages/xhair-badge.svg)](https://melpa.org/#/xhair)
+  * Center visual cross-hairs on POINT.
+  * https://github.com/Boruch-Baum/emacs-xhair
+
+* Pkg-Overview
+  [![MELPA](https://melpa.org/packages/pkg-overview-badge.svg)](https://melpa.org/#/pkg-overview)
+  * Make org documentation from an elisp source file
+  * https://github.com/Boruch-Baum/emacs-pkg-overview
+
 * Key-assist
   [![MELPA](https://melpa.org/packages/key-assist-badge.svg)](https://melpa.org/#/key-assist)
   [![MELPA Stable](https://stable.melpa.org/packages/key-assist-badge.svg)](https://stable.melpa.org/#/key-assist)
-  * Simple keybinding cheatsheet and launcher
+  * Simple keybinding cheat-sheet and launcher
   * https://github.com/Boruch-Baum/emacs-key-assist
 
 * Home-end

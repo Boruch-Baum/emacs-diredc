@@ -1,10 +1,10 @@
 ;;; diredc.el --- Extensions for dired -*- lexical-binding: t -*-
 
-;; Copyright © 2020-2021, Boruch Baum <boruch_baum@gmx.com>
+;; Copyright © 2020-2022, Boruch Baum <boruch_baum@gmx.com>
 
 ;; Author/Maintainer: Boruch Baum <boruch_baum@gmx.com>
 ;; Homepage: https://github.com/Boruch-Baum/emacs-diredc
-;; License: GPL3+
+;; SPDX-License-Identifier: GPL-3.0-or-later
 ;; Keywords: files
 ;; Package: diredc
 ;; Version: 1.0
@@ -117,7 +117,7 @@
 ;; 2) I recommend defining a global keybinding for function `diredc',
 ;;    with a preference for Shift-F11, as follows:
 ;;
-;;      (global-set-key (kbd "S-<f11>") 'diredc))
+;;      (global-set-key (kbd "S-<f11>") 'diredc)
 ;;
 ;;    An alternative or additional option would be:
 ;;
@@ -926,7 +926,6 @@ variable LC_NUMERIC."
   ;; ref: https://lists.gnu.org/archive/html/emacs-devel/2021-06/msg00139.html
   :type 'string
   :group 'diredc)
-
 
 ;;
 ;;; Buffer-local variables:
@@ -1503,9 +1502,6 @@ A hook function for `post-command-hook'. It creates and kills
             (setq diredc-browse--buffer original-win)))
         (setq diredc-browse--tracker (cons new-file browse-buf))
         (set-buffer browse-buf)
-        (setq header-line-format
-          (format "Diredc browse buffer%s"
-                  (if new-file (concat ": " (file-name-nondirectory new-file)) "")))
         (let ((inhibit-read-only t))
           (cond
            ((and new-file
@@ -1514,7 +1510,11 @@ A hook function for `post-command-hook'. It creates and kills
                  (not (file-symlink-p new-file)))
              (unless (diredc-browse--exclude new-file)
                (condition-case err
-                 (insert-file-contents new-file nil nil nil 'replace)
+                 (progn
+                   (insert-file-contents new-file nil nil nil 'replace)
+                     (setq buffer-file-name new-file)
+                     (set-auto-mode)
+                     (setq diredc-browse--buffer original-win))
                  (error
                    (erase-buffer)
                    (insert (concat "diredc browse buffer\n\n Error looking at file: "
@@ -1538,6 +1538,11 @@ A hook function for `post-command-hook'. It creates and kills
                             (if (not new-file)
                               "Looking at nothing"
                              (format "Looking at an unreadable file")))))))))
+        (setq header-line-format
+          (format "Diredc %s buffer%s"
+                  (propertize "browse" 'face 'warning)
+                  (if new-file (concat ": " (file-name-nondirectory new-file)) "")))
+        (set-buffer-modified-p nil)
         (buffer-disable-undo)
         (view-mode)
         (use-local-map diredc-browse-mode-map)

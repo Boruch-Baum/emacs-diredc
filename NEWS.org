@@ -1,4 +1,8 @@
 * diredc NEWS
+** 2022-01
+
++ New feature to fontify diredc-browse buffers
+
 ** 2021-06
 
 + New feature to add a header line to diredc buffers.
