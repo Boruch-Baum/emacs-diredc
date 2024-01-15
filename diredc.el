@@ -649,6 +649,11 @@ See also `hl-line-mode'."
   :group 'dired
   :prefix "diredc-")
 
+(defcustom diredc-make-new-frame t
+  "Set this NIL to force doredc to re-use the current frame.
+This may be useful in a GUI tiling window manager environment."
+  :type 'boolean)
+
 (defcustom diredc-allow-duplicate-buffers t
   "Allow multiple `dired' buffers to visit the same directory.
 
@@ -994,6 +999,14 @@ should be NIL.")
 
 Don't ever set this variable directly! Instead, evaluate function
 `diredc-mode'.")
+
+(defvar diredc--single-frame-config nil
+  "Window configuration prior to launching 'diredc'.
+This is used only when variable 'diredc-make-new-frame' is NIL.")
+
+(defvar diredc--single-frame-name nil
+  "Frame name prior to launching 'diredc'.
+This is used only when variable 'diredc-make-new-frame' is NIL.")
 
 (defvar diredc-history-mode nil
   "Whether to globally enable dired buffer navigation histories.
@@ -2093,7 +2106,7 @@ BUF is expected to be a live dired buffer."
   "Prompt when attempting to operate on a deleted directory."
   (unless (file-directory-p dir)
     (unless (yes-or-no-p
-	      (format "This diredc buffer %s describes a directory that has been deleted!
+              (format "This diredc buffer %s describes a directory that has been deleted!
 Continue anyway? " dir))
       (user-error "Operation aborted"))))
 
@@ -3423,14 +3436,19 @@ function context, either `diredc-mode' or `dired-mode-hook'."
 This function does not change any `dired' settings or global
 modes."
   (interactive)
+  (diredc-browse-mode -1)
   (while (condition-case nil
            (or (select-frame-by-name "diredc") t)
            (error nil))
     (condition-case nil
-      (delete-frame)
+      (if diredc-make-new-frame
+        (delete-frame)
+       (set-window-configuration diredc--single-frame-config)
+       (set-frame-name diredc--single-frame-name)
+       (setq diredc--single-frame-config nil)
+       (setq diredc--single-frame-name nil))
       (error ; this happens when all frames were named 'dired'
         (set-frame-name "F1")))) ; emacs default first frame name
-  (diredc-browse-mode -1)
   (dolist (buf (buffer-list))
     (set-buffer buf)
     (when (or (eq major-mode 'dired-mode)
@@ -3470,7 +3488,8 @@ judgements...\"), try this function."
         (push fram temp-list)))
     (cond
      ((zerop (length temp-list))
-       (make-frame-command)
+       (when diredc-make-new-frame
+         (make-frame-command))
        (set-frame-name "diredc"))
      (t
       (select-frame (pop temp-list))
@@ -3584,7 +3603,13 @@ If no `diredc' frame exists, create one with a dual-window layout."
     (diredc-mode 1))
   (cond
    ((string-match "^#<frame diredc " (format "%s" (window-frame)))
-     (other-frame 1)
+     (if diredc-make-new-frame
+       (other-frame 1)
+      (set-frame-name (or diredc--single-frame-name "F1"))
+      (condition-case nil
+        (set-window-configuration diredc--single-frame-config)
+        (error
+          (diredc-exit))))
      (redraw-frame))
    (t
     (condition-case nil
@@ -3592,17 +3617,24 @@ If no `diredc' frame exists, create one with a dual-window layout."
       (error
         (setq dired-dwim-target t)  ; dual pane awareness
         (setq diredc-allow-duplicate-buffers t)
-        (select-frame (make-frame-command))
-        (set-frame-name "diredc")
-        (split-window-right)
-        (dired default-directory)
-        (set-window-dedicated-p nil t)
-        (other-window 1)
-        (dired "~")
-        (set-window-dedicated-p nil t)
-        (other-window -1)
-        (put 'dired-find-alternate-file 'disabled nil))))))
-
+        (cond
+         (diredc-make-new-frame
+           (select-frame (make-frame-command))
+           (set-frame-name "diredc")
+           (split-window-right)
+           (dired default-directory)
+           (set-window-dedicated-p nil t)
+           (other-window 1)
+           (dired "~")
+           (set-window-dedicated-p nil t)
+           (other-window -1)
+           (put 'dired-find-alternate-file 'disabled nil))
+         (t ; ie. (eq diredc-make-new-frame nil)
+           (setq diredc--single-frame-config (current-window-configuration))
+           (setq diredc--single-frame-name (frame-parameter nil 'name))
+           (delete-other-windows)
+           (set-frame-name "diredc")
+           (diredc-recover))))))))
 
 ;;
 ;;; Work I'm not sure I want to include...
