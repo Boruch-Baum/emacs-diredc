@@ -1053,6 +1053,8 @@ change of state.")
             (lambda (x)
               (cons (with-current-buffer x dired-directory) x))
             buffer-list))
+        (delete-other-windows)
+        (split-window-right)
         (dolist (num '("first" "second"))
           (setq decision nil)
           (while (or (not decision)
@@ -1063,7 +1065,9 @@ change of state.")
                 (format "select %s buffer to keep: " num)
                 (mapcar 'car buffer-list) nil t)))
           (setq decision (assoc decision buffer-list))
-          (switch-to-buffer (cdr decision))
+          (set-window-dedicated-p nil nil)
+          (switch-to-buffer (cdr decision) nil 'force)
+          (set-window-dedicated-p nil t)
           (setq buffer-list (remq decision buffer-list))
           (other-window 1))
         (while buffer-list
@@ -3048,6 +3052,7 @@ With optional prefix argument, repeat ARG times."
   (let ((dir dired-directory)
         (omit-mode dired-omit-mode)
         (special-sort diredc--sort-option-special))
+    (set-window-dedicated-p nil nil)
     (cond
      ((not (file-directory-p dir))
        (diredc--ask-on-directory-deleted dir)
@@ -3100,11 +3105,11 @@ With optional prefix argument, repeat ARG times."
           (dotimes ( _x (max arg 0))
             (when dir
               (setq dir (file-name-directory (substring dir 0 -1)))))
-          (find-alternate-file (or dir "/"))))))
+          (find-alternate-file (or dir "/"))
           (diredc--set-omit-mode omit-mode)
           (when special-sort
-            (diredc--sort-special special-sort))
-          (set-window-dedicated-p nil t)))
+            (diredc--sort-special special-sort))))))
+     (set-window-dedicated-p nil t)))
 
 (defun diredc-hist-select ()
   "Navigate anywhere in the Dired history directly.
@@ -3293,6 +3298,7 @@ the file in another frame."
                  pos  diredc-hist--history-position)
            (setf (nth 1 (nth pos hist)) (point))
            (setf (nth 2 (nth pos hist)) omit-mode)
+           (set-window-dedicated-p nil nil)
            (dired-find-alternate-file))
          (t ; open directory in another window
            (let ((other-windows-on-this-frame
@@ -3423,6 +3429,7 @@ function context, either `diredc-mode' or `dired-mode-hook'."
 This function does not change any `dired' settings or global
 modes."
   (interactive)
+  (diredc-browse-mode -1)
   (while (condition-case nil
            (or (select-frame-by-name "diredc") t)
            (error nil))
@@ -3430,7 +3437,6 @@ modes."
       (delete-frame)
       (error ; this happens when all frames were named 'dired'
         (set-frame-name "F1")))) ; emacs default first frame name
-  (diredc-browse-mode -1)
   (dolist (buf (buffer-list))
     (set-buffer buf)
     (when (or (eq major-mode 'dired-mode)
@@ -3460,7 +3466,8 @@ judgements...\"), try this function."
   (interactive)
   (when (zerop (length diredc-recover-schemes))
     (error "Variable 'diredc-recover-schemes' corrupt"))
-  (let (minibuffer-history ; needs to be reset to prevent unwanted entries
+  (let ((switch-to-buffer-in-dedicated-window t)
+        minibuffer-history ; needs to be reset to prevent unwanted entries
         temp-list ; variable is re-used for several purposes!
         len       ; variable is re-used for several purposes!
         options
