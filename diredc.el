@@ -3359,7 +3359,7 @@ the file in another frame."
                 (win (and buf
                           (get-buffer-window buf t))))
            (cond
-            (not diredc-make-new-frame
+            ((not diredc-make-new-frame)
               (set-window-configuration diredc--single-frame-config)
               (set-frame-name diredc--single-frame-name)
               (find-file target))
