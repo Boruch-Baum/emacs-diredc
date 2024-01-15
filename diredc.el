@@ -1212,60 +1212,60 @@ See also: Emacs bug report #44023:
 ;; IMPORTANT: This is good for emacs 26.1, 27.1, 28.0(snapshot 2020-09)
 ;; TODO: emacs 25.1, emacs 27.1
   (let* ((old-buf (current-buffer))
-	 (dirname (if (consp dir-or-list) (car dir-or-list) dir-or-list))
+         (dirname (if (consp dir-or-list) (car dir-or-list) dir-or-list))
        ;; BEGIN modification
        ;;(buffer (dired-find-buffer-nocreate dirname mode))
          (buffer (when (not (bound-and-true-p diredc-allow-duplicate-buffers))
                    (dired-find-buffer-nocreate dirname mode)))
        ;; END modification
-	 (new-buffer-p (null buffer)))
+         (new-buffer-p (null buffer)))
     (or buffer
         (setq buffer (create-file-buffer (directory-file-name dirname))))
     (set-buffer buffer)
-    (if (not new-buffer-p)		; existing buffer ...
-	(cond (switches			; ... but new switches
-	       ;; file list may have changed
-	       (setq dired-directory dir-or-list)
-	       ;; this calls dired-revert
-	       (dired-sort-other switches))
-	      ;; Always revert when `dir-or-list' is a cons.  Also revert
-	      ;; if `dired-directory' is a cons but `dir-or-list' is not.
-	      ((or (consp dir-or-list) (consp dired-directory))
-	       (setq dired-directory dir-or-list)
-	       (revert-buffer))
-	      ;; Always revert regardless of whether it has changed or not.
-	      ((eq dired-auto-revert-buffer t)
-	       (revert-buffer))
-	      ;; Revert when predicate function returns non-nil.
-	      ((functionp dired-auto-revert-buffer)
-	       (when (funcall dired-auto-revert-buffer dirname)
-		 (revert-buffer)
-		 (message "Changed directory automatically updated")))
-	      ;; If directory has changed on disk, offer to revert.
-	      ((when (dired-directory-changed-p dirname)
-		 (message "%s"
-			  (substitute-command-keys
-			   "Directory has changed on disk; type \\[revert-buffer] to update Dired")))))
+    (if (not new-buffer-p)              ; existing buffer ...
+        (cond (switches                 ; ... but new switches
+               ;; file list may have changed
+               (setq dired-directory dir-or-list)
+               ;; this calls dired-revert
+               (dired-sort-other switches))
+              ;; Always revert when `dir-or-list' is a cons.  Also revert
+              ;; if `dired-directory' is a cons but `dir-or-list' is not.
+              ((or (consp dir-or-list) (consp dired-directory))
+               (setq dired-directory dir-or-list)
+               (revert-buffer))
+              ;; Always revert regardless of whether it has changed or not.
+              ((eq dired-auto-revert-buffer t)
+               (revert-buffer))
+              ;; Revert when predicate function returns non-nil.
+              ((functionp dired-auto-revert-buffer)
+               (when (funcall dired-auto-revert-buffer dirname)
+                 (revert-buffer)
+                 (message "Changed directory automatically updated")))
+              ;; If directory has changed on disk, offer to revert.
+              ((when (dired-directory-changed-p dirname)
+                 (message "%s"
+                          (substitute-command-keys
+                           "Directory has changed on disk; type \\[revert-buffer] to update Dired")))))
       ;; Else a new buffer
       (setq default-directory
             (or (car-safe (insert-directory-wildcard-in-dir-p dirname))
-	        ;; We can do this unconditionally
-	        ;; because dired-noselect ensures that the name
-	        ;; is passed in directory name syntax
-	        ;; if it was the name of a directory at all.
-	        (file-name-directory dirname)))
+                ;; We can do this unconditionally
+                ;; because dired-noselect ensures that the name
+                ;; is passed in directory name syntax
+                ;; if it was the name of a directory at all.
+                (file-name-directory dirname)))
       (or switches (setq switches dired-listing-switches))
       (if mode (funcall mode)
         (dired-mode dir-or-list switches))
       ;; default-directory and dired-actual-switches are set now
       ;; (buffer-local), so we can call dired-readin:
       (let ((failed t))
-	(unwind-protect
-	    (progn (dired-readin)
-		   (setq failed nil))
-	  ;; dired-readin can fail if parent directories are inaccessible.
-	  ;; Don't leave an empty buffer around in that case.
-	  (if failed (kill-buffer buffer))))
+        (unwind-protect
+            (progn (dired-readin)
+                   (setq failed nil))
+          ;; dired-readin can fail if parent directories are inaccessible.
+          ;; Don't leave an empty buffer around in that case.
+          (if failed (kill-buffer buffer))))
       (goto-char (point-min))
       (dired-initial-position dirname))
     (when (consp dired-directory)
@@ -3305,73 +3305,81 @@ the file in another frame."
          hist pos new hist-elem)
      (cond ; whether target is a directory or a file
       ((file-directory-p target) ; a directory
-        (cond ; whether to use this window or another one
-         ((not arg) ; use this window
-           (setq hist diredc-hist--history-list
-                 pos  diredc-hist--history-position)
-           (setf (nth 1 (nth pos hist)) (point))
-           (setf (nth 2 (nth pos hist)) omit-mode)
-           (dired-find-alternate-file))
-         (t ; open directory in another window
-           (let ((other-windows-on-this-frame
-                   (remq (selected-window) (window-list)))
-                 another-window found)
-             (cond
-              ((zerop (length other-windows-on-this-frame))
-                ; create 2nd window / 2nd dired buffer, use current hist
-                (split-window-right)
-                (other-window 1)
-                (dired target)
-                ; maybe instead: look for and use a non-visible dired buffer?
-                )
-              (t ; find a window displaying a dired buffer, and use it
-                (while (and (not found)
-                            (setq another-window (pop other-windows-on-this-frame)))
-                  (with-current-buffer (window-buffer another-window)
-                    (when (eq major-mode 'dired-mode)
-                      (setq found another-window))))
-                (cond
-                 (found
-                   (select-window found)
-                   (setq hist diredc-hist--history-list
-                         pos  diredc-hist--history-position)
-                   (setf (nth 1 (nth pos hist)) (point))
-                   (setf (nth 2 (nth pos hist)) omit-mode)
-                   (find-alternate-file target))
-                 (t ; no window is a dired window
-                   (other-window 1)
-                   (dired target)
-                   ; maybe instead: look for and use a non-visible dired buffer?
-                  )))))))
-        (diredc--set-omit-mode omit-mode)
-        (when special-sort
-          (diredc--sort-special special-sort))
-        (set-window-dedicated-p nil t)
-        (setq new (diredc-hist--update-directory-history hist pos)
-              diredc-hist--history-list (car new)
-              diredc-hist--history-position (cdr new)
-              hist-elem (nth (cdr new) (car new)))
-;;      Not certain it is necessary to goto-char here...
-        (goto-char (nth 1 hist-elem)))
+          (cond ; whether to use this window or another one
+           ((not arg) ; use this window
+             (setq hist diredc-hist--history-list
+                   pos  diredc-hist--history-position)
+             (setf (nth 1 (nth pos hist)) (point))
+             (setf (nth 2 (nth pos hist)) omit-mode)
+             (set-window-dedicated-p nil nil)
+             (dired-find-alternate-file))
+           (t ; open directory in another window
+             (let ((other-windows-on-this-frame
+                     (remq (selected-window) (window-list)))
+                   another-window found)
+               (cond
+                ((zerop (length other-windows-on-this-frame))
+                  ; create 2nd window / 2nd dired buffer, use current hist
+                  (split-window-right)
+                  (other-window 1)
+                  (dired target)
+                  ; maybe instead: look for and use a non-visible dired buffer?
+                  )
+                (t ; find a window displaying a dired buffer, and use it
+                  (while (and (not found)
+                              (setq another-window (pop other-windows-on-this-frame)))
+                    (with-current-buffer (window-buffer another-window)
+                      (when (eq major-mode 'dired-mode)
+                        (setq found another-window))))
+                  (cond
+                   (found
+                     (select-window found)
+                     (setq hist diredc-hist--history-list
+                           pos  diredc-hist--history-position)
+                     (setf (nth 1 (nth pos hist)) (point))
+                     (setf (nth 2 (nth pos hist)) omit-mode)
+                     (find-alternate-file target))
+                   (t ; no window is a dired window
+                     (other-window 1)
+                     (dired target)
+                     ; maybe instead: look for and use a non-visible dired buffer?
+                    )))))))
+          (diredc--set-omit-mode omit-mode)
+          (when special-sort
+            (diredc--sort-special special-sort))
+          (set-window-dedicated-p nil t)
+          (setq new (diredc-hist--update-directory-history hist pos)
+                diredc-hist--history-list (car new)
+                diredc-hist--history-position (cdr new)
+                hist-elem (nth (cdr new) (car new)))
+;;        Not certain it is necessary to goto-char here...
+          (goto-char (nth 1 hist-elem)))
       (t ; target is not a directory, so visit file, in another frame
          (let* ((buf (find-buffer-visiting target))
                 (win (and buf
                           (get-buffer-window buf t))))
            (cond
-            ((and win (equal (window-frame win) (window-frame)))
-             ; file is already viewable in current frame, so select it in
-             ; another frame
-              (if (> 1 (length (frame-list)))
-                (select-frame (next-frame))
-               (make-frame-command))
+            (not diredc-make-new-frame
+              (set-window-configuration diredc--single-frame-config)
+              (set-frame-name diredc--single-frame-name)
               (find-file target))
-            (win ; file is already viewable in another frame, so select it
-              (select-window win))
-            (t
-              (if (< 1 (length (frame-list)))
-                (select-frame (next-frame))
-               (make-frame-command))
-              (find-file target)))))))))
+            (t ; ie. (eq diredc-make-new-frame t)
+             (cond
+              ((and win (equal (window-frame win) (window-frame)))
+               ; file is already viewable in current frame, so select it in
+               ; another frame
+                (if (> 1 (length (frame-list)))
+                  (select-frame (next-frame))
+                 (make-frame-command))
+                (find-file target))
+              (win ; file is already viewable in another frame, so select it
+                (select-window win))
+              (t
+                (if (< 1 (length (frame-list)))
+                  (select-frame (next-frame))
+                 (make-frame-command))
+                (find-file target))))))))))
+  (redraw-frame))
 
 (defun diredc-other-window ()
   "Select another `diredc' window, if one exists.
