@@ -1195,60 +1195,60 @@ See also: Emacs bug report #44023:
 ;; IMPORTANT: This is good for emacs 26.1, 27.1, 28.0(snapshot 2020-09)
 ;; TODO: emacs 25.1, emacs 27.1
   (let* ((old-buf (current-buffer))
-	 (dirname (if (consp dir-or-list) (car dir-or-list) dir-or-list))
+         (dirname (if (consp dir-or-list) (car dir-or-list) dir-or-list))
        ;; BEGIN modification
        ;;(buffer (dired-find-buffer-nocreate dirname mode))
          (buffer (when (not (bound-and-true-p diredc-allow-duplicate-buffers))
                    (dired-find-buffer-nocreate dirname mode)))
        ;; END modification
-	 (new-buffer-p (null buffer)))
+         (new-buffer-p (null buffer)))
     (or buffer
         (setq buffer (create-file-buffer (directory-file-name dirname))))
     (set-buffer buffer)
-    (if (not new-buffer-p)		; existing buffer ...
-	(cond (switches			; ... but new switches
-	       ;; file list may have changed
-	       (setq dired-directory dir-or-list)
-	       ;; this calls dired-revert
-	       (dired-sort-other switches))
-	      ;; Always revert when `dir-or-list' is a cons.  Also revert
-	      ;; if `dired-directory' is a cons but `dir-or-list' is not.
-	      ((or (consp dir-or-list) (consp dired-directory))
-	       (setq dired-directory dir-or-list)
-	       (revert-buffer))
-	      ;; Always revert regardless of whether it has changed or not.
-	      ((eq dired-auto-revert-buffer t)
-	       (revert-buffer))
-	      ;; Revert when predicate function returns non-nil.
-	      ((functionp dired-auto-revert-buffer)
-	       (when (funcall dired-auto-revert-buffer dirname)
-		 (revert-buffer)
-		 (message "Changed directory automatically updated")))
-	      ;; If directory has changed on disk, offer to revert.
-	      ((when (dired-directory-changed-p dirname)
-		 (message "%s"
-			  (substitute-command-keys
-			   "Directory has changed on disk; type \\[revert-buffer] to update Dired")))))
+    (if (not new-buffer-p)              ; existing buffer ...
+        (cond (switches                 ; ... but new switches
+               ;; file list may have changed
+               (setq dired-directory dir-or-list)
+               ;; this calls dired-revert
+               (dired-sort-other switches))
+              ;; Always revert when `dir-or-list' is a cons.  Also revert
+              ;; if `dired-directory' is a cons but `dir-or-list' is not.
+              ((or (consp dir-or-list) (consp dired-directory))
+               (setq dired-directory dir-or-list)
+               (revert-buffer))
+              ;; Always revert regardless of whether it has changed or not.
+              ((eq dired-auto-revert-buffer t)
+               (revert-buffer))
+              ;; Revert when predicate function returns non-nil.
+              ((functionp dired-auto-revert-buffer)
+               (when (funcall dired-auto-revert-buffer dirname)
+                 (revert-buffer)
+                 (message "Changed directory automatically updated")))
+              ;; If directory has changed on disk, offer to revert.
+              ((when (dired-directory-changed-p dirname)
+                 (message "%s"
+                          (substitute-command-keys
+                           "Directory has changed on disk; type \\[revert-buffer] to update Dired")))))
       ;; Else a new buffer
       (setq default-directory
             (or (car-safe (insert-directory-wildcard-in-dir-p dirname))
-	        ;; We can do this unconditionally
-	        ;; because dired-noselect ensures that the name
-	        ;; is passed in directory name syntax
-	        ;; if it was the name of a directory at all.
-	        (file-name-directory dirname)))
+                ;; We can do this unconditionally
+                ;; because dired-noselect ensures that the name
+                ;; is passed in directory name syntax
+                ;; if it was the name of a directory at all.
+                (file-name-directory dirname)))
       (or switches (setq switches dired-listing-switches))
       (if mode (funcall mode)
         (dired-mode dir-or-list switches))
       ;; default-directory and dired-actual-switches are set now
       ;; (buffer-local), so we can call dired-readin:
       (let ((failed t))
-	(unwind-protect
-	    (progn (dired-readin)
-		   (setq failed nil))
-	  ;; dired-readin can fail if parent directories are inaccessible.
-	  ;; Don't leave an empty buffer around in that case.
-	  (if failed (kill-buffer buffer))))
+        (unwind-protect
+            (progn (dired-readin)
+                   (setq failed nil))
+          ;; dired-readin can fail if parent directories are inaccessible.
+          ;; Don't leave an empty buffer around in that case.
+          (if failed (kill-buffer buffer))))
       (goto-char (point-min))
       (dired-initial-position dirname))
     (when (consp dired-directory)
@@ -2093,7 +2093,7 @@ BUF is expected to be a live dired buffer."
   "Prompt when attempting to operate on a deleted directory."
   (unless (file-directory-p dir)
     (unless (yes-or-no-p
-	      (format "This diredc buffer %s describes a directory that has been deleted!
+              (format "This diredc buffer %s describes a directory that has been deleted!
 Continue anyway? " dir))
       (user-error "Operation aborted"))))
 
