@@ -344,7 +344,7 @@ all file managers, and also some unique features:
 
 ## Colophon
 
-* Copyright © 2020-2022, Boruch Baum <boruch_baum@gmx.com>
+* Copyright © 2020-2024, Boruch Baum <boruch_baum@gmx.com>
 * Author/Maintainer: Boruch Baum <boruch_baum@gmx.com>
 * Homepage: https://github.com/Boruch-Baum/emacs-diredc
 * SPDX-License-Identifier: GPL-3.0-or-later
