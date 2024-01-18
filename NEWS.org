@@ -1,6 +1,13 @@
 * diredc NEWS
 ** 2024-01
 
++ New feature for key-presses RETURN and C-u RETURN.
+
+  + For file-types associated with shell commands in variable
+    'dired-guess-shell-alist-user', pressing RETURN on that file runs
+    the first of those shell commands, asynchronously. To 'find' that
+    file in Emacs, use C-u RETURN.
+
 + New feature: customizable parameters for the diredc frame.
 
   + See new defcustom variables 'diredc-frame-parameters' and

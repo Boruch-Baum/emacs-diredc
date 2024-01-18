@@ -191,6 +191,13 @@
 ;; behavior can be made default by modifying variable
 ;; `diredc-async-processes-are-persistent'.
 ;;
+;; Pressing RETURN on files that you don't want opened in Emacs,
+;; doesn't. Pre-existing 'dired' variable
+;; 'dired-guess-shell-alist-user' is used as reference, and pressing
+;; RETURN runs on the selected file the first associated executable in
+;; that list. If you really do want to find the find in Emacs, press
+;; C-u RETURN instead.
+;;
 ;; The display format of `dired' buffers can be "hot-swapped" using 'M-t'
 ;; (M-x `diredc-display-toggle'). Use 'C-u M't' to select from available
 ;; display formats, and customize the list using defcustom variable
@@ -2118,6 +2125,29 @@ BUF is expected to be a live dired buffer."
 Continue anyway? " dir))
       (user-error "Operation aborted"))))
 
+(defun diredc--guess-and-do-async-shell-command (target)
+  "Used by 'diredc-hist-find-alternate-file'.
+
+When a user presses <RET> on a file-type with known exec
+associations, ie. from variable
+'dired-guess-shell-alist-user' (see there), do not interpret this
+user action as a request to open the file in an Emacs buffer.
+Instead, run the first shell command on the file, and
+asynchronously."
+  (let ((execs (dired-guess-default (list target)))
+        exec found)
+    (when (< 1 (length execs))
+      ;; The final entry in 'execs' should always be xdg-open or
+      ;; similar, which we will ignore for this feature since it would
+      ;; apply to files find-able for Emacs.
+      (setq execs (butlast execs))
+      (while (and (not found)
+                (setq exec (pop execs)))
+        (when (setq exec (executable-find exec))
+        (setq found t)
+          (dired-do-shell-command (format " %s &" exec) nil (list target)))))
+    found))
+
 
 ;;
 ;;; Interactive functions:
@@ -3360,26 +3390,29 @@ the file in another frame."
               hist-elem (nth (cdr new) (car new)))
 ;;      Not certain it is necessary to goto-char here...
         (goto-char (nth 1 hist-elem)))
-      (t ; target is not a directory, so visit file, in another frame
-         (let* ((buf (find-buffer-visiting target))
-                (win (and buf
-                          (get-buffer-window buf t)))
-                (frame-inherited-parameters diredc-frame-inherited-parameters))
-           (cond
-            ((and win (equal (window-frame win) (window-frame)))
-             ; file is already viewable in current frame, so select it in
-             ; another frame
-              (if (> 1 (length (frame-list)))
-                (select-frame (next-frame))
-               (make-frame diredc-frame-parameters))
-              (find-file target))
-            (win ; file is already viewable in another frame, so select it
-              (select-window win))
-            (t
-              (if (< 1 (length (frame-list)))
-                (select-frame (next-frame))
-               (make-frame diredc-frame-parameters))
-              (find-file target)))))))))
+      (t ; target is not a directory
+        (unless (and (not current-prefix-arg)
+                     (diredc--guess-and-do-async-shell-command target))
+          ;; No shell command associated, so visit file, in another frame
+          (let* ((buf (find-buffer-visiting target))
+                 (win (and buf
+                           (get-buffer-window buf t)))
+                 (frame-inherited-parameters diredc-frame-inherited-parameters))
+            (cond
+             ((and win (equal (window-frame win) (window-frame)))
+              ; file is already viewable in current frame, so select it in
+              ; another frame
+               (if (> 1 (length (frame-list)))
+                 (select-frame (next-frame))
+                (make-frame diredc-frame-parameters))
+               (find-file target))
+             (win ; file is already viewable in another frame, so select it
+               (select-window win))
+             (t
+               (if (< 1 (length (frame-list)))
+                 (select-frame (next-frame))
+                (make-frame diredc-frame-parameters))
+               (find-file target))))))))))
 
 (defun diredc-other-window ()
   "Select another `diredc' window, if one exists.

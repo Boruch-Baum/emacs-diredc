@@ -165,6 +165,12 @@ all file managers, and also some unique features:
  non-persistent behavior can be made default by modifying variable
  `diredc-async-processes-are-persistent`.
 
+ Pressing RETURN on files that you don't want opened in Emacs,
+ doesn't. Pre-existing `dired` variable `dired-guess-shell-alist-user`
+ is used as reference, and pressing RETURN runs on the selected file
+ the first associated executable in that list. If you really do want
+ to find the find in Emacs, press C-u RETURN instead.
+
  The display format of `dired` buffers can be "hot-swapped" using `M-t`
  (M-x `diredc-display-toggle`). Use `C-u M-t` to select from available
  display formats, and customize the list using defcustom variable
