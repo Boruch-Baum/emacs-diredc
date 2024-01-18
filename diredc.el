@@ -649,6 +649,23 @@ See also `hl-line-mode'."
   :group 'dired
   :prefix "diredc-")
 
+(defcustom diredc-frame-parameters '()
+  "Desired frame parameters for the diredc frame.
+An alist of cons (PARAMETER . VALUE).
+See function 'make-frame' and (info \"(elisp) Frame Parameters\")."
+;; ie. eval (info "(elisp) Frame Parameters")
+  :type '(repeat (cons (symbol :tag "Frame parameter")
+                       (sexp   :tag "Value"))))
+
+(defcustom diredc-frame-inherited-parameters
+  '(left top width height)
+  "Features of parent frame to retain for 'diredc' frame.
+A list of symbols of parameters.
+See (info \"(elisp) Frame Parameters\")."
+;; ie. eval (info "(elisp) Frame Parameters")
+  :type '(repeat (symbol :tag "Frame parameter"))
+  )
+
 (defcustom diredc-allow-duplicate-buffers t
   "Allow multiple `dired' buffers to visit the same directory.
 
@@ -3346,21 +3363,22 @@ the file in another frame."
       (t ; target is not a directory, so visit file, in another frame
          (let* ((buf (find-buffer-visiting target))
                 (win (and buf
-                          (get-buffer-window buf t))))
+                          (get-buffer-window buf t)))
+                (frame-inherited-parameters diredc-frame-inherited-parameters))
            (cond
             ((and win (equal (window-frame win) (window-frame)))
              ; file is already viewable in current frame, so select it in
              ; another frame
               (if (> 1 (length (frame-list)))
                 (select-frame (next-frame))
-               (make-frame-command))
+               (make-frame diredc-frame-parameters))
               (find-file target))
             (win ; file is already viewable in another frame, so select it
               (select-window win))
             (t
               (if (< 1 (length (frame-list)))
                 (select-frame (next-frame))
-               (make-frame-command))
+               (make-frame diredc-frame-parameters))
               (find-file target)))))))))
 
 (defun diredc-other-window ()
@@ -3469,6 +3487,7 @@ judgements...\"), try this function."
   (when (zerop (length diredc-recover-schemes))
     (error "Variable 'diredc-recover-schemes' corrupt"))
   (let ((switch-to-buffer-in-dedicated-window t)
+        (frame-inherited-parameters diredc-frame-inherited-parameters)
         minibuffer-history ; needs to be reset to prevent unwanted entries
         temp-list ; variable is re-used for several purposes!
         len       ; variable is re-used for several purposes!
@@ -3479,7 +3498,7 @@ judgements...\"), try this function."
         (push fram temp-list)))
     (cond
      ((zerop (length temp-list))
-       (make-frame-command)
+       (make-frame diredc-frame-parameters)
        (set-frame-name "diredc"))
      (t
       (select-frame (pop temp-list))
@@ -3601,7 +3620,8 @@ If no `diredc' frame exists, create one with a dual-window layout."
       (error
         (setq dired-dwim-target t)  ; dual pane awareness
         (setq diredc-allow-duplicate-buffers t)
-        (select-frame (make-frame-command))
+        (let ((frame-inherited-parameters diredc-frame-inherited-parameters))
+          (select-frame (make-frame diredc-frame-parameters)))
         (set-frame-name "diredc")
         (split-window-right)
         (dired default-directory)

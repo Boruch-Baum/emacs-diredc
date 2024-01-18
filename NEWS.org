@@ -1,4 +1,11 @@
 * diredc NEWS
+** 2024-01
+
++ New feature: customizable parameters for the diredc frame.
+
+  + See new defcustom variables 'diredc-frame-parameters' and
+    'diredc-frame-inherited-parameters'.
+
 ** 2022-01
 
 + New feature to fontify diredc-browse buffers

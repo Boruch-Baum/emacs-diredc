@@ -19,6 +19,8 @@
 	(diredc-hist-find-alternate-file, diredc-exit, diredc-recover)
 	(diredc-hist-duplicate): Bugfix: stop creating windows above
 	others
+	(diredc-hist-find-alternate-file, diredc-exit, diredc-recover):
+	Bugfix: stop creating windows above others
 
 2022-01-12  Boruch Baum  <boruch_baum@gmx.com>
 
