@@ -1,3 +1,10 @@
+2024-01-22  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--show-more-file-info-cmd): Redefine from
+	string to cons.
+	(diredc-show-more-file-info, diredc--show-more-file-info): Improve
+	display output.
+
 2024-01-18  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--guess-and-do-async-shell-command): New

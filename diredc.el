@@ -1125,8 +1125,9 @@ is that file's buffer.")
 Internal variable for `diredc'. An integer, beginning at zero.")
 
 (defvar diredc--show-more-file-info-cmd ""
-  "Current command string to be used to show additional file info.
-Internal variable for `diredc'.")
+  "Current command to be used to show additional file info.
+Internal variable for 'diredc'.
+This is a CONS extracted from variable 'diredc-show-more-file-info-list'.")
 
 (defvar diredc--lc-collate-original-value nil
   "The original value of environment variable `LC_COLLATE'.
@@ -1976,15 +1977,27 @@ management."
   "Update the additional file information displayed in the minibuffer."
   (let (message-log-max ; suppress output to *Messages* buffer
         (info-file (expand-file-name (diredc--file-name-at-point)))
-        (cmd diredc--show-more-file-info-cmd)
+        (cmd (cdr diredc--show-more-file-info-cmd))
         output)
     (when (and info-file (not (zerop (length cmd))))
-      (setq output (condition-case nil
-                     (shell-command-to-string (format cmd info-file))
-                     (error ""))) ; TODO: Report error encountered
-      (if (zerop (length output))
-        (message "%s: No output." (substring cmd 0 (string-match " "cmd)))
-       (message "%s" output)))))
+      (setq output
+        (with-temp-buffer
+          (insert
+            (condition-case nil
+              (shell-command-to-string (format cmd info-file))
+              (error ""))) ; TODO: Report error encountered
+          (goto-char (point-min))
+          (while (re-search-forward "\\(\\([^[:blank:][:digit:]]+[[:blank:]]\\)+\\)?[^[:space:][:digit:]]+:" nil t)
+            (add-face-text-property (match-beginning 0) (match-end 0) 'font-lock-comment-face))
+          (buffer-string)))
+      (message "[%s/%s] %s (%s)%s"
+        diredc--show-more-file-info-index
+        (length diredc-show-more-file-info-list)
+        (propertize (car diredc--show-more-file-info-cmd) 'face 'font-lock-comment-face)
+        (substring cmd 0 (string-match " "cmd))
+        (if (zerop (length output))
+          ": No output."
+         (concat "\n" output))))))
 
 (defun diredc--hist-guess-restore-point (hist pos)
   "Fetch POINT of an adjoining matching history entry.
@@ -2868,21 +2881,25 @@ operation."
   (cond
    ((called-interactively-p 'any)
      (setq diredc--show-more-file-info-cmd
-       (cdr (nth (setq diredc--show-more-file-info-index
-                   (if current-prefix-arg
-                     (let ((choices (mapcar 'car diredc-show-more-file-info-list))
-                           choice minibuffer-history)
-                       (while (not (setq choice
-                                     (cl-position
-                                       (completing-read "Select: " choices nil t nil 'choices)
-                                       choices :test 'equal))))
-                       choice)
-                    ;; if: not current-prefix-arg
-                    (mod (1+ diredc--show-more-file-info-index)
-                         (length diredc-show-more-file-info-list))))
-                 diredc-show-more-file-info-list)))
-     (if (zerop (length diredc--show-more-file-info-cmd))
-       (message "Suppressing display of additional file info.")
+       (nth (setq diredc--show-more-file-info-index
+              (if current-prefix-arg
+                (let ((choices (mapcar 'car diredc-show-more-file-info-list))
+                      choice minibuffer-history)
+                  (while (not (setq choice
+                                (cl-position
+                                  (completing-read "Select: " choices nil t nil 'choices)
+                                  choices :test 'equal))))
+                  choice)
+               ;; if: not current-prefix-arg
+               (mod (1+ diredc--show-more-file-info-index)
+                    (length diredc-show-more-file-info-list))))
+            diredc-show-more-file-info-list))
+     (if (zerop (length (cdr diredc--show-more-file-info-cmd)))
+       (message "[%s/%s] %s"
+                diredc--show-more-file-info-index
+                (length diredc-show-more-file-info-list)
+                (propertize "Suppressing display of additional file info."
+                            'face 'font-lock-comment-face))
      (diredc--show-more-file-info)))
    (; cond: not called-interactively
     (and arg

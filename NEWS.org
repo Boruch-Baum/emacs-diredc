@@ -13,6 +13,13 @@
   + See new defcustom variables 'diredc-frame-parameters' and
     'diredc-frame-inherited-parameters'.
 
++ Modification: Display of file information
+
+  + Add long description of what is being displayed.
+
+  + Add current position in list of display options (ie. [n/m]).
+
+  + Fontify output.
 ** 2022-01
 
 + New feature to fontify diredc-browse buffers
