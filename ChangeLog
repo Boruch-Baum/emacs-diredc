@@ -4,6 +4,8 @@
 	string to cons.
 	(diredc-show-more-file-info, diredc--show-more-file-info): Improve
 	display output.
+	(diredc-hist-change-directory): Bugfix: stop creating windows above
+	others.
 
 2024-01-18  Boruch Baum  <boruch_baum@gmx.com>
 

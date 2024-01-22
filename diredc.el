@@ -3088,7 +3088,9 @@ and navigates to that location."
          (setf (nth 2 (nth pos hist)) dired-omit-mode))
        (let ((omit-mode dired-omit-mode)
              (special-sort diredc--sort-option-special))
+         (set-window-dedicated-p nil nil)
          (find-alternate-file new-dir)
+         (set-window-dedicated-p nil t)
          (diredc--set-omit-mode omit-mode)
          (when (setq restore-point
                  (diredc--hist-guess-restore-point hist pos))
