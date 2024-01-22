@@ -1,5 +1,10 @@
 2024-01-22  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc--show-more-file-info): Apply quotes and
+	escapes for messy file names.
+
+2024-01-22  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-hist-find-alternate-file): ): Bugfix: move focus
 	to opened files.
 

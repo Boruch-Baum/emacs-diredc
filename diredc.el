@@ -1976,7 +1976,9 @@ management."
 (defun diredc--show-more-file-info ()
   "Update the additional file information displayed in the minibuffer."
   (let (message-log-max ; suppress output to *Messages* buffer
-        (info-file (expand-file-name (diredc--file-name-at-point)))
+        (info-file (format "'%s'"
+                           (shell-quote-argument
+                             (expand-file-name (diredc--file-name-at-point)))))
         (cmd (cdr diredc--show-more-file-info-cmd))
         output)
     (when (and info-file (not (zerop (length cmd))))
