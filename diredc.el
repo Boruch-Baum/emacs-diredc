@@ -3418,20 +3418,17 @@ the file in another frame."
                            (get-buffer-window buf t)))
                  (frame-inherited-parameters diredc-frame-inherited-parameters))
             (cond
-             ((and win (equal (window-frame win) (window-frame)))
+             ((or (not win)
+                  (and win (equal (window-frame win) (window-frame))))
               ; file is already viewable in current frame, so select it in
               ; another frame
-               (if (> 1 (length (frame-list)))
-                 (select-frame (next-frame))
-                (make-frame diredc-frame-parameters))
+               (select-frame-set-input-focus
+                 (if (< 1 (length (frame-list)))
+                   (next-frame)
+                  (make-frame diredc-frame-parameters)))
                (find-file target))
-             (win ; file is already viewable in another frame, so select it
-               (select-window win))
-             (t
-               (if (< 1 (length (frame-list)))
-                 (select-frame (next-frame))
-                (make-frame diredc-frame-parameters))
-               (find-file target))))))))))
+             (t ; ie. win ; file is already viewable in another frame, so select it
+               (select-window win))))))))))
 
 (defun diredc-other-window ()
   "Select another `diredc' window, if one exists.
