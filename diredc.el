@@ -1124,7 +1124,7 @@ is that file's buffer.")
   "Current position in `diredc-show-more-file-info-list'.
 Internal variable for `diredc'. An integer, beginning at zero.")
 
-(defvar diredc--show-more-file-info-cmd ""
+(defvar diredc--show-more-file-info-cmd (cons "" "")
   "Current command to be used to show additional file info.
 Internal variable for 'diredc'.
 This is a CONS extracted from variable 'diredc-show-more-file-info-list'.")
