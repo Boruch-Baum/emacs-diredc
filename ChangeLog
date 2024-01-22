@@ -1,3 +1,25 @@
+2024-01-18  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--guess-and-do-async-shell-command): New
+	feature: For file-types associated with shell commands in variable
+	'dired-guess-shell-alist-user', pressing RETURN on that file runs
+	the first of those shell commands, asynchronously.
+	(diredc-hist-find-alternate-file): Use it, but not for C-u RETURN.
+
+2024-01-18  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-frame-parameters)
+	(diredc-frame-inherited-parameters)
+	(diredc-hist-find-alternate-file, diredc-recover, diredc): New
+	feature: customizable frame-parameters.
+
+2024-01-15  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-recover-schemes, diredc-hist-up-directory)
+	(diredc-hist-find-alternate-file, diredc-exit, diredc-recover)
+	(diredc-hist-duplicate): Bugfix: stop creating windows above
+	others
+
 2022-01-12  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-browse--hook-function): Fontify browse
