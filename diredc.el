@@ -2711,7 +2711,7 @@ setting of variable `delete-by-moving-to-trash'."
     ;; This next code idiom repeats elsewhere (eg.
     ;; `diredc-trash-restore'), so consider making it a function.
     (if (not (region-active-p))
-      (setq files (list (cons (diredc--file-name-at-point) 0)))
+      (setq files (list (cons (diredc--file-name-at-point) (point-marker))))
      (save-excursion
        (setq end (region-end))
        (goto-char (region-beginning))
@@ -2974,7 +2974,6 @@ ARG is the prefix-arg."
      ;; command entered, but without " &" suffix
      (setq command (concat command " &"))))
   (dired-do-shell-command command arg file-list))
-
 
 (defun diredc-history-mode (&optional arg)
   "Control ability to navigate directory history.

@@ -1,3 +1,8 @@
+2024-01-23  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-trash-quick-delete): Bugfix: format of list
+	sent to function dired--internal-do-deletions
+
 2024-01-22  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--show-more-file-info): Apply quotes and
