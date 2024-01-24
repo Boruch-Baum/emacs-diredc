@@ -3,6 +3,9 @@
 
    * Current users! See the NEWS.org file for the new features...
 
+![direc_basic_screenshot](./diredc-screenshot-1.png?raw=true "diredc
+basic screenshot")
+
 This package extends emacs' `dired-mode` with features found in almost
 all file managers, and also some unique features:
 
