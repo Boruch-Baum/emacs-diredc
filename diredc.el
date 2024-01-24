@@ -1,4 +1,4 @@
-;;; diredc.el --- Extensions for dired -*- lexical-binding: t -*-
+;;; diredc.el --- Midnight Commander features (plus) for dired -*- lexical-binding: t -*-
 
 ;; Copyright © 2020-2024, Boruch Baum <boruch_baum@gmx.com>
 
