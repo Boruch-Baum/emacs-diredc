@@ -3027,6 +3027,7 @@ Optionally, navigate prefix argument ARG number of history elements."
       (message "No more directory history!")
      (setf (nth 1 (nth diredc-hist--history-position hist)) (point))
      (setf (nth 2 (nth diredc-hist--history-position hist)) dired-omit-mode)
+     (set-window-dedicated-p nil nil)
      (find-alternate-file (car hist-elem))
      (set-window-dedicated-p nil t)
      (diredc--set-omit-mode (nth 2 hist-elem))

@@ -1,3 +1,8 @@
+2024-01-24  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-hist-previous-directory):  Bugfix: stop creating windows above
+	others.
+
 2024-01-23  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-trash-quick-delete): Bugfix: format of list
