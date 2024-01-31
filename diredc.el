@@ -1759,6 +1759,16 @@ variables to a shell."
      (t val))
    (format "\"%s\"" val)))
 
+(defun diredc-shell--bind-keys ()
+  "Set uniform keybindings for all forms of diredc shells.
+These bindings need to be performed \"early\" in order that they
+exist even if the shell process crashes, eg. due to a bad value
+in variables 'explicit-bash-args'."
+  (use-local-map (copy-keymap (current-local-map)))
+  (local-set-key (kbd "C-c C-k") 'diredc-shell-kill)
+  (local-set-key [remap kill-buffer] 'diredc-shell-kill))
+
+
 (defun diredc-shell--launch-shell (program d1 d2 f1 f2 t1 t2)
   "Internal function for use with variable `diredc-shell-list'.
 PROGRAM is the shell executable to run. D1, D2, F1, F2, T1, and
@@ -1772,6 +1782,7 @@ If optional ANSI is NON-NIL, then the program is run in Emacs
     (display-buffer-same-window
       buf (list nil)) ;; not sure what this last ARG is about (not documented).
     (shell buf)
+    (diredc-shell--bind-keys)
     (insert (format "export d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
                     d1 (or d2 "") (or f1 "") (or f2 "")
                     (diredc-shell--array-variable program t1)
@@ -1791,6 +1802,7 @@ set based upon their dired values."
     (setq-local d2 d2)
     (setq-local f2 f2)
     (setq-local t2 t2)
+    (diredc-shell--bind-keys)
     buf))
 
 (defun diredc-shell--launch-term (program d1 d2 f1 f2 t1 t2)
@@ -1814,6 +1826,7 @@ Emacs `ansi-term'; Otherwise, the simple Emacs `term-mode' is
 used."
   (let ((buf (if ansi (ansi-term program) (term program))))
     (term-line-mode)
+    (diredc-shell--bind-keys)
     (insert (format "export d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
                     d1 (or d2 "") (or f1 "") (or f2 "")
                     (diredc-shell--array-variable program t1)
@@ -2340,9 +2353,6 @@ directory, select it instead of creating an additional one."
               d1 d2 f1 f2 t1 t2)
      (setq-local dired-directory d1)
      (setq  diredc-shell--bufwin d1-window)
-     (use-local-map (copy-keymap (current-local-map)))
-     (local-set-key (kbd "C-c C-k") 'diredc-shell-kill)
-     (local-set-key [remap kill-buffer] 'diredc-shell-kill)
      (set-window-dedicated-p nil t)
      (when (< 1 len)
        (message "Variables d2,f2,t2 not set. (More than two dired buffers visible).")))))
