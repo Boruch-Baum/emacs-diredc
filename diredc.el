@@ -7,7 +7,7 @@
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 ;; Keywords: files
 ;; Package: diredc
-;; Version: 1.0
+;; Version: 1.2
 ;; Package-Requires: ((emacs "26.1") (key-assist "1.0"))
 ;;
 ;;   (emacs "24.1") for: split-window-right
@@ -479,6 +479,9 @@ keymap."
 
 ;;
 ;;; Constants:
+
+(defconst diredc--version 1.2
+  "Current version of 'diredc'.")
 
 ;; diredc--identify-trash-directory: This function is here, seemingly
 ;; out of place, because its only purpose is to define several
