@@ -1,4 +1,8 @@
 * diredc NEWS
+** 2024-03
+
++ New environment variable $INSIDE_DIREDC for shell windows.
+
 ** 2024-01
 
 + New feature for key-presses RETURN and C-u RETURN.
