@@ -2804,7 +2804,7 @@ a PREFIX-ARG, behaves as function `beginning-of-buffer'."
   (if current-prefix-arg
     (beginning-of-buffer current-prefix-arg)
    (goto-char (point-min))
-   (forward-line 2))
+   (forward-line 1))
   (dired-move-to-filename))
 
 (defun diredc-end-of-buffer ()
