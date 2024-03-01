@@ -1776,7 +1776,7 @@ in variables 'explicit-bash-args'."
   "Internal function to uniformly set terminal emulator environment.
 For keybindings and environment variables."
   (diredc-shell--bind-keys)
-  (insert (format "export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n\n# diredc-shell: Use C-c C-k to close this pop-up shell.\n"
+  (insert (format "PS1_ORIG=${PS1};PS1=\"\"; export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=\"%s\" t2=\"%s\"; clear; printf 'diredc-shell: Use C-c C-k to close this pop-up shell.\ndiredc-shell: Special variables: $d1 $d2 $f1 $f2 $t1 $t2\n' ; PS1=${PS1_ORIG}"
                   diredc--version
                   d1 (or d2 "") (or f1 "") (or f2 "")
                   (diredc-shell--array-variable program t1)
