@@ -75,6 +75,7 @@
 ;;       * $f1, $f2  current dired file in this/other pane
 ;;       * $t1, $t2  tagged elements in this other pane
 ;;         * as a shell array variable, if supported by the shell
+;;       * $INSIDE_DIREDC  value of variable 'diredc--version'
 ;;   * Bookmark support
 ;;   * Edit dired buffers (really `wdired-mode', not `diredc')
 ;;   * Set both panels to same directory (use "=" or "C-u =")
@@ -1786,7 +1787,8 @@ If optional ANSI is NON-NIL, then the program is run in Emacs
       buf (list nil)) ;; not sure what this last ARG is about (not documented).
     (shell buf)
     (diredc-shell--bind-keys)
-    (insert (format "export d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
+    (insert (format "export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
+                    diredc--version
                     d1 (or d2 "") (or f1 "") (or f2 "")
                     (diredc-shell--array-variable program t1)
                     (diredc-shell--array-variable program t2)))
@@ -1830,7 +1832,8 @@ used."
   (let ((buf (if ansi (ansi-term program) (term program))))
     (term-line-mode)
     (diredc-shell--bind-keys)
-    (insert (format "export d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
+    (insert (format "export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
+                    diredc--version
                     d1 (or d2 "") (or f1 "") (or f2 "")
                     (diredc-shell--array-variable program t1)
                     (diredc-shell--array-variable program t2)))

@@ -2,7 +2,8 @@
 
 	* (diredc-shell): Expand ~ in file-names (for $f1, $f2), properly
 	concat and quote lists of marked files (for $t1 $t2), add user
-	hint message that C-c C-k will properly close the terminal window.
+	hint message that C-c C-k will properly close the terminal window,
+	add environment variable: $INSIDE_DIREDC
 
 2024-02-29  Boruch Baum  <boruch_baum@gmx.com>
 

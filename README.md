@@ -47,6 +47,7 @@ all file managers, and also some unique features:
        * $f1, $f2  current dired file in this/other pane
        * $t1, $t2  tagged elements in this other pane
          * as a shell array variable, if supported by the shell
+       * $INSIDE_DIREDC  value of variable `diredc--version`
    * Bookmark support
    * Edit dired buffers (really `wdired-mode`, not `diredc`)
    * Set both panels to same directory (use "=" or "C-u =")
