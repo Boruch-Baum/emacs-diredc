@@ -2313,8 +2313,17 @@ The chosen shell option is set in variable
 `diredc-shell-default', but you can call this function with a
 PREFIX-ARG to over-ride it.
 
-If a shell-window already exists for the current `dired'
-directory, select it instead of creating an additional one."
+If a shell-window already exists for the current 'dired'
+directory, select it instead of creating an additional one.
+
+The shell process will be configured with the following variables:
+
+  $d1, $d2  dired-directory of this/other pane
+  $f1, $f2  current dired file of this/other pane
+  $t1, $t2  tagged elements of this other pane
+            (as a shell array variable, if supported by the shell)
+
+  $INSIDE_DIREDC  value of variable 'diredc--version'"
   (interactive)
   (when (not (eq major-mode 'dired-mode))
     (error "Not a dired-buffer"))
