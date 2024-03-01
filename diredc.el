@@ -2319,8 +2319,8 @@ directory, select it instead of creating an additional one."
         window-list minibuffer-history len d2 f2 t2 make-new
         (shell-choice (when (not current-prefix-arg)
                         (car (assoc diredc-shell-default diredc-shell-list))))
-        (d1 dired-directory)
-        (f1 (or (dired-file-name-at-point) ""))
+        (d1 (expand-file-name dired-directory))
+        (f1 (or (expand-file-name (dired-file-name-at-point)) ""))
         (t1 (or (dired-get-marked-files) "")))
    (while (or (not shell-choice)
               (zerop (length shell-choice)))
@@ -2346,9 +2346,9 @@ directory, select it instead of creating an additional one."
      (setq window-list (remq d1-window window-list))
      (when (= 1 (setq len (length window-list)))
        (select-window (car window-list) 'norecord)
-       (setq d2        dired-directory
              f2        (or (dired-file-name-at-point) "")
              t2        (or (dired-get-marked-files) "")))
+       (setq d2        (expand-file-name dired-directory)
      (select-window d1-window 'norecord)
      (select-window (split-window-below (- 0 diredc-shell-lines)))
      (funcall (nth 1 (assoc shell-choice diredc-shell-list))
