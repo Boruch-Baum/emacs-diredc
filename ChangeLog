@@ -1,6 +1,7 @@
 2024-02-29  Boruch Baum  <boruch_baum@gmx.com>
 
-	* (diredc-shell): Expand ~ in file-names.
+	* (diredc-shell): Expand ~ in file-names (for $f1, $f2), properly
+	concat and quote lists of marked files (for $t1 $t2).
 
 2024-02-29  Boruch Baum  <boruch_baum@gmx.com>
 
