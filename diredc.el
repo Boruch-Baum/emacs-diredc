@@ -1797,6 +1797,7 @@ If optional ANSI is NON-NIL, then the program is run in Emacs
     (shell buf)
     (diredc--set-term-environment program d1 d2 f1 f2 t1 t2)
     (comint-send-input)
+    (delete-region (point-min) (point-max))
     buf))
 
 (defun diredc-shell--launch-eshell (_program d1 d2 f1 f2 t1 t2)
