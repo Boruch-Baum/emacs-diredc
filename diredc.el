@@ -1772,6 +1772,15 @@ in variables 'explicit-bash-args'."
   (local-set-key (kbd "C-c C-k") 'diredc-shell-kill)
   (local-set-key [remap kill-buffer] 'diredc-shell-kill))
 
+(defun diredc--set-term-environment (program d1 d2 f1 f2 t1 t2)
+  "Internal function to uniformly set terminal emulator environment.
+For keybindings and environment variables."
+  (diredc-shell--bind-keys)
+  (insert (format "export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
+                  diredc--version
+                  d1 (or d2 "") (or f1 "") (or f2 "")
+                  (diredc-shell--array-variable program t1)
+                  (diredc-shell--array-variable program t2))))
 
 (defun diredc-shell--launch-shell (program d1 d2 f1 f2 t1 t2)
   "Internal function for use with variable `diredc-shell-list'.
@@ -1786,12 +1795,7 @@ If optional ANSI is NON-NIL, then the program is run in Emacs
     (display-buffer-same-window
       buf (list nil)) ;; not sure what this last ARG is about (not documented).
     (shell buf)
-    (diredc-shell--bind-keys)
-    (insert (format "export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
-                    diredc--version
-                    d1 (or d2 "") (or f1 "") (or f2 "")
-                    (diredc-shell--array-variable program t1)
-                    (diredc-shell--array-variable program t2)))
+    (diredc--set-term-environment program d1 d2 f1 f2 t1 t2)
     (comint-send-input)
     buf))
 
@@ -1831,12 +1835,7 @@ Emacs `ansi-term'; Otherwise, the simple Emacs `term-mode' is
 used."
   (let ((buf (if ansi (ansi-term program) (term program))))
     (term-line-mode)
-    (diredc-shell--bind-keys)
-    (insert (format "export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=%s t2=%s\n"
-                    diredc--version
-                    d1 (or d2 "") (or f1 "") (or f2 "")
-                    (diredc-shell--array-variable program t1)
-                    (diredc-shell--array-variable program t2)))
+    (diredc--set-term-environment program d1 d2 f1 f2 t1 t2)
     (term-send-input)
     buf))
 
