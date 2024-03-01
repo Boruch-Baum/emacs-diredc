@@ -2357,8 +2357,10 @@ directory, select it instead of creating an additional one."
      (setq-local dired-directory d1)
      (setq  diredc-shell--bufwin d1-window)
      (set-window-dedicated-p nil t)
-     (when (< 1 len)
-       (message "Variables d2,f2,t2 not set. (More than two dired buffers visible).")))))
+     (message "diredc-shell: Use C-c C-k to close this pop-up shell.%s"
+       (if (< 1 len)
+         "\ndiredc-shell: Variables d2,f2,t2 not set. (More than two dired buffers visible)."
+        "")))))
 
 (defun diredc-browse-tab ()
   "Tab-navigate to the next button or other window.
