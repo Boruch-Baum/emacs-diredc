@@ -1169,7 +1169,7 @@ function `diredc-swap-windows'."
 (defun diredc--advice--wdired-exit ()
   "Ensure correct keymap when returning from wdired."
   (when diredc-mode
-    (diredc-bonus-configuration 'dired-mode-hook)
+    (diredc--bonus-configuration 'dired-mode-hook)
     (when diredc-history-mode
       (diredc--set-omit-mode
         (nth 2 (nth diredc-hist--history-position diredc-hist--history-list))))
@@ -1459,7 +1459,7 @@ there applies the fix by changing also function
        (make-local-variable 'face-remapping-alist)
        (push (cons 'header-line 'diredc-header-line)
              face-remapping-alist))
-     (diredc-bonus-configuration 'dired-mode-hook)
+     (diredc--bonus-configuration 'dired-mode-hook)
      (advice-add 'wdired-finish-edit   :after #'diredc--advice--wdired-exit)
      (advice-add 'wdired-abort-changes :after #'diredc--advice--wdired-exit)
      (advice-add 'wdired-exit          :after #'diredc--advice--wdired-exit)
@@ -3470,7 +3470,7 @@ Returns NON-NIL upon success."
        (select-window original-win 'norecord)
        nil))))
 
-(defun diredc-bonus-configuration (caller)
+(defun diredc--bonus-configuration (caller)
   "Maybe set supplemental configuration options.
 When variable `diredc-bonus-configuration' is non-nil, enables
 those options that the `diredc' developer feels are sane and
@@ -3640,7 +3640,7 @@ turn the mode on; Otherwise, turn it off."
           (diredc--hook-function)
           (let ((win (get-buffer-window)))
             (when win (set-window-dedicated-p win t))))))
-     (diredc-bonus-configuration 'diredc-mode)
+     (diredc--bonus-configuration 'diredc-mode)
      (message "Diredc-mode enabled in all Dired buffers."))
    (t
      (remove-hook 'dired-mode-hook #'diredc--hook-function)
