@@ -1899,7 +1899,7 @@ The file is checked against the values of variables
 variable `diredc-browse-exclude-helper' is used (see there)."
   (let ((ext (or (file-name-extension filename)
                  (file-name-nondirectory filename)))
-        ext-match coding-match helper-match browse-binary)
+        ext-match var coding-match helper-match browse-binary)
     (when (or
             ;; check file extensions to exclude
             (setq ext-match

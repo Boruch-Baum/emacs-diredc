@@ -1,3 +1,8 @@
+2024-03-14  Boruch Baum  <boruch_baum@gmx.com>
+
+	* (diredc-browse--exclude): Give variable 'var' the local scope
+	that it deserves.
+
 2024-02-29  Boruch Baum  <boruch_baum@gmx.com>
 
 	* (diredc-shell): Expand ~ in file-names (for $f1, $f2), properly
