@@ -482,13 +482,13 @@ keymap."
 ;;; Constants:
 
 (defconst diredc--version 1.4
-  "Current version of 'diredc'.")
+  "Current version of `diredc'.")
 
 ;; diredc--identify-trash-directory: This function is here, seemingly
 ;; out of place, because its only purpose is to define several
 ;; constants, below.
 (defun diredc--identify-trash-directory (&optional subdir)
-  "Return the path to the 'Trash' directory.
+  "Return the path to the \"Trash\" directory.
 
 This is an internal `diredc' function. You should never need to
 call this function. Instead, use the constants `diredc-trash-dir'
@@ -497,9 +497,9 @@ call this function. Instead, use the constants `diredc-trash-dir'
 
 Optional SUBDIR is a string of a subdirectory to return. Note the
 behavior of this argument is subject to change as information
-about more 'Trash' standards, uh, accumulate. The idea would be
-to generically distinguish between 'files', 'info', and
-'expunged' content subdirectories (if they exist), wherever they
+about more \"Trash\" standards, uh, accumulate. The idea would be
+to generically distinguish between \"files\", \"info\", and
+\"expunged\" content subdirectories (if they exist), wherever they
 may be and whatever they may be called."
   (file-name-as-directory
     (cond (trash-directory
@@ -517,16 +517,16 @@ may be and whatever they may be called."
                       "~/.local/share"))))))))
 
 (defconst diredc-trash-dir (diredc--identify-trash-directory)
-  "The 'Trash' root directory.")
+  "The \"Trash\" root directory.")
 
 (defconst diredc-trash-files-dir (diredc--identify-trash-directory "files")
-  "The 'Trash' directory with the actual trashed files.")
+  "The \"Trash\" directory with the actual trashed files.")
 
 (defconst diredc-trash-info-dir (diredc--identify-trash-directory "info")
-  "The 'Trash' directory with the trashed files' metadata.")
+  "The \"Trash\" directory with the trashed files' metadata.")
 
 (defconst diredc-trash-expunged-dir (diredc--identify-trash-directory "expunged")
-  "The 'Trash' directory with the 'expunged' information.")
+  "The \"Trash\" directory with the \"expunged\" information.")
 
 (defconst diredc-face-chmod-font-lock-dir   'diredc-face-chmod-font-lock-dir
   "Face definition for how we apply `font-lock' keywords.
@@ -590,7 +590,7 @@ Applicable when variable `diredc-bonus-configuration' is non-nil.")
     ("extension (A-Za-z)"    "extension" nil   t     t         nil)
     ("extension (Z-Az-a)"    "extension" t     nil   t         nil))
   "List of options for function `diredc-sort-or-edit'.
-See there and your version of 'man(1) ls'.")
+See there and your version of \"man(1) ls\".")
 
 (defconst diredc--sort-columns-regexp
   "^  \\([-ldrwxgst]\\{10\\}\\) +\\([^ ]+\\) +\\([^ ]+\\) +\\([^ ]+\\).*$"
@@ -663,14 +663,14 @@ See also `hl-line-mode'."
 (defcustom diredc-frame-parameters '()
   "Desired frame parameters for the diredc frame.
 An alist of cons (PARAMETER . VALUE).
-See function 'make-frame' and (info \"(elisp) Frame Parameters\")."
+See function `make-frame' and (info \"(elisp) Frame Parameters\")."
 ;; ie. eval (info "(elisp) Frame Parameters")
   :type '(repeat (cons (symbol :tag "Frame parameter")
                        (sexp   :tag "Value"))))
 
 (defcustom diredc-frame-inherited-parameters
   '(left top width height)
-  "Features of parent frame to retain for 'diredc' frame.
+  "Features of parent frame to retain for `diredc' frame.
 A list of symbols of parameters.
 See (info \"(elisp) Frame Parameters\")."
 ;; ie. eval (info "(elisp) Frame Parameters")
@@ -713,7 +713,7 @@ The value is a list of COMMAND where each COMMAND can either be a
 string or a Lisp expression that evaluates to a string. If this
 expression needs to consult the name of the file for which the
 shell commands are being requested, it can access that file name
-as the variable `file'. If several COMMANDs are given, the first
+as the variable \"file\". If several COMMANDs are given, the first
 one will be the default and the rest will be added temporarily to
 the history and can be retrieved with \\<minibuffer-local-map>
 \\[previous-history-element].
@@ -721,14 +721,14 @@ the history and can be retrieved with \\<minibuffer-local-map>
 IMPORTANT: This feature requires function `dired-guess-default'
 be advised by `diredc--advice--shell-guess-fallback', as follows:
 
-  (advice-add 'dired-guess-default
-              :around #'diredc--advice--shell-guess-fallback)
+  (advice-add \='dired-guess-default
+              :around #\='diredc--advice--shell-guess-fallback)
 
 It may have already been done for you. In order to undo it,
 perform:
 
-  (advice-remove 'dired-guess-default
-                 #'diredc--advice--shell-guess-fallback)"
+  (advice-remove \='dired-guess-default
+                 #\='diredc--advice--shell-guess-fallback)"
   :type '(repeat sexp)
   :group 'diredc)
 
@@ -1008,7 +1008,7 @@ It is used by function `dired-read-shell-command' which `diredc'
 advises with function `diredc--advice--dired-read-shell-command'.")
 
 (defvar-local diredc--sort-option-special nil
-  "Whether the sort option uses 'ls' switches or a `diredc' method.
+  "Whether the sort option uses \"ls\" switches or a `diredc' method.
 If the sort option uses a `diredc' method, then the value is the
 method entry in variable `diredc--sort-options'. Otherwise, it
 should be NIL.")
@@ -1130,11 +1130,11 @@ Internal variable for `diredc'. An integer, beginning at zero.")
 
 (defvar diredc--show-more-file-info-cmd (cons "" "")
   "Current command to be used to show additional file info.
-Internal variable for 'diredc'.
-This is a CONS extracted from variable 'diredc-show-more-file-info-list'.")
+Internal variable for `diredc'.
+This is a CONS extracted from variable `diredc-show-more-file-info-list'.")
 
 (defvar diredc--lc-collate-original-value nil
-  "The original value of environment variable `LC_COLLATE'.
+  "The original value of environment variable LC_COLLATE.
 As found by `diredc' when started.")
 
 
@@ -1181,8 +1181,8 @@ function `diredc-swap-windows'."
 OLDFUN is function `dired-guess-default', which is never called by this advice.
 FILES are defined there.
 
-Usage: (advice-add 'dired-guess-default
-                   :around #'diredc--advice--shell-guess-fallback)
+Usage: (advice-add \\'dired-guess-default
+                   :around #\\'diredc--advice--shell-guess-fallback)
 
 This advice addresses the issues in Emacs bug report and patch #48071
 (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48071) and also
@@ -1299,8 +1299,8 @@ by this advice. COMMAND is an entire shell command string. For
 asynchronous commands, `dired' prepares COMMAND to end with
 \"&wait&\" without a space prior.
 
-Usage: (advice-add 'dired-run-shell-command
-                   :around #'diredc--advice--dired-run-shell-command)"
+Usage: (advice-add \='dired-run-shell-command
+                   :around #\='diredc--advice--dired-run-shell-command)"
 ;; NOTE: The advised function is reached via `dired-do-shell-command'
 ;; which calls it indirectly via `dired-bunch-files' if `on-each' (ie.
 ;; apply the function separately for each of a list of files).
@@ -1656,10 +1656,10 @@ to the header line.
 
 This function is fragile in the sense that it expects the
 `diredc' buffer to be presenting its first five fields in classic
-'ls -l' format.
+\"ls -l\" format.
 
 This function does not attempt to calculate the actual size of
-directories (eg. by using shell command `du') because that can
+directories (eg. by using shell command \"du\") because that can
 many seconds for large subdirectory trees, and this function is
 meant to be called as part of a `post-command-hook'. For that
 feature, see interactive function `diredc-du'."
@@ -1767,7 +1767,7 @@ variables to a shell."
   "Set uniform keybindings for all forms of diredc shells.
 These bindings need to be performed \"early\" in order that they
 exist even if the shell process crashes, eg. due to a bad value
-in variables 'explicit-bash-args'."
+in variables `explicit-bash-args'."
   (use-local-map (copy-keymap (current-local-map)))
   (local-set-key (kbd "C-c C-k") 'diredc-shell-kill)
   (local-set-key [remap kill-buffer] 'diredc-shell-kill))
@@ -1892,7 +1892,7 @@ Returns a coding-system symbol. See variables
 
 (defun diredc-browse--exclude (filename)
   "Decide whether to browse readable file FILENAME.
-Reports in the 'diredc browse' buffer any reason not to browse.
+Reports in the \"diredc browse\" buffer any reason not to browse.
 The file is checked against the values of variables
 `diredc-browse-exclude-file-extensions' and
 `diredc-browse-exclude-coding-systems'. If those checks pass,
@@ -2022,7 +2022,7 @@ management."
 
 (defun diredc--hist-guess-restore-point (hist pos)
   "Fetch POINT of an adjoining matching history entry.
-This function is called in cases of 'direct' navigation, because
+This function is called in cases of \"direct\" navigation, because
 the user may have asked to directly navigate to a directory that
 could have been done by either `diredc-hist-next-directory' or
 `diredc-hist-previous-directory' for which the history stack has
@@ -2160,11 +2160,11 @@ Continue anyway? " dir))
       (user-error "Operation aborted"))))
 
 (defun diredc--guess-and-do-async-shell-command (target)
-  "Used by 'diredc-hist-find-alternate-file'.
+  "Used by `diredc-hist-find-alternate-file'.
 
 When a user presses <RET> on a file-type with known exec
 associations, ie. from variable
-'dired-guess-shell-alist-user' (see there), do not interpret this
+`dired-guess-shell-alist-user' (see there), do not interpret this
 user action as a request to open the file in an Emacs buffer.
 Instead, run the first shell command on the file, and
 asynchronously."
@@ -2204,7 +2204,7 @@ by name, ascending.
 
 Note that the sorting options for chmod, owner, and group are
 fragile in the sense that they expect the `diredc' buffer to be
-presenting its first four fields in classic 'ls -l' format.
+presenting its first four fields in classic \"ls -l\" format.
 
 With a prefix argument, allows the user to manually edit the
 current listing switches instead. See variable
@@ -2212,7 +2212,7 @@ current listing switches instead. See variable
 `dired-sort-toggle-or-edit'.
 
 Some of the available sort methods change the environment
-variable `LC_COLLATE', which you might want set differently for
+variable LC_COLLATE, which you might want set differently for
 your Emacs use outside of `diredc'. If you find yourself in such
 a situation, evaluating function `diredc-reset-collation' will
 restore the variable to how it was found. This will be performed
@@ -2313,7 +2313,7 @@ The chosen shell option is set in variable
 `diredc-shell-default', but you can call this function with a
 PREFIX-ARG to over-ride it.
 
-If a shell-window already exists for the current 'dired'
+If a shell-window already exists for the current `dired'
 directory, select it instead of creating an additional one.
 
 The shell process will be configured with the following variables:
@@ -2323,7 +2323,7 @@ The shell process will be configured with the following variables:
   $t1, $t2  tagged elements of this other pane
             (as a shell array variable, if supported by the shell)
 
-  $INSIDE_DIREDC  value of variable 'diredc--version'"
+  $INSIDE_DIREDC  value of variable `diredc--version'."
   (interactive)
   (when (not (eq major-mode 'dired-mode))
     (error "Not a dired-buffer"))
@@ -2590,7 +2590,7 @@ functions (\\[diredc-trash-key-assist])."
      (key-assist spec prompt t))))
 
 (defun diredc-trash-toggle ()
-  "Toggle between using 'trash' or 'delete'."
+  "Toggle between using \"trash\" or \"delete\"."
   (interactive)
   (setq delete-by-moving-to-trash (not delete-by-moving-to-trash))
   (message (if delete-by-moving-to-trash
@@ -2938,7 +2938,7 @@ operation."
 (defun diredc-do-async-shell-command (command &optional arg file-list)
   "Run a shell COMMAND on the marked files FILE-LIST asynchronously.
 
-Like `dired-do-async-shell-command', but entering a 'blank' is
+Like `dired-do-async-shell-command', but entering a \"blank\" is
 interpreted as (concat \" \" default-command). Doing so allows
 overriding a setting of `diredc-async-processes-are-persistent'
 non-NIL.
@@ -3559,7 +3559,7 @@ second, by binding `Q' to `dired-do-find-regexp-and-replace'."
   "Attempt to restore a `dired' dual-pane layout.
 
 If possibly one or more `dired' frames and/or' buffers exist, but
-the layout on the frame has been altered 'somehow' (\"ahem.. no
+the layout on the frame has been \"somehow\" altered (\"ahem.. no
 judgements...\"), try this function."
   (interactive)
   (when (zerop (length diredc-recover-schemes))
