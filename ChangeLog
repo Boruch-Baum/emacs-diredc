@@ -1,3 +1,13 @@
+2024-04-08  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--set-term-environment): Remove setup commands
+	from comint history and erase them from the shell buffer display.
+	Change method of sending setup commands to use function
+	comint-input-sender for all comint buffers.
+	(diredc-shell--launch-shell, diredc-shell--launch-eshell): Remove
+	send-input commands, now performed uniformly by function diredc--set-term-environment.
+	(diredc-shell): Improve user message.
+
 2024-03-14  Boruch Baum  <boruch_baum@gmx.com>
 
 	* (diredc-browse--exclude): Give variable 'var' the local scope

@@ -1776,11 +1776,33 @@ in variables `explicit-bash-args'."
   "Internal function to uniformly set terminal emulator environment.
 For keybindings and environment variables."
   (diredc-shell--bind-keys)
-  (insert (format "PS1_ORIG=${PS1};PS1=\"\"; export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=\"%s\" t2=\"%s\"; clear; printf 'diredc-shell: Use C-c C-k to close this pop-up shell.\ndiredc-shell: Special variables: $d1 $d2 $f1 $f2 $t1 $t2\n' ; PS1=${PS1_ORIG}"
-                  diredc--version
-                  d1 (or d2 "") (or f1 "") (or f2 "")
-                  (diredc-shell--array-variable program t1)
-                  (diredc-shell--array-variable program t2))))
+  (setq-local diredc--shell-point (point-max)) ; See kludge below.
+  (funcall comint-input-sender
+           (get-buffer-process (current-buffer))
+           (format "export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=\"%s\" t2=\"%s\"; printf 'diredc-shell: Use C-c C-k to close this pop-up shell.\ndiredc-shell: Special variables: $d1 $d2 $f1 $f2 $t1 $t2%s\n'"
+                   diredc--version
+                   d1 (or d2 "") (or f1 "") (or f2 "")
+                   (diredc-shell--array-variable program t1)
+                   (diredc-shell--array-variable program t2)
+                   (if (equal d2 "")
+                     "\ndiredc-shell: Variables d2,f2,t2 not set. (More than two dired buffers visible)."
+                    "")))
+  ;; TODO: 2024-04: It seems that at this point (Emacs 29.2), there is
+  ;; no way to nicely wait on a change of state in the comint buffer
+  ;; (eg. process-sentinel). Revisit this situation periodically so we
+  ;; can replace the following kludge.
+  (dotimes (x 2) ; two commands sent above
+    (cl-loop
+      repeat 10
+      do (sleep-for 0.1)
+      until
+        (when (not (equal diredc--shell-point (point-max)))
+          (goto-char (point-min))
+          (when (search-forward "diredc-shell:" nil t)
+            (delete-region (point-min) (match-beginning 0)))
+          (goto-char (point-max))
+          t)))
+  (setq-local diredc--shell-point nil))
 
 (defun diredc-shell--launch-shell (program d1 d2 f1 f2 t1 t2)
   "Internal function for use with variable `diredc-shell-list'.
@@ -1796,8 +1818,6 @@ If optional ANSI is NON-NIL, then the program is run in Emacs
       buf (list nil)) ;; not sure what this last ARG is about (not documented).
     (shell buf)
     (diredc--set-term-environment program d1 d2 f1 f2 t1 t2)
-    (comint-send-input)
-    (delete-region (point-min) (point-max))
     buf))
 
 (defun diredc-shell--launch-eshell (_program d1 d2 f1 f2 t1 t2)
@@ -1837,7 +1857,6 @@ used."
   (let ((buf (if ansi (ansi-term program) (term program))))
     (term-line-mode)
     (diredc--set-term-environment program d1 d2 f1 f2 t1 t2)
-    (term-send-input)
     buf))
 
 (defun diredc-shell--find-existing-shell ()
@@ -2369,7 +2388,7 @@ The shell process will be configured with the following variables:
      (setq-local dired-directory d1)
      (setq  diredc-shell--bufwin d1-window)
      (set-window-dedicated-p nil t)
-     (message "diredc-shell: Use C-c C-k to close this pop-up shell.%s"
+     (message "diredc-shell: Use C-c C-k to close this pop-up shell.\ndiredc-shell: Special variables: $d1 $d2 $f1 $f2 $t1 $t2%s"
        (if (< 1 len)
          "\ndiredc-shell: Variables d2,f2,t2 not set. (More than two dired buffers visible)."
         "")))))
