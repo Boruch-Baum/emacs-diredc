@@ -306,7 +306,7 @@ all file managers, and also some unique features:
  *] Modify data structure `diredc-recover-schemes` to apply your own
     custom recovery strategies. Share them for others` benefit!
 
- *) Use `diredc-trash-quick-delete` (default: `C-k`) on a POINT or a
+ *] Use `diredc-trash-quick-delete` (default: `C-k`) on a POINT or a
     REGION to quick-delete the selected files. Use the prefix-arg to
     toggle between "trashing" or deleting.
 
@@ -336,7 +336,8 @@ all file managers, and also some unique features:
     will be set as such; Otherwise, elements will be quoted and
     delimited with a space.
 
- *) universal fallback guess shell command(s)
+ *] universal fallback guess shell command(s)
+
 
  *] Use `diredc-collapse-mode` (default: `{` or `}`) to view that
     single file at the bottom of a "sparse" path, ie.

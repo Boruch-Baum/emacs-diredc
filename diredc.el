@@ -327,7 +327,7 @@
 ;; *] Modify data structure `diredc-recover-schemes' to apply your own
 ;;    custom recovery strategies. Share them for others' benefit!
 ;;
-;; *) Use `diredc-trash-quick-delete' (default: `C-k') on a POINT or a
+;; *] Use `diredc-trash-quick-delete' (default: `C-k') on a POINT or a
 ;;    REGION to quick-delete the selected files. Use the prefix-arg to
 ;;    toggle between "trashing" or deleting.
 ;;
