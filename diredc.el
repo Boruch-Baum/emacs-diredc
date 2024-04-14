@@ -3608,7 +3608,9 @@ modes."
       ;; If ALL your existing buffers (including *scratch*) are in
       ;; dired-mode, when the final one is killed, emacs v26.1
       ;; creates a *Messages* buffer.
-      (kill-buffer buf))))
+      (kill-buffer buf)))
+  (let ((inhibit-message t))
+   (diredc-mode -1)))
 (defalias 'diredc-quit 'diredc-exit)
 
 (defun diredc-do-not-quit-window ()
