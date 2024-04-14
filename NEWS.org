@@ -1,11 +1,42 @@
 * diredc NEWS
-** 2024-**
-+ New feature to fontify filenames based upon their extension
+** 2024-04
 
-  + See new defcuston variable 'diredc-face-ext-alist'.
++ New feature to fontify filenames based upon their names.
+
+  + diredc-fontify-by-file-name
+  + diredc-face-file-name-alist
+
++ New feature to fontify filenames based upon their extensions.
+
+  + diredc-fontify-by-file-extension
+  + diredc-face-file-ext-alist
+
++ New features to fontify 'executable' suffix symbols.
+
+  + diredc-fontify-executable-symbol
+
++ New feature to immediately apply font-lock configuration changes.
+
+  + diredc-improve-font-lock-performance
+
++ New user hint messages upon opening 'diredc' shells.
+
++ Re-organize customization options into sub-groups.
+
++ New feature to improve dired's buffer updating
+
+  This fixes dired's failure to update upon the change of a size of
+  file listed in the buffer. For example, creating a tar archive would
+  always cause the archive file to display as size 0.
+
+  + diredc-update-interval
+
++ Improvement to 'diredc-exit' cleanup.
+
 ** 2024-03
 
 + New environment variable $INSIDE_DIREDC for shell windows.
+
 ** 2024-01
 
 + New feature for key-presses RETURN and C-u RETURN.
@@ -27,6 +58,7 @@
   + Add current position in list of display options (ie. [n/m]).
 
   + Fontify output.
+
 ** 2022-01
 
 + New feature to fontify diredc-browse buffers

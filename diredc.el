@@ -80,7 +80,8 @@
 ;;   * Edit dired buffers (really `wdired-mode', not `diredc')
 ;;   * Set both panels to same directory (use "=" or "C-u =")
 ;;     * inspired by 'midnight commander's "M-i"
-;;   * Fontify filenames based upon their extensions
+;;   * Fontify filenames based upon their names or extensions
+;;     * fontify 'executable' suffix symbol
 ;;
 ;; Bonus customization features
 ;;   * Customize colors for chmod bits (font-lock)

@@ -51,8 +51,9 @@ all file managers, and also some unique features:
    * Bookmark support
    * Edit dired buffers (really `wdired-mode`, not `diredc`)
    * Set both panels to same directory (use "=" or "C-u =")
-     * inspired by `midnight commander's "M-i"
-   * Fontify filenames based upon their extensions
+     * inspired by `midnight commander`s "M-i"
+   * Fontify filenames based upon their names or extensions
+     * fontify `executable` suffix symbol
 
 
 ## Bonus customization features
