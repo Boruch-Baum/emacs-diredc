@@ -606,24 +606,6 @@ See there and your version of \"man(1) ls\".")
   :group 'dired
   :prefix "diredc-")
 
-(defcustom diredc-frame-parameters '()
-  "Desired frame parameters for the diredc frame.
-An alist of cons (PARAMETER . VALUE).
-See function `make-frame' and (info \"(elisp) Frame Parameters\")."
-;; ie. eval (info "(elisp) Frame Parameters")
-  :type '(repeat (cons (symbol :tag "Frame parameter")
-                       (sexp   :tag "Value")))
-  :package-version '(diredc . "1.2"))
-
-(defcustom diredc-frame-inherited-parameters
-  '(left top width height)
-  "Features of parent frame to retain for `diredc' frame.
-A list of symbols of parameters.
-See (info \"(elisp) Frame Parameters\")."
-;; ie. eval (info "(elisp) Frame Parameters")
-  :type '(repeat (symbol :tag "Frame parameter"))
-  :package-version '(diredc . "1.2"))
-
 (defcustom diredc-allow-duplicate-buffers t
   "Allow multiple `dired' buffers to visit the same directory.
 
@@ -726,6 +708,30 @@ variable LC_NUMERIC."
   ;; ref: https://lists.gnu.org/archive/html/emacs-devel/2021-06/msg00139.html
   :type 'string
   :package-version '(diredc . "1.0"))
+
+(defgroup diredc-frame nil
+  "GUI Emacs settings."
+  :group 'diredc)
+
+(defcustom diredc-frame-parameters '()
+  "Desired frame parameters for the diredc frame.
+An alist of cons (PARAMETER . VALUE).
+See function 'make-frame' and (info \"(elisp) Frame Parameters\")."
+;; ie. eval (info "(elisp) Frame Parameters")
+  :type '(repeat (cons (symbol :tag "Frame parameter")
+                       (sexp   :tag "Value")))
+  :package-version '(diredc . "1.2")
+  :group 'diredc-frame)
+
+(defcustom diredc-frame-inherited-parameters
+  '(left top width height)
+  "Features of parent frame to retain for 'diredc' frame.
+A list of symbols of parameters.
+See (info \"(elisp) Frame Parameters\")."
+;; ie. eval (info "(elisp) Frame Parameters")
+  :type '(repeat (symbol :tag "Frame parameter"))
+  :package-version '(diredc . "1.2")
+  :group 'diredc-frame)
 
 (defgroup diredc-shell nil
   "Pop-up shell settings."
