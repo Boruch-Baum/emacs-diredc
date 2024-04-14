@@ -57,8 +57,7 @@ all file managers, and also some unique features:
    * Optional "drilled-down" view of "sparse" paths (use "}", "{")
      * ie. ./paths/with/only/single/entries
      * Uses a `diredc`-patched version of external package
-       `dired-collapse` (https://github.com/Fuco1/dired-hacks)
-       pending pull-request merges.
+       [dired-collapse](https://github.com/Fuco1/dired-hacks).
 
 
 ## Bonus customization features
