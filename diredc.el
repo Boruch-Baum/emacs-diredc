@@ -721,7 +721,7 @@ Applicable when variable `diredc-bonus-configuration' is non-nil.")
   "Face definition for how we apply `font-lock' keywords.
 Applicable when variable `diredc-bonus-configuration' is non-nil.")
 
-(defconst diredc--chmod-font-lock-regex
+(defconst diredc--chmod-font-lock-regexp
   " \\([dl-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\([r-]\\)\\([w-]\\)\\([xsgt-]\\)\\+? "
   "Regexp to identify alphanumeric permission mode strings.
 This constant is used to colorize the string, using `font-lock',
@@ -729,7 +729,7 @@ when variable `diredc-bonus-configuration' is non-nil.")
 
 (defconst diredc--chmod-font-lock-keyword
   (list
-    (list diredc--chmod-font-lock-regex
+    (list diredc--chmod-font-lock-regexp
           '(1 diredc-face-chmod-font-lock-dir t t)
           '(2 diredc-face-chmod-font-lock-read t t)
           '(3 diredc-face-chmod-font-lock-write t t)
@@ -917,7 +917,7 @@ See (info \"(elisp) Frame Parameters\")."
 (defcustom diredc-shell-guess-fallback '("xdg-open")
   "Universal fallback suggested command(s).
 
-This offers a final option if no matching regex is found in
+This offers a final option if no matching regexp is found in
 either `dired-guess-shell-alist-default' or
 `dired-guess-shell-alist-default'.
 
@@ -1075,8 +1075,8 @@ customization variables `diredc-browse-include-images',
 Each element of this list is itself a list of one symbol and six
 strings: 1) The emacs variable `system-type' for this element; 2)
 The inclusion helper command; 3) Any parameters for the command;
-4) The regex of the command's desired output; 5) The exclusion
-helper command; 6) Any parameters for the command; 7) The regex
+4) The regexp of the command's desired output; 5) The exclusion
+helper command; 6) Any parameters for the command; 7) The regexp
 of the command's desired output.
 
 Mode `diredc-browse-mode' applies the inclusion test, and only if
@@ -2009,10 +2009,10 @@ element added to variable `diredc-font-lock-keywords'."
              (re-search-forward "/" limit 'noerror))
     t))
 
-(defun diredc--font-lock-matcher-common (start-pos limit regex type data)
+(defun diredc--font-lock-matcher-common (start-pos limit regexp type data)
   "Common match function for `diredc--font-lock-file-matcher'.
 START-POS is POINT at the beginning of the `dired' filename.
-LIMIT is POINT at the end of the `dired' line. REGEX is where
+LIMIT is POINT at the end of the `dired' line. REGEXP is where
 within the filename to search for a match, where '%s' indicates
 the matching section. TYPE is either \"name\" or \"extension\".
 DATA is the alist, either `diredc-face-file-name-alist' or
@@ -2022,7 +2022,7 @@ DATA is the alist, either `diredc-face-file-name-alist' or
                 (setq elem (pop data)))
       (goto-char start-pos)
       (when (re-search-forward
-                (format regex (regexp-opt (nth 1 elem)))
+                (format regexp (regexp-opt (nth 1 elem)))
                 limit 'noerror)
         (setq facename (intern (format "diredc--face-for-file-%s-type-%s"
                                        type
