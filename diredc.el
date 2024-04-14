@@ -696,15 +696,6 @@ does, see function `diredc-bonus-configuration'."
   :type 'boolean
   :package-version '(diredc . "1.0"))
 
-(defcustom diredc-fontify-executable-symbol t
-  "Whether to highlight a file's executable suffix symbol.
-This will be an asterisk that appears appended to a filename by
-the operating system listing program used by 'dired', ie. 'ls'.
-For customizing the fontification, see face
-'diredc-face-executable'."
-  :type 'boolean
-  :package-version '(diredc . "1.4"))
-
 (defcustom diredc-header-line t
   "Whether to display a header line.
 This will summarize the number and size of marked items."
@@ -940,6 +931,10 @@ This is one of a set of four related customizable variables:
   :package-version '(diredc . "1.0")
   :group 'diredc-sort)
 
+(defgroup diredc-face nil
+  "Fonrification options and faces."
+  :group 'diredc)
+
 (defcustom diredc-fontify-by-file-extension nil
   "Whether to fontify filenames based upon their extensions.
 The actual rules are defined by defcustom variable
@@ -948,7 +943,17 @@ defcustom option 'diredc-fontify-by-file-name', with the rules of
 that option taking precedence."
   :type 'boolean
   :package-version '(diredc . "1.4")
-  :group 'diredc-faces)
+  :group 'diredc-face)
+
+(defcustom diredc-fontify-executable-symbol t
+  "Whether to highlight a file's executable suffix symbol.
+This will be an asterisk that appears appended to a filename by
+the operating system listing program used by 'dired', ie. 'ls'.
+For customizing the fontification, see face
+'diredc-face-executable'."
+  :type 'boolean
+  :package-version '(diredc . "1.4")
+  :group 'diredc-face)
 
 (defcustom diredc-face-file-ext-alist nil
   "FONT-LOCK faces to apply to filenames, by their extensions.
@@ -977,7 +982,7 @@ your dired buffers."
                        (repeat (string :tag "Extension string"))
                        (sexp   :tag "Face spec")))
   :package-version '(diredc . "1.4")
-  :group 'diredc-faces)
+  :group 'diredc-face)
 
 (defcustom diredc-fontify-by-file-name nil
   "Whether to fontify filenames.
@@ -987,7 +992,7 @@ defcustom option 'diredc-fontify-by-file-ext', with the rules of
 this option taking precedence."
   :type 'boolean
   :package-version '(diredc . "1.4")
-  :group 'diredc-faces)
+  :group 'diredc-face)
 
 (defcustom diredc-face-file-name-alist nil
   "FONT-LOCK faces to apply to filenames.
@@ -1001,7 +1006,7 @@ or the unquoted symbol of a face."
                        (repeat (string :tag "File name string"))
                        (sexp   :tag "Face spec")))
   :package-version '(diredc . "1.4")
-  :group 'diredc-faces)
+  :group 'diredc-face)
 
 (defcustom diredc-improve-font-lock-performance t
   "Read the details below to understand the trade-offs.
@@ -1020,7 +1025,7 @@ When this variable is set non-NIL, modifications to defcustom
  and restarting 'diredc'."
   :type 'boolean
   :package-version '(diredc . "1.4")
-  :group 'diredc-faces)
+  :group 'diredc-face)
 
 
 ;;
@@ -1028,7 +1033,7 @@ When this variable is set non-NIL, modifications to defcustom
 
 (defgroup diredc-faces nil
   "Faces for the dired-commander suite of packages."
-  :group 'diredc)
+  :group 'diredc-face)
 
 (defface diredc-face-chmod-font-lock-dir   '((t :foreground "cyan"))
   "Face for chmod directory bits in dired buffers.
