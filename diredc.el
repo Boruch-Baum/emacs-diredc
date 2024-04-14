@@ -886,6 +886,18 @@ variable LC_NUMERIC."
   :type 'string
   :package-version '(diredc . "1.0"))
 
+(defcustom diredc-update-interval 1.0
+  "How often, in seconds, to update `diredc' buffers.
+Positive integers or floating point numbers are acceptable.
+See function `diredc--update-control' for details."
+  :type '(float
+          :validate
+          (lambda (w)
+            (when (> 0 (floor (widget-value w)))
+              (widget-put w :error "Positive number required.")
+              w)))
+  :package-version '(diredc . "1.4"))
+
 (defgroup diredc-frame nil
   "GUI Emacs settings."
   :group 'diredc)
@@ -1515,6 +1527,9 @@ variable `dired-font-lock-keywords'.")
 (defvar diredc--faces-created nil
   "Faces created by function `diredc--font-lock-file-extension-matcher'.")
 
+(defvar diredc--update-timer nil
+  "Timer object, created by function `diredc--update-control'.")
+
 
 ;;
 ;;; Functions - inline functions:
@@ -2117,6 +2132,39 @@ See customization variables `diredc-face-file-name-alist' and
                 ;; MATCH-HIGHLIGHT, ie. (SUBEXP FACENAME OVERRIDE LAXMATCH)
                 (list 1 '(face-user-default-spec 'diredc-face-collapse) t t)))
     'append))
+
+(defun diredc--revert-all ()
+  "Revert `diredc' buffers."
+  (dolist (elem dired-buffers)
+    (when (buffer-live-p (cdr elem))
+      (with-current-buffer (cdr elem)
+        (unless (or (= (buffer-size) 0)
+                    (eq major-mode 'wdired-mode))
+          (revert-buffer))))))
+
+(defun diredc--update-control (arg)
+  "Update `diredc' buffers.
+
+Revert `diredc' buffers every `diredc-update-interval' seconds,
+unless they are in `wdired-mode'. ARG should be either 'start or
+'stop.
+
+This mitigates a deficiency of `Dired' in that it relies upon
+`file-notify' to trigger buffer updates. However, `file-notify'
+does not trigger upon events that change the size of a file that
+is listed in a `Dired' buffer. Thus, for example, when a tar
+archive is created, vanilla `Dired' records its size as zero, and
+it will remain so until some other action triggers a
+`revert-buffer' event."
+  (and diredc--update-timer
+       (timerp diredc--update-timer)
+       (cancel-timer diredc--update-timer))
+  (when (eq arg 'start)
+    (setq diredc--update-timer
+      (run-with-timer
+        1
+        (if (< 0 diredc-update-interval) diredc-update-interval 1)
+        'diredc--revert-all))))
 
 (defun diredc--thousands (num)
   "Return a readable string for integer NUM.
@@ -4068,6 +4116,7 @@ function context, either `diredc-mode' or `dired-mode-hook'."
 This function does not change any `dired' settings or global
 modes."
   (interactive)
+  (diredc--update-control 'stop)
   (diredc-browse-mode -1)
   (while (condition-case nil
            (or (select-frame-by-name "diredc") t)
@@ -4195,6 +4244,7 @@ turn the mode on; Otherwise, turn it off."
             (when win (set-window-dedicated-p win t))))))
      (diredc--bonus-configuration 'diredc-mode)
      (diredc--font-lock-add-rules)
+     (diredc--update-control 'start)
      (message "Diredc-mode enabled in all Dired buffers."))
    (t
      (remove-hook 'dired-mode-hook #'diredc--hook-function)
@@ -4224,6 +4274,7 @@ turn the mode on; Otherwise, turn it off."
           (use-local-map dired-mode-map))))
      (diredc-restore-collation)
      (diredc-collapse-mode -1)
+     (diredc--update-control 'stop)
      (message "Diredc-mode disabled in all Dired buffers."))))
 
 ;;;###autoload

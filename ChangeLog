@@ -1,3 +1,10 @@
+2024-04-14  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--update-control): New feature to revert buffers regularly.
+	(diredc--revert-all, diredc-update-interval)
+	(diredc--update-timer): Support the new feature.
+	(diredc-exit, diredc-mode): Use the new feature.
+
 2024-04-08  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--set-term-environment): Remove setup commands
