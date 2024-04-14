@@ -911,31 +911,40 @@ variable LC_NUMERIC."
 ;;
 ;;; Customization faces:
 
+(defgroup diredc-faces nil
+  "Faces for the dired-commander suite of packages."
+  :group 'diredc)
+
 (defface diredc-face-chmod-font-lock-dir   '((t :foreground "cyan"))
   "Face for chmod directory bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-faces)
 
 (defface diredc-face-chmod-font-lock-read  '((t :foreground "blue"))
   "Face for chmod readable bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-faces)
 
 (defface diredc-face-chmod-font-lock-write '((t :foreground "yellow"))
   "Face for chmod writable bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-faces)
 
 (defface diredc-face-chmod-font-lock-exec  '((t :foreground "red"))
   "Face for chmod executable bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-faces)
 
 (defface diredc-hl-current-buffer '((t :inherit 'hl-line :bold t))
   "Face for current line in selected buffer.
 Applicable when variable `diredc-bonus-configuration' is non-nil.
 See also `hl-line-mode'."
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-faces)
 
 (defface diredc-header-line
  '((((class color) (background light))
@@ -943,7 +952,8 @@ See also `hl-line-mode'."
    (((class color) (background dark))
        (:background "black")))
   "Face remapping for the header line."
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-faces)
 
 (defface diredc-header-*-marks
  '((((class color) (background light))
@@ -951,7 +961,8 @@ See also `hl-line-mode'."
    (((class color) (background dark))
        (:foreground "brightcyan")))
   "Face for default marks' summary in header line."
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-faces)
 
 (defface diredc-header-D-marks
  '((((class color) (background light))
@@ -959,7 +970,8 @@ See also `hl-line-mode'."
    (((class color) (background dark))
        (:foreground "color-197")))
   "Face for deletion marks' summary in header line."
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-faces)
 
 
 ;;
