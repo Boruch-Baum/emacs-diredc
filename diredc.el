@@ -1088,10 +1088,10 @@ command as \"text\" and excludes all recognized as
   :type '(repeat (list (sexp   :tag "Emacs system type")
                  (file :must-match t :tag "Inclusion helper command")
                  (string :tag "Inclusion command's parameters") ;
-                 (string :tag "Inclusion command's desired output")
+                 (regexp :tag "Inclusion command's desired output")
                  (file :must-match t :tag "Exclusion helper command")
                  (string :tag "Exclusion command's parameters")
-                 (string :tag "Exclusion command's desried output")))
+                 (regexp :tag "Exclusion command's desried output")))
   :package-version '(diredc . "1.4")
   :group 'diredc-browse)
 (defalias 'diredc-browse-exclude-helper 'diredc-browse-helper
