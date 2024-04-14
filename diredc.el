@@ -1000,13 +1000,13 @@ is a string that must match an entry in `diredc-shell-list'."
 
 When this variable is NON-NIL, If inclusion helper command
 specified in customization variable
-`diredc-browse-exclude-helper' identifies the target file as an
+`diredc-browse-helper' identifies the target file as an
 image, then the settings of customization variables
 `diredc-browse-exclude-file-extensions',
 `diredc-browse-exclude-coding-systems' and
-`diredc-browse-exclude-helper' will be ignored..
+`diredc-browse-helper' will be ignored..
 
-Note that this can also be accomplished by entering
+Note that this can also be toggled by entering
 `diredc-browse-mode' with a PREFIX-ARG, ie. C-u \\<diredc-mode-map>\\[diredc-browse-mode]."
   :type 'boolean
   :package-version '(diredc . "1.4")
@@ -1031,7 +1031,7 @@ Example: For a tar file, use the form  ^tar$, not .tar
 This is useful to avoid displaying unnecessary garbage buffers
 when using `diredc-browse-mode'. See also the related
 customization variables `diredc-browse-exclude-coding-systems'
-and `diredc-browse-exclude-helper'.
+and `diredc-browse-helper'.
 
 Setting this variable isn't expected to be necessary, as all
 cases ought to be caught by the settings for
@@ -1046,14 +1046,14 @@ cases ought to be caught by the settings for
 This is useful to avoid displaying unnecessary garbage buffers
 when using `diredc-browse-mode'. See also the related
 customization variables `diredc-browse-exclude-coding-systems'
-and `diredc-browse-exclude-helper'.
+and `diredc-browse-helper'.
 
 See also Info node `(emacs) Coding Systems'"
   :type '(repeat coding-system)
   :package-version '(diredc . "1.0")
   :group 'diredc-browse)
 
-(defcustom diredc-browse-exclude-helper
+(defcustom diredc-browse-helper
   ;; FIXME: Only tested for (eq system-type 'gnu/linux). Please submit
   ;;        corrections or additions.
   (list
@@ -1092,8 +1092,11 @@ command as \"text\" and excludes all recognized as
                  (file :must-match t :tag "Exclusion helper command")
                  (string :tag "Exclusion command's parameters")
                  (string :tag "Exclusion command's desried output")))
-  :package-version '(diredc . "1.0")
+  :package-version '(diredc . "1.4")
   :group 'diredc-browse)
+(defalias 'diredc-browse-exclude-helper 'diredc-browse-helper
+  "This variable name was deprecated in version 1.4 in favor of
+`diredc-browse-helper', to which it is currently still aliased.")
 
 (defgroup diredc-sort nil
   "Mode line indicators for sort direction."
@@ -2425,8 +2428,8 @@ Reports in the \"diredc browse\" buffer any reason not to browse.
 The file is checked against the values of variables
 `diredc-browse-exclude-file-extensions' and
 `diredc-browse-exclude-coding-systems'. If those checks pass,
-variable `diredc-browse-exclude-helper' is used (see there)."
-  (let ((helper (assq system-type diredc-browse-exclude-helper))
+variable `diredc-browse-helper' is used (see there)."
+  (let ((helper (assq system-type diredc-browse-helper))
         (ext (or (file-name-extension filename)
                  (file-name-nondirectory filename)))
         output ext-match var coding-match helper-match browse-binary)
@@ -2469,7 +2472,7 @@ variable `diredc-browse-exclude-helper' is used (see there)."
              (format "coding system \"%s\".\n\nSee variable %s"
                      (car coding-match) var))
            (helper-match
-             (setq var 'diredc-browse-exclude-helper)
+             (setq var 'diredc-browse-helper)
              (format "property \"%s\".\n\nSee variable %s"
                      helper-match var))
            (browse-binary
