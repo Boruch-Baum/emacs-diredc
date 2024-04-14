@@ -1618,8 +1618,9 @@ to be visiting the same directory.
 
 See also: Emacs bug report #44023:
           https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44023"
-;; IMPORTANT: This is good for emacs 26.1, 27.1, 28.0(snapshot 2020-09)
-;; TODO: emacs 25.1, emacs 27.1
+;; IMPORTANT: This has been checked and is good for emacs versions
+;; 26.1, 27.1, 28.0, 29.2
+
   (let* ((old-buf (current-buffer))
          (dirname (if (consp dir-or-list) (car dir-or-list) dir-or-list))
        ;; BEGIN modification
