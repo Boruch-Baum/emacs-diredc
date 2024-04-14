@@ -2674,15 +2674,17 @@ position."
       ; diredc-hist--history-position
       pos)))
 
-(defun diredc-display--update (new)
+(defun diredc--update-listing-switches (new)
   "Internal function to update all `dired' buffers.
 NEW is the new listing switch entry to use."
   (setq dired-listing-switches (cdr new))
-  (dolist (buf (buffer-list))
-    (with-current-buffer buf
-      (when (eq major-mode 'dired-mode)
+  (dolist (elem dired-buffers)
+    (when (buffer-live-p (cdr elem))
+      (with-current-buffer (cdr elem)
         (setq dired-actual-switches dired-listing-switches)
-        (revert-buffer))))
+        (unless (or (= (buffer-size) 0)
+                    (eq major-mode 'wdired-mode))
+          (revert-buffer)))))
   (message "Dired using 'ls' switches: \"%s\"" (car new)))
 
 (defun diredc-hist--prune-deleted-directories ()
@@ -3460,7 +3462,7 @@ for this purpose, see `diredc-display-select-without-popup'."
                                 :around t
                                 :initial-index pos)))
       (when new
-        (diredc-display--update new)))))
+        (diredc--update-listing-switches new)))))
 
 (defun diredc-display-toggle ()
   "Toggle to the next data presentation format for the `diredc' buffer.
@@ -3481,7 +3483,7 @@ explicit selection of a specific display option."
      (when (not (zerop len))
        (setq new (nth (if (not pos) 0 (mod (1+ pos) len))
                    diredc-display-listing-switches-list))
-       (diredc-display--update new)))))
+       (diredc--update-listing-switches new)))))
 
 (defun diredc-show-more-file-info (&optional arg)
   "Change what/whether to display additional file information in minibuffer.
