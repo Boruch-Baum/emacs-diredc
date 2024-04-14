@@ -612,7 +612,8 @@ An alist of cons (PARAMETER . VALUE).
 See function `make-frame' and (info \"(elisp) Frame Parameters\")."
 ;; ie. eval (info "(elisp) Frame Parameters")
   :type '(repeat (cons (symbol :tag "Frame parameter")
-                       (sexp   :tag "Value"))))
+                       (sexp   :tag "Value")))
+  :package-version '(diredc . "1.2"))
 
 (defcustom diredc-frame-inherited-parameters
   '(left top width height)
@@ -621,7 +622,7 @@ A list of symbols of parameters.
 See (info \"(elisp) Frame Parameters\")."
 ;; ie. eval (info "(elisp) Frame Parameters")
   :type '(repeat (symbol :tag "Frame parameter"))
-  )
+  :package-version '(diredc . "1.2"))
 
 (defcustom diredc-allow-duplicate-buffers t
   "Allow multiple `dired' buffers to visit the same directory.
@@ -630,7 +631,7 @@ This must be set NON-NIL for `diredc' to work properly, and
 evaluating \\<global-keymap> \\[diredc] sets this variable
 non-nil for the session."
   :type 'boolean
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-bookmarks '()
   "List of bookmarked directories for `diredc'.
@@ -641,12 +642,12 @@ See also functions `diredc-bookmark-add' and
 `diredc-bookmark-jump'."
   :type '(repeat (cons (directory :tag "Directory to bookmark")
                        (string    :tag "Description / Annotation")))
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-hist-select-without-popup nil
   "Function `dir-hist-select' should never use package `popup'."
   :type 'boolean
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-shell-guess-fallback '("xdg-open")
   "Universal fallback suggested command(s).
@@ -676,7 +677,7 @@ perform:
   (advice-remove \='dired-guess-default
                  #\='diredc--advice--shell-guess-fallback)"
   :type '(repeat sexp)
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-display-listing-switches-list
     '(("classic long" . "-aFlv --group-directories-first --time-style=long-iso")
@@ -693,7 +694,7 @@ This is merely a list of values suitable for defcustom
 Also see the `man' page for `ls'."
   :type '(repeat (cons (string :tag "Description")
                        (string :tag "Listing switches")))
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-show-more-file-info-list
   '(("Don't display any additional information" . "")
@@ -708,17 +709,17 @@ string, and whose CDR is the text string of a shell command with
 the file's name replaced with \"%s\". See command `diredc-show-more-file-info'."
   :type '(repeat (cons (string :tag "Description")
                        (string :tag "Command")))
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-display-select-without-popup nil
   "Function `diredc-display-select' should never use package `popup'."
   :type 'boolean
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-shell-lines 15
   "Number of lines for a `diredc' shell window."
   :type 'integer
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-shell-list
   '(("POSIX shell"                  diredc-shell--launch-shell "/bin/sh")
@@ -745,7 +746,7 @@ the other dired directory ('$t2')."
   :type '(repeat (list (string :tag "Description")
                        (function  :must-match t :tag "Function")
                        (file :must-match t :tag "Shell executable")))
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-shell-default "POSIX shell"
   "Default shell to launch from a `dired' buffer.
@@ -756,7 +757,7 @@ is a string that must match an entry in `diredc-shell-list'."
                          diredc-shell-list)))
            (push 'radio result)
            result)
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-browse-exclude-file-extensions (list "^db$" "^docx$")
   "Regexps for filename extensions of files not to be browsed.
@@ -772,7 +773,7 @@ Setting this variable isn't expected to be necessary, as all
 cases ought to be caught by the settings for
 `diredc-browse-exclude-coding-systems'."
   :type '(repeat string)
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-browse-exclude-coding-systems
   '(binary no-conversion no-conversion-multibyte)
@@ -782,7 +783,7 @@ when using `diredc-browse-mode'. See also the related
 customization variables `diredc-browse-exclude-coding-systems'
 and `diredc-browse-exclude-helper'."
   :type '(repeat coding-system)
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-browse-exclude-helper
   ;; FIXME: Only tested for (eq system-type 'gnu/linux). Please submit
@@ -821,7 +822,7 @@ command as \"text\" and excludes all recognized as
                  (file :must-match t :tag "Exclusion helper command")
                  (string :tag "Exclusion command's parameters")
                  (string :tag "Exclusion command's desried output")))
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-async-processes-are-persistent t
   "Whether spawned asynchronous processes out-live Emacs.
@@ -836,7 +837,7 @@ SPACE, thus spawning an *Async Shell Command* buffer and logging
 there STDOUT and STDERR for the process. See
 `diredc-do-async-shell-command'."
   :type 'boolean
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-bonus-configuration t
   "Supplemental configuration for `diredc' buffers.
@@ -848,7 +849,7 @@ enables those options that the `diredc' developer feels are sane
 and desirable for a newcomer to `dired'. For exactly what it
 does, see function `diredc-bonus-configuration'."
   :type 'boolean
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 
 (defcustom diredc-sort-prefix-ascending  ""
@@ -858,7 +859,7 @@ This is one of a set of four related customizable variables:
 `diredc-sort-prefix-descending', and
 `diredc-sort-suffix-descending'."
   :type 'string
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-sort-suffix-ascending  "↑"
   "Mode line indicator for sort direction.
@@ -867,7 +868,7 @@ This is one of a set of four related customizable variables:
 `diredc-sort-prefix-descending', and
 `diredc-sort-suffix-descending'."
   :type 'string
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-sort-prefix-descending ""
   "Mode line indicator for sort direction.
@@ -876,7 +877,7 @@ This is one of a set of four related customizable variables:
 `diredc-sort-prefix-descending', and
 `diredc-sort-suffix-descending'."
   :type 'string
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-sort-suffix-descending "↓"
   "Mode line indicator for sort direction.
@@ -885,13 +886,13 @@ This is one of a set of four related customizable variables:
 `diredc-sort-prefix-descending', and
 `diredc-sort-suffix-descending'."
   :type 'string
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-header-line t
   "Whether to display a header line.
 This will summarize the number and size of marked items."
   :type 'boolean
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defcustom diredc-thousands-separator ","
   "How to divide long numbers for readability.
@@ -899,7 +900,7 @@ This is in lieu of getting the information from environment
 variable LC_NUMERIC."
   ;; ref: https://lists.gnu.org/archive/html/emacs-devel/2021-06/msg00139.html
   :type 'string
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 ;; NOTE: defcustom 'diredc-face-ext-alist' is placed below, after
 ;; function 'diredc--font-lock-add-file-extensions' because that
@@ -913,28 +914,28 @@ variable LC_NUMERIC."
 (defface diredc-face-chmod-font-lock-dir   '((t :foreground "cyan"))
   "Face for chmod directory bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defface diredc-face-chmod-font-lock-read  '((t :foreground "blue"))
   "Face for chmod readable bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defface diredc-face-chmod-font-lock-write '((t :foreground "yellow"))
   "Face for chmod writable bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defface diredc-face-chmod-font-lock-exec  '((t :foreground "red"))
   "Face for chmod executable bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defface diredc-hl-current-buffer '((t :inherit 'hl-line :bold t))
   "Face for current line in selected buffer.
 Applicable when variable `diredc-bonus-configuration' is non-nil.
 See also `hl-line-mode'."
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defface diredc-header-line
  '((((class color) (background light))
@@ -942,7 +943,7 @@ See also `hl-line-mode'."
    (((class color) (background dark))
        (:background "black")))
   "Face remapping for the header line."
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defface diredc-header-*-marks
  '((((class color) (background light))
@@ -950,7 +951,7 @@ See also `hl-line-mode'."
    (((class color) (background dark))
        (:foreground "brightcyan")))
   "Face for default marks' summary in header line."
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 (defface diredc-header-D-marks
  '((((class color) (background light))
@@ -958,7 +959,7 @@ See also `hl-line-mode'."
    (((class color) (background dark))
        (:foreground "color-197")))
   "Face for deletion marks' summary in header line."
-  :group 'diredc)
+  :package-version '(diredc . "1.0"))
 
 
 ;;
@@ -3743,14 +3744,14 @@ If no `diredc' frame exists, create one with a dual-window layout."
 ;;   "What version control methods `diredc-git-jump' acts on."
 ;;   :type '(repeat (choice (const 'git)
 ;;                          (const 'cvs)))
-;;   :group 'diredc)
+;;   )
 ;;
 ;; (defcustom diredc-vc-root-dirs '("~")
 ;;   "From where to search for sub-directories under version control.
 ;;
 ;; See `diredc-git-jump'."
 ;;   :type '(repeat (directory))
-;;   :group 'diredc)
+;;   )
 ;;
 ;; (defun diredc-vc-jump (&optional vc-type)
 ;;   "Jump to a directory under version control.
