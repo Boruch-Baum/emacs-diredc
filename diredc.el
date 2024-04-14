@@ -2140,7 +2140,10 @@ See customization variables `diredc-face-file-name-alist' and
       (with-current-buffer (cdr elem)
         (unless (or (= (buffer-size) 0)
                     (eq major-mode 'wdired-mode))
-          (revert-buffer))))))
+          (let ((p (point)))
+            (revert-buffer)
+            (goto-char p)
+            (hl-line-mode)))))))
 
 (defun diredc--update-control (arg)
   "Update `diredc' buffers.
