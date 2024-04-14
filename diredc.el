@@ -599,60 +599,6 @@ See there and your version of \"man(1) ls\".")
 
 
 ;;
-;;; Customization faces:
-
-(defface diredc-face-chmod-font-lock-dir   '((t :foreground "cyan"))
-  "Face for chmod directory bits in dired buffers.
-Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :group 'diredc)
-
-(defface diredc-face-chmod-font-lock-read  '((t :foreground "blue"))
-  "Face for chmod readable bits in dired buffers.
-Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :group 'diredc)
-
-(defface diredc-face-chmod-font-lock-write '((t :foreground "yellow"))
-  "Face for chmod writable bits in dired buffers.
-Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :group 'diredc)
-
-(defface diredc-face-chmod-font-lock-exec  '((t :foreground "red"))
-  "Face for chmod executable bits in dired buffers.
-Applicable when variable `diredc-bonus-configuration' is non-nil."
-  :group 'diredc)
-
-(defface diredc-hl-current-buffer '((t :inherit 'hl-line :bold t))
-  "Face for current line in selected buffer.
-Applicable when variable `diredc-bonus-configuration' is non-nil.
-See also `hl-line-mode'."
-  :group 'diredc)
-
-(defface diredc-header-line
- '((((class color) (background light))
-       (:background "white"))
-   (((class color) (background dark))
-       (:background "black")))
-  "Face remapping for the header line."
-  :group 'diredc)
-
-(defface diredc-header-*-marks
- '((((class color) (background light))
-       (:foreground "blue"))
-   (((class color) (background dark))
-       (:foreground "brightcyan")))
-  "Face for default marks' summary in header line."
-  :group 'diredc)
-
-(defface diredc-header-D-marks
- '((((class color) (background light))
-       (:foreground "darkred" :bold t))
-   (((class color) (background dark))
-       (:foreground "color-197")))
-  "Face for deletion marks' summary in header line."
-  :group 'diredc)
-
-
-;;
 ;;; Customization variables:
 
 (defgroup diredc nil
@@ -954,6 +900,66 @@ variable LC_NUMERIC."
   ;; ref: https://lists.gnu.org/archive/html/emacs-devel/2021-06/msg00139.html
   :type 'string
   :group 'diredc)
+
+;; NOTE: defcustom 'diredc-face-ext-alist' is placed below, after
+;; function 'diredc--font-lock-add-file-extensions' because that
+;; function is used by the defcustom :set keyword.
+;; TODO: Figure out how to position the variable here.
+
+
+;;
+;;; Customization faces:
+
+(defface diredc-face-chmod-font-lock-dir   '((t :foreground "cyan"))
+  "Face for chmod directory bits in dired buffers.
+Applicable when variable `diredc-bonus-configuration' is non-nil."
+  :group 'diredc)
+
+(defface diredc-face-chmod-font-lock-read  '((t :foreground "blue"))
+  "Face for chmod readable bits in dired buffers.
+Applicable when variable `diredc-bonus-configuration' is non-nil."
+  :group 'diredc)
+
+(defface diredc-face-chmod-font-lock-write '((t :foreground "yellow"))
+  "Face for chmod writable bits in dired buffers.
+Applicable when variable `diredc-bonus-configuration' is non-nil."
+  :group 'diredc)
+
+(defface diredc-face-chmod-font-lock-exec  '((t :foreground "red"))
+  "Face for chmod executable bits in dired buffers.
+Applicable when variable `diredc-bonus-configuration' is non-nil."
+  :group 'diredc)
+
+(defface diredc-hl-current-buffer '((t :inherit 'hl-line :bold t))
+  "Face for current line in selected buffer.
+Applicable when variable `diredc-bonus-configuration' is non-nil.
+See also `hl-line-mode'."
+  :group 'diredc)
+
+(defface diredc-header-line
+ '((((class color) (background light))
+       (:background "white"))
+   (((class color) (background dark))
+       (:background "black")))
+  "Face remapping for the header line."
+  :group 'diredc)
+
+(defface diredc-header-*-marks
+ '((((class color) (background light))
+       (:foreground "blue"))
+   (((class color) (background dark))
+       (:foreground "brightcyan")))
+  "Face for default marks' summary in header line."
+  :group 'diredc)
+
+(defface diredc-header-D-marks
+ '((((class color) (background light))
+       (:foreground "darkred" :bold t))
+   (((class color) (background dark))
+       (:foreground "color-197")))
+  "Face for deletion marks' summary in header line."
+  :group 'diredc)
+
 
 ;;
 ;;; Buffer-local variables:
