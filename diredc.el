@@ -649,36 +649,6 @@ See also functions `diredc-bookmark-add' and
   :type 'boolean
   :package-version '(diredc . "1.0"))
 
-(defcustom diredc-shell-guess-fallback '("xdg-open")
-  "Universal fallback suggested command(s).
-
-This offers a final option if no matching regex is found in
-either `dired-guess-shell-alist-default' or
-`dired-guess-shell-alist-default'.
-
-The value is a list of COMMAND where each COMMAND can either be a
-string or a Lisp expression that evaluates to a string. If this
-expression needs to consult the name of the file for which the
-shell commands are being requested, it can access that file name
-as the variable \"file\". If several COMMANDs are given, the first
-one will be the default and the rest will be added temporarily to
-the history and can be retrieved with \\<minibuffer-local-map>
-\\[previous-history-element].
-
-IMPORTANT: This feature requires function `dired-guess-default'
-be advised by `diredc--advice--shell-guess-fallback', as follows:
-
-  (advice-add \='dired-guess-default
-              :around #\='diredc--advice--shell-guess-fallback)
-
-It may have already been done for you. In order to undo it,
-perform:
-
-  (advice-remove \='dired-guess-default
-                 #\='diredc--advice--shell-guess-fallback)"
-  :type '(repeat sexp)
-  :package-version '(diredc . "1.0"))
-
 (defcustom diredc-display-listing-switches-list
     '(("classic long" . "-aFlv --group-directories-first --time-style=long-iso")
       ("long, derefernce links, K sizes" . "-aFlv --block-size=K --group-directories-first")
@@ -716,10 +686,87 @@ the file's name replaced with \"%s\". See command `diredc-show-more-file-info'."
   :type 'boolean
   :package-version '(diredc . "1.0"))
 
+(defcustom diredc-async-processes-are-persistent t
+  "Whether spawned asynchronous processes out-live Emacs.
+When non-NIL, asynchronous processes spawned via
+`dired-do-async-shell-command' will survive even after exiting
+Emacs. However, because *Async Shell Command* buffers will not be
+spawned, STDOUT and STDERR for the process will be lost.
+
+Even when this variable is non-NIL, the non-persistent behavior
+can be chosen at run-time by prefixing the process command with a
+SPACE, thus spawning an *Async Shell Command* buffer and logging
+there STDOUT and STDERR for the process. See
+`diredc-do-async-shell-command'."
+  :type 'boolean
+  :package-version '(diredc . "1.0"))
+
+(defcustom diredc-bonus-configuration t
+  "Supplemental configuration for `diredc' buffers.
+
+Dired was developed more than 25 years ago. Around it have
+developed very many configuration options and also very many
+opinions about those options. Setting this variable non-nil
+enables those options that the `diredc' developer feels are sane
+and desirable for a newcomer to `dired'. For exactly what it
+does, see function `diredc-bonus-configuration'."
+  :type 'boolean
+  :package-version '(diredc . "1.0"))
+
+(defcustom diredc-header-line t
+  "Whether to display a header line.
+This will summarize the number and size of marked items."
+  :type 'boolean
+  :package-version '(diredc . "1.0"))
+
+(defcustom diredc-thousands-separator ","
+  "How to divide long numbers for readability.
+This is in lieu of getting the information from environment
+variable LC_NUMERIC."
+  ;; ref: https://lists.gnu.org/archive/html/emacs-devel/2021-06/msg00139.html
+  :type 'string
+  :package-version '(diredc . "1.0"))
+
+(defgroup diredc-shell nil
+  "Pop-up shell settings."
+  :group 'diredc)
+
+(defcustom diredc-shell-guess-fallback '("xdg-open")
+  "Universal fallback suggested command(s).
+
+This offers a final option if no matching regex is found in
+either `dired-guess-shell-alist-default' or
+`dired-guess-shell-alist-default'.
+
+The value is a list of COMMAND where each COMMAND can either be a
+string or a Lisp expression that evaluates to a string. If this
+expression needs to consult the name of the file for which the
+shell commands are being requested, it can access that file name
+as the variable `file'. If several COMMANDs are given, the first
+one will be the default and the rest will be added temporarily to
+the history and can be retrieved with \\<minibuffer-local-map>
+\\[previous-history-element].
+
+IMPORTANT: This feature requires function `dired-guess-default'
+be advised by `diredc--advice--shell-guess-fallback', as follows:
+
+  (advice-add 'dired-guess-default
+              :around #'diredc--advice--shell-guess-fallback)
+
+It may have already been done for you. In order to undo it,
+perform:
+
+  (advice-remove 'dired-guess-default
+                 #'diredc--advice--shell-guess-fallback)"
+  :type '(repeat sexp)
+  :package-version '(diredc . "1.0")
+  :group 'diredc-shell)
+
 (defcustom diredc-shell-lines 15
   "Number of lines for a `diredc' shell window."
   :type 'integer
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-shell)
 
 (defcustom diredc-shell-list
   '(("POSIX shell"                  diredc-shell--launch-shell "/bin/sh")
@@ -746,7 +793,8 @@ the other dired directory ('$t2')."
   :type '(repeat (list (string :tag "Description")
                        (function  :must-match t :tag "Function")
                        (file :must-match t :tag "Shell executable")))
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-shell)
 
 (defcustom diredc-shell-default "POSIX shell"
   "Default shell to launch from a `dired' buffer.
@@ -757,7 +805,12 @@ is a string that must match an entry in `diredc-shell-list'."
                          diredc-shell-list)))
            (push 'radio result)
            result)
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-shell)
+
+(defgroup diredc-browse nil
+  "Quick file preview settings."
+  :group 'diredc)
 
 (defcustom diredc-browse-exclude-file-extensions (list "^db$" "^docx$")
   "Regexps for filename extensions of files not to be browsed.
@@ -773,7 +826,8 @@ Setting this variable isn't expected to be necessary, as all
 cases ought to be caught by the settings for
 `diredc-browse-exclude-coding-systems'."
   :type '(repeat string)
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-browse)
 
 (defcustom diredc-browse-exclude-coding-systems
   '(binary no-conversion no-conversion-multibyte)
@@ -783,7 +837,8 @@ when using `diredc-browse-mode'. See also the related
 customization variables `diredc-browse-exclude-coding-systems'
 and `diredc-browse-exclude-helper'."
   :type '(repeat coding-system)
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-browse)
 
 (defcustom diredc-browse-exclude-helper
   ;; FIXME: Only tested for (eq system-type 'gnu/linux). Please submit
@@ -822,49 +877,8 @@ command as \"text\" and excludes all recognized as
                  (file :must-match t :tag "Exclusion helper command")
                  (string :tag "Exclusion command's parameters")
                  (string :tag "Exclusion command's desried output")))
-  :package-version '(diredc . "1.0"))
-
-(defcustom diredc-async-processes-are-persistent t
-  "Whether spawned asynchronous processes out-live Emacs.
-When non-NIL, asynchronous processes spawned via
-`dired-do-async-shell-command' will survive even after exiting
-Emacs. However, because *Async Shell Command* buffers will not be
-spawned, STDOUT and STDERR for the process will be lost.
-
-Even when this variable is non-NIL, the non-persistent behavior
-can be chosen at run-time by prefixing the process command with a
-SPACE, thus spawning an *Async Shell Command* buffer and logging
-there STDOUT and STDERR for the process. See
-`diredc-do-async-shell-command'."
-  :type 'boolean
-  :package-version '(diredc . "1.0"))
-
-(defcustom diredc-bonus-configuration t
-  "Supplemental configuration for `diredc' buffers.
-
-Dired was developed more than 25 years ago. Around it have
-developed very many configuration options and also very many
-opinions about those options. Setting this variable non-nil
-enables those options that the `diredc' developer feels are sane
-and desirable for a newcomer to `dired'. For exactly what it
-does, see function `diredc-bonus-configuration'."
-  :type 'boolean
-  :package-version '(diredc . "1.0"))
-
-
-(defcustom diredc-header-line t
-  "Whether to display a header line.
-This will summarize the number and size of marked items."
-  :type 'boolean
-  :package-version '(diredc . "1.0"))
-
-(defcustom diredc-thousands-separator ","
-  "How to divide long numbers for readability.
-This is in lieu of getting the information from environment
-variable LC_NUMERIC."
-  ;; ref: https://lists.gnu.org/archive/html/emacs-devel/2021-06/msg00139.html
-  :type 'string
-  :package-version '(diredc . "1.0"))
+  :package-version '(diredc . "1.0")
+  :group 'diredc-browse)
 
 (defgroup diredc-sort nil
   "Mode line indicators for sort direction."
