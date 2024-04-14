@@ -2340,7 +2340,7 @@ For keybindings and environment variables."
   (setq-local diredc--shell-point (point-max)) ; See kludge below.
   (funcall comint-input-sender
            (get-buffer-process (current-buffer))
-           (format "export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=\"%s\" t2=\"%s\"; printf 'diredc-shell: Use C-c C-k to close this pop-up shell.\ndiredc-shell: Special variables: $d1 $d2 $f1 $f2 $t1 $t2%s\n'"
+           (format " export INSIDE_DIREDC=\"%s\" d1=\"%s\" d2=\"%s\" f1=\"%s\" f2=\"%s\" t1=\"%s\" t2=\"%s\"; printf 'diredc-shell: Use C-c C-k to close this pop-up shell.\ndiredc-shell: Special variables: $d1 $d2 $f1 $f2 $t1 $t2%s\n'"
                    diredc--version
                    d1 (or d2 "") (or f1 "") (or f2 "")
                    (diredc-shell--array-variable program t1)
