@@ -998,7 +998,7 @@ is a string that must match an entry in `diredc-shell-list'."
 (defcustom diredc-browse-exclude-file-extensions (list "^db$" "^docx$")
   "Regexps for filename extensions of files not to be browsed.
 
-Example: For a tar file, the use form  ^tar$, not .tar
+Example: For a tar file, use the form  ^tar$, not .tar
 
 This is useful to avoid displaying unnecessary garbage buffers
 when using `diredc-browse-mode'. See also the related
@@ -1018,7 +1018,9 @@ cases ought to be caught by the settings for
 This is useful to avoid displaying unnecessary garbage buffers
 when using `diredc-browse-mode'. See also the related
 customization variables `diredc-browse-exclude-coding-systems'
-and `diredc-browse-exclude-helper'."
+and `diredc-browse-exclude-helper'.
+
+See also Info node `(emacs) Coding Systems'"
   :type '(repeat coding-system)
   :package-version '(diredc . "1.0")
   :group 'diredc-browse)
