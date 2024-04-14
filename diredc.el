@@ -852,42 +852,6 @@ does, see function `diredc-bonus-configuration'."
   :package-version '(diredc . "1.0"))
 
 
-(defcustom diredc-sort-prefix-ascending  ""
-  "Mode line indicator for sort direction.
-This is one of a set of four related customizable variables:
-`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
-`diredc-sort-prefix-descending', and
-`diredc-sort-suffix-descending'."
-  :type 'string
-  :package-version '(diredc . "1.0"))
-
-(defcustom diredc-sort-suffix-ascending  "↑"
-  "Mode line indicator for sort direction.
-This is one of a set of four related customizable variables:
-`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
-`diredc-sort-prefix-descending', and
-`diredc-sort-suffix-descending'."
-  :type 'string
-  :package-version '(diredc . "1.0"))
-
-(defcustom diredc-sort-prefix-descending ""
-  "Mode line indicator for sort direction.
-This is one of a set of four related customizable variables:
-`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
-`diredc-sort-prefix-descending', and
-`diredc-sort-suffix-descending'."
-  :type 'string
-  :package-version '(diredc . "1.0"))
-
-(defcustom diredc-sort-suffix-descending "↓"
-  "Mode line indicator for sort direction.
-This is one of a set of four related customizable variables:
-`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
-`diredc-sort-prefix-descending', and
-`diredc-sort-suffix-descending'."
-  :type 'string
-  :package-version '(diredc . "1.0"))
-
 (defcustom diredc-header-line t
   "Whether to display a header line.
 This will summarize the number and size of marked items."
@@ -901,6 +865,50 @@ variable LC_NUMERIC."
   ;; ref: https://lists.gnu.org/archive/html/emacs-devel/2021-06/msg00139.html
   :type 'string
   :package-version '(diredc . "1.0"))
+
+(defgroup diredc-sort nil
+  "Mode line indicators for sort direction."
+  :group 'diredc)
+
+(defcustom diredc-sort-prefix-ascending  ""
+  "Mode line indicator for sort direction.
+This is one of a set of four related customizable variables:
+`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
+`diredc-sort-prefix-descending', and
+`diredc-sort-suffix-descending'."
+  :type 'string
+  :package-version '(diredc . "1.0")
+  :group 'diredc-sort)
+
+(defcustom diredc-sort-suffix-ascending  "↑"
+  "Mode line indicator for sort direction.
+This is one of a set of four related customizable variables:
+`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
+`diredc-sort-prefix-descending', and
+`diredc-sort-suffix-descending'."
+  :type 'string
+  :package-version '(diredc . "1.0")
+  :group 'diredc-sort)
+
+(defcustom diredc-sort-prefix-descending ""
+  "Mode line indicator for sort direction.
+This is one of a set of four related customizable variables:
+`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
+`diredc-sort-prefix-descending', and
+`diredc-sort-suffix-descending'."
+  :type 'string
+  :package-version '(diredc . "1.0")
+  :group 'diredc-sort)
+
+(defcustom diredc-sort-suffix-descending "↓"
+  "Mode line indicator for sort direction.
+This is one of a set of four related customizable variables:
+`diredc-sort-prefix-ascending', `diredc-sort-suffix-ascending',
+`diredc-sort-prefix-descending', and
+`diredc-sort-suffix-descending'."
+  :type 'string
+  :package-version '(diredc . "1.0")
+  :group 'diredc-sort)
 
 ;; NOTE: defcustom 'diredc-face-ext-alist' is placed below, after
 ;; function 'diredc--font-lock-add-file-extensions' because that
