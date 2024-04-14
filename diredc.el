@@ -4060,6 +4060,7 @@ Returns NON-NIL upon success."
       (when (not (eq w original-win))
         (select-window w 'norecord)
         (when (or (eq major-mode 'dired-mode)
+                  (eq major-mode 'wdired-mode)
                   (bound-and-true-p diredc-browse--buffer))
           (setq done t)
           (select-window w))))
