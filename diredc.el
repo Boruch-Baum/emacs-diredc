@@ -1226,7 +1226,7 @@ change of state.")
         (setq buffer-list
           (mapcar
             (lambda (x)
-              (cons (with-current-buffer x dired-directory) x))
+              (cons (buffer-local-value 'dired-directory x) x))
             buffer-list))
         (delete-other-windows)
         (split-window-right)
