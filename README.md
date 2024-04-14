@@ -54,6 +54,11 @@ all file managers, and also some unique features:
      * inspired by `midnight commander`s "M-i"
    * Fontify filenames based upon their names or extensions
      * fontify `executable` suffix symbol
+   * Optional "drilled-down" view of "sparse" paths (use "}", "{")
+     * ie. ./paths/with/only/single/entries
+     * Uses a `diredc`-patched version of external package
+       `dired-collapse` (https://github.com/Fuco1/dired-hacks)
+       pending pull-request merges.
 
 
 ## Bonus customization features
@@ -332,6 +337,11 @@ all file managers, and also some unique features:
     delimited with a space.
 
  *) universal fallback guess shell command(s)
+
+ *] Use `diredc-collapse-mode` (default: `{` or `}`) to view that
+    single file at the bottom of a "sparse" path, ie.
+    ./path/with/only/single/entry. This feature respects
+    `dired-omit-mode`.
 
 
 ## Feedback:

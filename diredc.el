@@ -82,6 +82,11 @@
 ;;     * inspired by 'midnight commander's "M-i"
 ;;   * Fontify filenames based upon their names or extensions
 ;;     * fontify 'executable' suffix symbol
+;;   * Optional "drilled-down" view of "sparse" paths (use "}", "{")
+;;     * ie. ./paths/with/only/single/entries
+;;     * Uses a 'diredc'-patched version of external package
+;;       'dired-collapse' (https://github.com/Fuco1/dired-hacks)
+;;       pending pull-request merges.
 ;;
 ;; Bonus customization features
 ;;   * Customize colors for chmod bits (font-lock)
@@ -109,9 +114,8 @@
 ;;
 ;; Suggested (not part of Emacs):
 ;;
-;;   popup       -- for popup-menu*
-;;   key-assist  -- for key-assist
-
+;;   popup          -- for popup-menu*
+;;   key-assist     -- for key-assist
 ;;
 ;;; Installation:
 ;;
@@ -352,8 +356,13 @@
 ;;    If the selected shell supports array variables, then $t1 and $t2 will
 ;;    be set as such; Otherwise, elements will be quoted and delimited with
 ;;    a space.
-
+;;
 ;; *) universal fallback guess shell command(s)
+;;
+;; *] Use `diredc-collapse-mode' (default: `{' or `}') to view that
+;;    single file at the bottom of a "sparse" path, ie.
+;;    ./path/with/only/single/entry. This feature respects
+;;    `dired-omit-mode'.
 
 ;;
 ;;; Feedback:
@@ -400,6 +409,170 @@
 (require 'key-assist nil t)
 (declare-function key-assist                 "ext:key-assist.el")
 (declare-function key-assist--get-keybinding "ext:key-assist.el")
+
+
+;;
+;;; Forked Code:
+
+;; Upstream: https://github.com/Fuco1/dired-hacks/blob/master/dired-collapse.el
+;; Author: Matúš Goljer <matus.goljer@gmail.com>
+;; Copyright: ©2017-2024, Matúš Goljer
+;; License:  GPL 3
+;; Fork purpose:
+;; * Apply mode globally
+;;   https://github.com/Fuco1/dired-hacks/pull/209
+;; * Support `dired-omit-mode'
+;;   https://github.com/Fuco1/dired-hacks/pull/210
+;; * Remove dependencies
+;;   https://github.com/Fuco1/dired-hacks/pull/211
+;; * Avoid using function 'length' on lists
+;;   https://github.com/Fuco1/dired-hacks/pull/212
+;; * Apply overlay optionally
+;;   https://github.com/Fuco1/dired-hacks/pull/213
+;; * Use custom shadow face
+;;   For me, 'shadow alters the :foreground property, which conflicts
+;;   with other `diredc' font-lock features, so we guarantee a face
+;;   that only alters the :background property, and only subtly.
+
+(defgroup diredc-collapse ()
+  "Collapse unique nested paths in Diredc listings."
+  :group 'diredc
+  :prefix "diredc-collapse-")
+
+(defcustom diredc-collapse-remote nil
+  "If non-nil, enable `diredc-collapse' in remote (TRAMP) buffers."
+  :type 'boolean
+  :package-version '(diredc . "1.4")
+  :group 'diredc-collapse)
+
+(defcustom diredc-collapse-fontify nil
+  "If non-nil, fontify with a shaded overlay."
+  :type 'boolean
+  :package-version '(diredc . "1.4")
+  :group 'diredc-collapse)
+
+(defface diredc-collapse-shadow-face
+  ;; ref: https://emacs.stackexchange.com/questions/69050
+  (list (list t (list :background
+    (let*
+      ((fg (color-values (face-attribute 'default :foreground)))
+       (bg (color-values (face-attribute 'default :background)))
+       (fg-factor 0.92)
+       (bg-factor (- 1.0 fg-factor)))
+     (apply 'format
+       (cons "#%02x%02x%02x"
+         (mapcar
+           (lambda (n)
+             (ash (truncate (+ (* (nth n fg) bg-factor)
+                               (* (nth n bg) fg-factor)))
+                  -8))
+           '(0 1 2))))))))
+  "Slightly adjust the background color of collapsed `diredc' entries.")
+
+(defvar diredc-collapse-mode nil
+  "Whether `diredc' extensions to `dired' are globally enabled.
+
+Don't ever set this variable directly! Instead, evaluate function
+`diredc-mode'.")
+
+(defun diredc-collapse-mode (&optional arg)
+  "Toggle collapsing of unique nested paths in Diredc buffers.
+Interactively, toggle the mode. From Lisp, with ARG positive or NIL,
+turn the mode on; Otherwise, turn it off."
+  (interactive)
+  (cond
+    ((called-interactively-p 'interactive)
+      (setq diredc-collapse-mode (not diredc-collapse-mode)))
+    (arg
+     (setq diredc-collapse-mode (if (< 0 arg) t nil)))
+    (t
+     (setq diredc-collapse-mode t)))
+  (cond
+   (diredc-collapse-mode
+    (add-hook 'dired-after-readin-hook         'diredc-collapse 90)
+    (add-hook 'dired-subtree-after-insert-hook 'diredc-collapse 90)
+    (add-hook 'dired-omit-mode-hook            'diredc-collapse 90))
+   (t ; ie. not diredc-collapse-mode
+    (remove-hook 'dired-after-readin-hook 'diredc-collapse)
+    (remove-hook 'dired-subtree-after-insert-hook 'diredc-collapse)
+    (remove-hook 'dired-omit-mode-hook 'diredc-collapse)))
+  (diredc--revert-all)
+  (let (message-log-max)
+    (message "Diredc-collapse-mode %s." (if diredc-collapse-mode "enabled" "disabled"))))
+
+(defun diredc-collapse--replace-file (file)
+  "Replace file on the current line with FILE."
+  (delete-region (line-beginning-position) (1+ (line-end-position)))
+  (insert "  ")
+  (insert-directory file dired-listing-switches nil nil)
+  (forward-line -1)
+  (dired-align-file (line-beginning-position) (1+ (line-end-position)))
+  (when-let (replaced-file (dired-get-filename nil t))
+    (when (file-remote-p replaced-file)
+      (while (search-forward (dired-current-directory) (line-end-position) t)
+        (replace-match "")))))
+
+(defun diredc-collapse--create-ov (&optional to-eol)
+  "Create the shadow overlay which marks the collapsed path.
+
+If TO-EOL is non-nil, extend the overlay over the whole
+filename (for example when the final directory is empty)."
+  (save-excursion
+    (dired-move-to-filename)
+    (let* ((beg (point))
+           (end (save-excursion
+                  (dired-move-to-end-of-filename)
+                  (if to-eol
+                      (point)
+                    (1+ (search-backward "/")))))
+           (ov (make-overlay beg end)))
+      (overlay-put ov 'face 'diredc-collapse-shadow-face)
+      ov)))
+
+(defun diredc-collapse ()
+  "Collapse unique nested paths in diredc listings."
+  (when (or (not (file-remote-p default-directory)) diredc-collapse-remote)
+    (let (;; dired-hide-details-mode hides details by assigning a
+          ;; special invisibility text property to them, while
+          ;; diredc-collapse requires all the details. So we disable
+          ;; invisibility here temporarily.
+          (buffer-invisibility-spec nil)
+          (inhibit-read-only t)
+          (rgx (and dired-omit-mode (dired-omit-regexp))))
+      (save-excursion
+        (goto-char (point-min))
+        (while (not (eobp))
+          (when-let ((filename-no-dir (dired-get-filename 'no-dir t)))
+            (when (and (looking-at-p dired-re-dir)
+                       (not (member filename-no-dir (list "." "..")))
+                       (not (eolp)))
+              (let ((path (dired-get-filename nil t))
+                    entry-1 entry-2 files)
+                (while (and (file-directory-p path)
+                            (file-accessible-directory-p path)
+                            (setq files (directory-files path
+                                                         'full
+                                                         directory-files-no-dot-files-regexp))
+                            (or (not dired-omit-mode)
+                                (setq files (cl-remove-if
+                                              (lambda(f)
+                                                (string-match rgx (file-name-nondirectory f)))
+                                              files)))
+                            (setq entry-1 (pop files))
+                            (not (setq entry-2 (pop files))))
+                  (setq path entry-1))
+                (if (and (not files)
+                         (equal path (dired-get-filename nil t)))
+                    (when diredc-collapse-fontify
+                      (diredc-collapse--create-ov 'to-eol))
+                  (setq path (s-chop-prefix (dired-current-directory) path))
+                  (when (string-match-p "/" path)
+                    (let ((default-directory (dired-current-directory)))
+                      (diredc-collapse--replace-file path))
+                    (dired-insert-set-properties (line-beginning-position) (line-end-position))
+                    (when diredc-collapse-fontify
+                      (diredc-collapse--create-ov (not entry-1))))))))
+          (forward-line 1))))))
 
 
 ;;
@@ -454,6 +627,8 @@ Returns a keymap."
     (define-key map (kbd "C-<delete> r") 'diredc-trash-restore)
     (define-key map [remap beginning-of-buffer] 'diredc-beginning-of-buffer)
     (define-key map [remap end-of-buffer]       'diredc-end-of-buffer)
+    (define-key map (kbd "\{")         'diredc-collapse-mode)
+    (define-key map (kbd "\}")         'diredc-collapse-mode)
     map))
 
 (defvar diredc-mode-map (diredc--create-keymap))
@@ -1064,6 +1239,13 @@ Applicable when variable `diredc-bonus-configuration' is non-nil."
   "Face for executable suffix symbol.
 This will be an asterisk that appears appended to a filename by
  the operating system listing program used by `dired', ie. `ls'."
+  :package-version '(diredc . "1.4")
+  :group 'diredc-faces)
+
+(defface diredc-face-collapse '((t (:foreground "red" :weight bold)))
+  "Face for \"collapsed\" directory delimiters.
+When `diredc-collapse-mode' is in effect, this will fontify the
+delimiters (\"/\") of the collapsed path."
   :package-version '(diredc . "1.4")
   :group 'diredc-faces)
 
@@ -1775,6 +1957,17 @@ face `diredc-hl-current-buffer'."
    (while (setq elem (pop diredc--faces-created))
      (face-spec-set elem nil 'reset))))
 
+(defun diredc--font-lock-collapse-matcher (limit)
+  "Matches a \"collapsed\" path-spec.
+See `diredc-collapse-mode' for details. Returns \"t\" upon match.
+This function is suitable for argument MATCHER as required by
+variable `font-lock-keyword'. It is mean to be part of a `diredc'
+element added to variable `diredc-font-lock-keywords'."
+  (when (and diredc-collapse-mode
+             (save-excursion (dired-move-to-filename))
+             (re-search-forward "/" limit 'noerror))
+    t))
+
 (defun diredc--font-lock-matcher-common (start-pos limit regex type data)
   "Common match function for `diredc--font-lock-file-matcher'.
 START-POS is POINT at the beginning of the `dired' filename.
@@ -1835,6 +2028,11 @@ element added to variable `diredc-font-lock-keywords'."
           (re-search-forward "\\*$" limit 'noerror))
       (setq diredc--font-lock-file-matched-face nil)
       t)
+    ((and diredc-collapse-mode
+          (goto-char start-pos)
+          (re-search-forward ".*/.+$" limit 'noerror))
+      (setq diredc--font-lock-file-matched-face nil)
+      t)
     (t nil))))
 
 (defun diredc--font-lock-add-rules ()
@@ -1848,24 +2046,36 @@ See customization variables `diredc-face-file-name-alist' and
   ;; `dired.el' at defvar `dired-font-lock-keywords', especially re:
   ;; MATCH-ANCHORED and "It is quicker...".
   ;;
-  (when (or diredc-fontify-by-file-extension
+  (when (or diredc-fontify-by-file-name
+            diredc-fontify-by-file-extension
             diredc-fontify-executable-symbol)
     (add-to-list
       'dired-font-lock-keywords
       (list 'diredc--font-lock-file-matcher
             ;; MATCH-ANCHORED
-            (list "\\(\\*?[^\\*]+\\)\\(\\*\\)?$" ; MATCHER
-                  '(dired-move-to-filename)      ; PRE-MATCH-FORM
-                  nil                            ; POST-MATCH-FORM
+            (list "\\(\\(.*/\\)+\\)?\\(\\*?[^\\*]+\\)?\\(\\*\\)?$" ; MATCHER
+                  '(or (dired-move-to-filename) (end-of-line))     ; PRE-MATCH-FORM
+                  nil                                              ; POST-MATCH-FORM
                   ;; MATCH-HIGHLIGHT, ie. (SUBEXP FACENAME OVERRIDE LAXMATCH)
-                  (list 1 '(when (or diredc-fontify-by-file-extension
+                  (list 2 '(face-user-default-spec 'dired-directory) t t)
+                  (list 3 '(when (or diredc-fontify-by-file-extension
                                      diredc-fontify-by-file-name)
                              diredc--font-lock-file-matched-face)
                         t t)
-                  (list 2 '(when diredc-fontify-executable-symbol
+                  (list 4 '(when diredc-fontify-executable-symbol
                              (face-user-default-spec 'diredc-face-executable))
                         t t)))
-      'append)))
+      'append))
+  (add-to-list
+    'dired-font-lock-keywords
+    (list 'diredc--font-lock-collapse-matcher
+          ;; MATCH-ANCHORED
+          (list "\\(/\\)."       ; MATCHER
+                '(backward-char) ; PRE-MATCH-FORM  (due to matcher function)
+                nil              ; POST-MATCH-FORM (prep for next)
+                ;; MATCH-HIGHLIGHT, ie. (SUBEXP FACENAME OVERRIDE LAXMATCH)
+                (list 1 '(face-user-default-spec 'diredc-face-collapse) t t)))
+    'append))
 
 (defun diredc--thousands (num)
   "Return a readable string for integer NUM.
@@ -3963,6 +4173,7 @@ turn the mode on; Otherwise, turn it off."
           (setq header-line-format nil)
           (use-local-map dired-mode-map))))
      (diredc-restore-collation)
+     (diredc-collapse-mode -1)
      (message "Diredc-mode disabled in all Dired buffers."))))
 
 ;;;###autoload
