@@ -80,6 +80,7 @@
 ;;   * Edit dired buffers (really `wdired-mode', not `diredc')
 ;;   * Set both panels to same directory (use "=" or "C-u =")
 ;;     * inspired by 'midnight commander's "M-i"
+;;   * Fontify filenames based upon their extensions
 ;;
 ;; Bonus customization features
 ;;   * Customize colors for chmod bits (font-lock)
@@ -553,16 +554,16 @@ when variable `diredc-bonus-configuration' is non-nil.")
 (defconst diredc--chmod-font-lock-keyword
   (list
     (list diredc--chmod-font-lock-regex
-          '(1 diredc-face-chmod-font-lock-dir)
-          '(2 diredc-face-chmod-font-lock-read)
-          '(3 diredc-face-chmod-font-lock-write)
-          '(4 diredc-face-chmod-font-lock-exec)
-          '(5 diredc-face-chmod-font-lock-read)
-          '(6 diredc-face-chmod-font-lock-write)
-          '(7 diredc-face-chmod-font-lock-exec)
-          '(8 diredc-face-chmod-font-lock-read)
-          '(9 diredc-face-chmod-font-lock-write)
-          '(10 diredc-face-chmod-font-lock-exec)))
+          '(1 diredc-face-chmod-font-lock-dir t t)
+          '(2 diredc-face-chmod-font-lock-read t t)
+          '(3 diredc-face-chmod-font-lock-write t t)
+          '(4 diredc-face-chmod-font-lock-exec t t)
+          '(5 diredc-face-chmod-font-lock-read t t)
+          '(6 diredc-face-chmod-font-lock-write t t)
+          '(7 diredc-face-chmod-font-lock-exec t t)
+          '(8 diredc-face-chmod-font-lock-read t t)
+          '(9 diredc-face-chmod-font-lock-write t t)
+          '(10 diredc-face-chmod-font-lock-exec t t)))
   "Diredc `font-lock' keyword definition for chmod strings.
 Applicable when variable `diredc-bonus-configuration' is non-nil.")
 
@@ -694,6 +695,15 @@ and desirable for a newcomer to `dired'. For exactly what it
 does, see function `diredc-bonus-configuration'."
   :type 'boolean
   :package-version '(diredc . "1.0"))
+
+(defcustom diredc-fontify-executable-symbol t
+  "Whether to highlight a file's executable suffix symbol.
+This will be an asterisk that appears appended to a filename by
+the operating system listing program used by 'dired', ie. 'ls'.
+For customizing the fontification, see face
+'diredc-face-executable'."
+  :type 'boolean
+  :package-version '(diredc . "1.4"))
 
 (defcustom diredc-header-line t
   "Whether to display a header line.
@@ -930,10 +940,87 @@ This is one of a set of four related customizable variables:
   :package-version '(diredc . "1.0")
   :group 'diredc-sort)
 
-;; NOTE: defcustom 'diredc-face-ext-alist' is placed below, after
-;; function 'diredc--font-lock-add-file-extensions' because that
-;; function is used by the defcustom :set keyword.
-;; TODO: Figure out how to position the variable here.
+(defcustom diredc-fontify-by-file-extension nil
+  "Whether to fontify filenames based upon their extensions.
+The actual rules are defined by defcustom variable
+'diredc-face-file-ext-alist'. This option operates along with
+defcustom option 'diredc-fontify-by-file-name', with the rules of
+that option taking precedence."
+  :type 'boolean
+  :package-version '(diredc . "1.4")
+  :group 'diredc-faces)
+
+(defcustom diredc-face-file-ext-alist nil
+  "FONT-LOCK faces to apply to filenames, by their extensions.
+Each element of this list must be in the form (LABEL EXT-LIST
+FACE-SPEC), where LABEL is a short identifier string, EXT-LIST is
+a list of filename extension strings, and FACE-SPEC is either as
+defined in macro ‘defface’, or the unquoted symbol of a face.
+
+Examples:
+  (\"org\"   '(\"org\")           '((t (:foreground \"green\"))))
+  (\"book\"  '(\"pdf\" \"epub\")  font-lock-doc-face)
+  (\"audio\" '(\"mp3\" \"ogg\")   '((((type x)) (:foreground \"cyan\"))
+                                    ( t         (:foreground \"blue\"))))
+
+Tip: When experimenting with this variable, temporarily setting
+defcuston variable 'diredc-improve-font-lock-performance' non-NIL
+will enable your modifications to be applied in one keystroke, by
+pressing 'g' (the default 'diredc' keybinding for
+'revert-buffer', ie. refresh the buffer), instead of needing to
+exit and restart 'diredc'. The cost of this occasional
+convenience is zillions of unnecessary face-spec resets and
+font-lock recalculations, where \"zillions\" increases with the
+number of frames you have open and the number of lines in all
+your dired buffers."
+  :type '(repeat (list (string :tag "Short label")
+                       (repeat (string :tag "Extension string"))
+                       (sexp   :tag "Face spec")))
+  :package-version '(diredc . "1.4")
+  :group 'diredc-faces)
+
+(defcustom diredc-fontify-by-file-name nil
+  "Whether to fontify filenames.
+The actual rules are defined by defcustom variable
+'diredc-face-file-name-alist'. This option operates along with
+defcustom option 'diredc-fontify-by-file-ext', with the rules of
+this option taking precedence."
+  :type 'boolean
+  :package-version '(diredc . "1.4")
+  :group 'diredc-faces)
+
+(defcustom diredc-face-file-name-alist nil
+  "FONT-LOCK faces to apply to filenames.
+These rules take precedence over those in defcustom variable
+'diredc-face-file-ext-alist'. Each element of this list must be
+in the form (LABEL EXT-LIST FACE-SPEC), where LABEL is a short
+identifier string, NAME-LIST is a list of filename extension
+strings, and FACE-SPEC is either as defined in macro ‘defface’,
+or the unquoted symbol of a face."
+  :type '(repeat (list (string :tag "Short label")
+                       (repeat (string :tag "File name string"))
+                       (sexp   :tag "Face spec")))
+  :package-version '(diredc . "1.4")
+  :group 'diredc-faces)
+
+(defcustom diredc-improve-font-lock-performance t
+  "Read the details below to understand the trade-offs.
+
+Setting this variable NIL will enable modifications to defcustom
+variable 'diredc-face-file-ext-alist' to be applied in one keystroke,
+by pressing 'g' (the default 'diredc' keybinding for
+'revert-buffer'). The cost of this ocassional convenience is
+zillions of unnecessary face-spec resets and font-lock
+recalculations, where \"zillions\" increases with the number of
+frames you have open and the number of lines in all your dired
+buffers.
+
+When this variable is set non-NIL, modifications to defcustom
+ variable 'diredc-face-file-ext-alist'will take effect upon exiting
+ and restarting 'diredc'."
+  :type 'boolean
+  :package-version '(diredc . "1.4")
+  :group 'diredc-faces)
 
 
 ;;
@@ -965,6 +1052,13 @@ Applicable when variable `diredc-bonus-configuration' is non-nil."
   "Face for chmod executable bits in dired buffers.
 Applicable when variable `diredc-bonus-configuration' is non-nil."
   :package-version '(diredc . "1.0")
+  :group 'diredc-faces)
+
+(defface diredc-face-executable '((t (:foreground "red" :weight bold)))
+  "Face for executable suffix symbol.
+This will be an asterisk that appears appended to a filename by
+ the operating system listing program used by 'dired', ie. 'ls'."
+  :package-version '(diredc . "1.4")
   :group 'diredc-faces)
 
 (defface diredc-hl-current-buffer '((t :inherit 'hl-line :bold t))
@@ -1183,6 +1277,14 @@ This is a CONS extracted from variable `diredc-show-more-file-info-list'.")
 (defvar diredc--lc-collate-original-value nil
   "The original value of environment variable LC_COLLATE.
 As found by `diredc' when started.")
+
+(defvar diredc--font-lock-file-matched-face nil
+  "Face for currently matched filename.
+Used by function 'diredc--font-lock-file-extension-matcher' and
+variable 'dired-font-lock-keywords'.")
+
+(defvar diredc--faces-created nil
+  "Faces created by function 'diredc--font-lock-file-extension-matcher'.")
 
 
 ;;
@@ -1651,6 +1753,113 @@ face `diredc-hl-current-buffer'."
 
 ;;
 ;;; Functions:
+
+(defun diredc--unset-created-faces ()
+  "Clear programmatically created faces."
+;; Why not delete the face? Elisp (Emacs 29) doesn't seem to be able
+;; to do that. While uninterning the symbol does remove its values, it
+;; doesn't delete it from the list of faces, and attempting to
+;; redefine it creates a duplicate, such that both the uninterned face
+;; and the new one appear as two distinct objects with identical
+;; names. Also, because the operation is not supported, the Emacs
+;; developers have felt free in the past to change the relevant
+;; internals (eg.
+;; https://emacs.stackexchange.com/questions/48443/how-to-delete-a-face#comment115865_48445).
+  (let ((elem))
+   (while (setq elem (pop diredc--faces-created))
+     (face-spec-set elem nil 'reset))))
+
+(defun diredc--font-lock-matcher-common (start-pos limit regex type data)
+  "Common match function for 'diredc--font-lock-file-matcher'.
+START-POS is POINT at the beginning of the 'dired' filename.
+LIMIT is POINT at the end of the 'dired' line. REGEX is where
+within the filename to search for a match, where '%s' indicates
+the matching section. TYPE is either \"name\" or \"extension\".
+DATA is the alist, either 'diredc-face-file-name-alist' or
+'diredc-face-file-ext-alist'."
+  (let (facename elem found faceval)
+    (while (and (not found)
+                (setq elem (pop data)))
+      (goto-char start-pos)
+      (when (re-search-forward
+                (format regex (regexp-opt (nth 1 elem)))
+                limit 'noerror)
+        (setq facename (intern (format "diredc--face-for-file-%s-type-%s"
+                                       type
+                                       (replace-regexp-in-string " " "_" (nth 0 elem)))))
+        (when (or (when (not (get facename 'face-override-spec))
+                    (push facename diredc--faces-created)
+                    t)
+                  (not diredc-improve-font-lock-performance))
+          (face-spec-set facename
+                         (if (facep (setq faceval (nth 2 elem)))
+                           (face-user-default-spec faceval)
+                          faceval)))
+        (setq diredc--font-lock-file-matched-face facename)
+        (setq found t)))
+    found))
+
+(defun diredc--font-lock-file-matcher (limit)
+  "Matches a file name or extension for font-lock fontification.
+Returns 't' upon match. See defcustom variables
+'diredc-face-file-name-alist' and 'diredc-face-file-ext-alist'
+This function is suitable for argument MATCHER as required by
+variable 'font-lock-keyword'. It is mean to be part of a 'diredc'
+element added to variable 'diredc-font-lock-keywords'."
+  (let ((start-pos (point)))
+   (cond
+    ((and diredc-fontify-by-file-name
+          (diredc--font-lock-matcher-common
+            start-pos
+            limit
+            "%s\\*?$"
+            "name"
+            diredc-face-file-name-alist))
+      t)
+    ((and diredc-fontify-by-file-extension
+          (diredc--font-lock-matcher-common
+            start-pos
+            limit
+            "\\.%s\\*?$"
+            "extension"
+            diredc-face-file-ext-alist))
+      t)
+    ((and diredc-fontify-executable-symbol
+          (goto-char start-pos)
+          (re-search-forward "\\*$" limit 'noerror))
+      (setq diredc--font-lock-file-matched-face nil)
+      t)
+    (t nil))))
+
+(defun diredc--font-lock-add-rules ()
+  "Create font-lock rules to fontify filenames.
+See customization variables 'diredc-face-file-name-alist' and
+'diredc-face-file-ext-alist'."
+  ;;
+  ;; IMPORTANT: In order to understand the subtleties of what is being
+  ;; done here, read the very long docstring for variable
+  ;; 'font-lock-keywords'. Then read the developer comments in file
+  ;; 'dired.el' at defvar 'dired-font-lock-keywords', especially re:
+  ;; MATCH-ANCHORED and "It is quicker...".
+  ;;
+  (when (or diredc-fontify-by-file-extension
+            diredc-fontify-executable-symbol)
+    (add-to-list
+      'dired-font-lock-keywords
+      (list 'diredc--font-lock-file-matcher
+            ;; MATCH-ANCHORED
+            (list "\\(\\*?[^\\*]+\\)\\(\\*\\)?$" ; MATCHER
+                  '(dired-move-to-filename)      ; PRE-MATCH-FORM
+                  nil                            ; POST-MATCH-FORM
+                  ;; MATCH-HIGHLIGHT, ie. (SUBEXP FACENAME OVERRIDE LAXMATCH)
+                  (list 1 '(when (or diredc-fontify-by-file-extension
+                                     diredc-fontify-by-file-name)
+                             diredc--font-lock-file-matched-face)
+                        t t)
+                  (list 2 '(when diredc-fontify-executable-symbol
+                             (face-user-default-spec 'diredc-face-executable))
+                        t t)))
+      'append)))
 
 (defun diredc--thousands (num)
   "Return a readable string for integer NUM.
@@ -3560,7 +3769,7 @@ function context, either `diredc-mode' or `dired-mode-hook'."
   (when diredc-bonus-configuration
     (cond
      ((eq caller 'dired-mode-hook)
-       (font-lock-add-keywords 'nil diredc--chmod-font-lock-keyword t)
+       (font-lock-add-keywords 'nil diredc--chmod-font-lock-keyword)
        (setq truncate-lines t
              directory-free-space-args "-Pm" ; show total/available space in MB
              ;; TODO: WARNING: `directory-free-space-args' becomes obsolete as
@@ -3719,6 +3928,7 @@ turn the mode on; Otherwise, turn it off."
           (let ((win (get-buffer-window)))
             (when win (set-window-dedicated-p win t))))))
      (diredc--bonus-configuration 'diredc-mode)
+     (diredc--font-lock-add-rules)
      (message "Diredc-mode enabled in all Dired buffers."))
    (t
      (remove-hook 'dired-mode-hook #'diredc--hook-function)
@@ -3736,6 +3946,7 @@ turn the mode on; Otherwise, turn it off."
                     #'diredc--advice--dired-run-shell-command)
      (advice-remove 'dired-read-shell-command
                     #'diredc--advice--dired-read-shell-command)
+     (diredc--unset-created-faces)
      (dolist (buf dired-buffers)
        (if (not (buffer-live-p (cdr buf)))
          (setq dired-buffers (remove buf dired-buffers))

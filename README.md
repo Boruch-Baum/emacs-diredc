@@ -52,6 +52,7 @@ all file managers, and also some unique features:
    * Edit dired buffers (really `wdired-mode`, not `diredc`)
    * Set both panels to same directory (use "=" or "C-u =")
      * inspired by `midnight commander's "M-i"
+   * Fontify filenames based upon their extensions
 
 
 ## Bonus customization features
