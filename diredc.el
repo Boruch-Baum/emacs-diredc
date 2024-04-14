@@ -995,6 +995,34 @@ is a string that must match an entry in `diredc-shell-list'."
   "Quick file preview settings."
   :group 'diredc)
 
+(defcustom diredc-browse-include-images t
+  "Over-ride exclusion specs, to enable image viewing.
+
+When this variable is NON-NIL, If inclusion helper command
+specified in customization variable
+`diredc-browse-exclude-helper' identifies the target file as an
+image, then the settings of customization variables
+`diredc-browse-exclude-file-extensions',
+`diredc-browse-exclude-coding-systems' and
+`diredc-browse-exclude-helper' will be ignored..
+
+Note that this can also be accomplished by entering
+`diredc-browse-mode' with a PREFIX-ARG, ie. C-u \\<diredc-mode-map>\\[diredc-browse-mode]."
+  :type 'boolean
+  :package-version '(diredc . "1.4")
+  :group 'diredc-browse)
+
+(defcustom diredc-browse-include-images-regexp
+  "\\<image\\>\\|\\<pdf\\>\\|\\<epub\\>\\|\\<djvu\\>"
+  "Mimetype categories to be browsed when image browsing is enabled.
+This REGEXP is referenced either when customization variable
+`diredc-browse-include-images' is NON-NIL or when the feature was
+toggled on by entering `diredc-browse-mode' with a PREFIX-ARG,
+ie. C-u\\<diredc-mode-map>\\[diredc-browse-mode]."
+  :type 'regexp
+  :package-version '(diredc . "1.4")
+  :group 'diredc-browse)
+
 (defcustom diredc-browse-exclude-file-extensions (list "^db$" "^docx$")
   "Regexps for filename extensions of files not to be browsed.
 
@@ -1036,11 +1064,13 @@ See also Info node `(emacs) Coding Systems'"
     (list 'cygwin       "/usr/bin/file" "-bi" "\\<text\\>" "/usr/bin/file" "-bi" "\\<ELF\\>\\|\\<binary\\>")
     (list 'ms-dos       "" "" "" "" "" "")
     (list 'windows-nt   "" "" "" "" "" ""))
-  "External helper programs to determine files not to be browsed.
+  "External helper programs to determine files (not) to be browsed.
 This is useful to avoid displaying unnecessary garbage buffers
 when using `diredc-browse-mode'. See also the related
-customization variables `diredc-browse-exclude-file-extensions'
-and `diredc-browse-exclude-coding-systems.'
+customization variables `diredc-browse-include-images',
+`diredc-browse-include-images-regexp',
+`diredc-browse-exclude-file-extensions' and
+`diredc-browse-exclude-coding-systems.'
 
 Each element of this list is itself a list of one symbol and six
 strings: 1) The emacs variable `system-type' for this element; 2)
@@ -1454,6 +1484,12 @@ number of existing `dired' buffers.")
 
 A CONS whose CAR is the most recent file browsed, and whose CDR
 is that file's buffer.")
+
+(defvar diredc--browse-include-images nil
+  "Whether the user interactively requested to view images.
+This is set when entering `diredc-browse-mode' with a PREFIX-ARG.
+See also the similarly named customization variable
+`diredc-browse-include-images'.")
 
 (defvar diredc--show-more-file-info-index 0
   "Current position in `diredc-show-more-file-info-list'.
@@ -2390,37 +2426,36 @@ The file is checked against the values of variables
 `diredc-browse-exclude-file-extensions' and
 `diredc-browse-exclude-coding-systems'. If those checks pass,
 variable `diredc-browse-exclude-helper' is used (see there)."
-  (let ((ext (or (file-name-extension filename)
+  (let ((helper (assq system-type diredc-browse-exclude-helper))
+        (ext (or (file-name-extension filename)
                  (file-name-nondirectory filename)))
-        ext-match var coding-match helper-match browse-binary)
-    (when (or
-            ;; check file extensions to exclude
-            (setq ext-match
-              (cl-loop for elem in diredc-browse-exclude-file-extensions
-                       when (string-match elem ext)
-                       return elem))
-            ;; check coding systems to exclude
-            (setq coding-match (memq (diredc--guess-decoding filename)
-                                     diredc-browse-exclude-coding-systems))
-            ;; check exclusion-helpers
-            (setq helper-match
-              (let*
-                ((helper (assq system-type diredc-browse-exclude-helper))
-                 (output (when helper
-                           (shell-command-to-string
-                             (format "%s %s \"%s\"" (nth 1 helper) (nth 2 helper) filename)))))
-               (when output
-                 (if (string-match (nth 3 helper) output)
-                   ;; the inclusion test passes
-                   nil
-                  ;; return the result of the exclusion test
-                  (and (string-match
-                         (nth 6 helper)
-                         (setq output (condition-case nil
-                           (shell-command-to-string
-                             (format "%s %s \"%s\"" (nth 4 helper) (nth 5 helper) filename))
-                           (error ""))))
-                       (match-string 0 output)))))))
+        output ext-match var coding-match helper-match browse-binary)
+    (cond
+     ((and helper
+          (setq output
+            (shell-command-to-string
+              (format "%s %s \"%s\"" (nth 1 helper) (nth 2 helper) filename)))
+          (or (string-match (nth 3 helper) output)    ; the inclusion test passed
+              (and diredc--browse-include-images
+                   (string-match diredc-browse-include-images-regexp output))))
+       nil) ; return value: exclusion is false
+     ((or ;; check file extensions to exclude
+          (setq ext-match
+            (cl-loop for elem in diredc-browse-exclude-file-extensions
+                     when (string-match elem ext)
+                     return elem))
+          ;; check coding systems to exclude
+          (setq coding-match (memq (diredc--guess-decoding filename)
+                                   diredc-browse-exclude-coding-systems))
+          ;; check exclusion-helpers
+          (setq helper-match
+            (and (string-match
+                   (nth 6 helper)
+                   (setq output (condition-case nil
+                     (shell-command-to-string
+                       (format "%s %s \"%s\"" (nth 4 helper) (nth 5 helper) filename))
+                     (error ""))))
+                 (match-string 0 output))))
       (erase-buffer)
       (insert
         (concat "\nThis file is excluded from being browsed because it has\n"
@@ -2456,7 +2491,7 @@ variable `diredc-browse-exclude-helper' is used (see there)."
                           :type 'help-xref
                           'action 'diredc-browse--button-return-action))
       t) ; Return t when exclusion is true
-    ))
+    )))
 
 (defun diredc-trash--show-more-file-info--freedesktop ()
   "Internal function for `diredc-mode' 'Trash' file buffers.
@@ -2933,10 +2968,15 @@ When called non-interactively, turns the mode on if ARG is
 positive or nil. Otherwise, turns the mode off.
 
 There are several ways to suppress this option for certain files.
-The mode checks each file against variables
-`diredc-browse-exclude-file-extensions' and
-`diredc-browse-exclude-coding-systems'. If those checks pass,
-variable `diredc-browse-exclude-helper' is used (see there)."
+See customization variables `diredc-browse-include-images',
+`diredc-browse-include-images-regexp',
+`diredc-browse-exclude-file-extensions',
+`diredc-browse-exclude-coding-systems', and
+`diredc-browse-helper'.
+
+When called interactively with a PREFIX-ARG, enter the mode with
+the state of customization variable
+`diredc-browse-include-images' toggled."
   (interactive)
   (when (not diredc-mode)
     (user-error "Not in Diredc mode"))
@@ -2946,7 +2986,12 @@ variable `diredc-browse-exclude-helper' is used (see there)."
     (user-error "Not a Diredc buffer"))
   (cond
    ((called-interactively-p 'interactive)
-     (setq diredc-browse-mode (not diredc-browse-mode)))
+     (setq diredc-browse-mode (not diredc-browse-mode))
+     (setq diredc--browse-include-images
+       (and diredc-browse-mode
+            (if current-prefix-arg
+              (not diredc-browse-include-images)
+             diredc-browse-include-images))))
    (arg
     (setq diredc-browse-mode (if (< 0 arg) t nil)))
    (t
