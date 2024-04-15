@@ -91,7 +91,6 @@
 ;; Bonus customization features
 ;;   * Customize colors for chmod bits (font-lock)
 ;;   * toggle display of "hidden" or "undesirable" files (dired-omit mode)
-;;   * auto-refresh buffers (auto-revert-mode)
 ;;   * highlight current line (hl-line-mode)
 ;;     * current buffer highlights with a unique face.
 ;;   * don't wrap long lines (toggle-truncate-lines)
@@ -102,7 +101,6 @@
 ;;
 ;;; Dependencies (all are already part of Emacs):
 ;;
-;;   autorevert -- for auto-revert-mode
 ;;   dired       -- ... (doh) ...
 ;;   dired-x     -- for dired-guess-default, dired-omit-mode
 ;;   dired-aux   -- for dired-compress-files
@@ -398,7 +396,6 @@
 (require 'dired-x)   ; dired-guess-default, dired-omit-mode
 (require 'term)      ; term-line-mode, term-send-input
 (require 'view)      ; view-mode
-(require 'autorevert); auto-revert-mode
 (require 'help-mode) ; help-xref button
 
 ;;
@@ -3307,10 +3304,7 @@ If a REGION is selected, all files within are restored."
            (delete-file info-file)))
        (when end
          (goto-char (region-beginning))
-         (deactivate-mark))
-       (when file
-         (let (auto-revert-verbose)
-           (auto-revert-mode)))))))
+         (deactivate-mark))))))
 
 (defun diredc-trash-view ()
   "Jump to the user's 'Trash' files directory."
@@ -4102,7 +4096,6 @@ function context, either `diredc-mode' or `dired-mode-hook'."
              ;; But, we want to support older emacsen for a while.
              dired-dwim-target t)            ; dual pane awareness
        (dired-omit-mode)
-       (auto-revert-mode)
        (hl-line-mode)
        (define-key dired-mode-map (kbd "M-.") 'dired-omit-mode))
      ((eq caller 'diredc-mode)

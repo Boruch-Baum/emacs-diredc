@@ -63,7 +63,6 @@ all file managers, and also some unique features:
 ## Bonus customization features
    * Customize colors for chmod bits (font-lock)
    * toggle display of "hidden" or "undesirable" files (dired-omit mode)
-   * auto-refresh buffers (auto-revert-mode)
    * highlight current line (hl-line-mode)
      * current buffer highlights with a unique face.
    * don`t wrap long lines (toggle-truncate-lines)
@@ -74,7 +73,6 @@ all file managers, and also some unique features:
 
 ## Dependencies (all are already part of emacs):
 
-   * autorevert -- for auto-revert-mode
    * dired      -- ... (doh) ...
    * dired-x    -- for dired-guess-default, dired-omit-mode
    * dired-aux  -- for dired-compress-files

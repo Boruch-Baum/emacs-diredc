@@ -1,5 +1,10 @@
 2024-04-14  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc--bonus-configuration, diredc-trash-restore):
+	remove dependency on package autorevert, for auto-revert-mode.
+
+2024-04-14  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc-display--update): Refactor to
 	diredc--update-listing-switches, fix for wdired-mode.
 
