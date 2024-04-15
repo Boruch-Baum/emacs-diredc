@@ -886,7 +886,7 @@ variable LC_NUMERIC."
   :type 'string
   :package-version '(diredc . "1.0"))
 
-(defcustom diredc-update-interval 1.0
+(defcustom diredc-update-interval 0.5
   "How often, in seconds, to update `diredc' buffers.
 Positive integers or floating point numbers are acceptable.
 See function `diredc--update-control' for details."
@@ -896,7 +896,11 @@ See function `diredc--update-control' for details."
             (when (> 0 (floor (widget-value w)))
               (widget-put w :error "Positive number required.")
               w)))
-  :package-version '(diredc . "1.4"))
+  :set (lambda (sym val)
+         (set-default-toplevel-value sym val)
+         (when diredc-mode
+           (diredc--update-control 'start)))
+  :package-version '(diredc . "1.6"))
 
 (defgroup diredc-frame nil
   "GUI Emacs settings."
