@@ -895,7 +895,7 @@ See function `diredc--update-control' for details."
               w)))
   :set (lambda (sym val)
          (set-default-toplevel-value sym val)
-         (when diredc-mode
+         (when (bound-and-true-p diredc-mode)
            (diredc--update-control 'start)))
   :package-version '(diredc . "1.6"))
 
