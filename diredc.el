@@ -1960,9 +1960,9 @@ A hook function for `post-command-hook'. It creates and kills
                (condition-case err
                  (progn
                    (insert-file-contents new-file nil nil nil 'replace)
-                     (setq buffer-file-name new-file)
-                     (set-auto-mode)
-                     (setq diredc-browse--buffer original-win))
+                   (setq buffer-file-name new-file)
+                   (set-auto-mode)
+                   (setq diredc-browse--buffer original-win))
                  (error
                    (erase-buffer)
                    (insert (concat "diredc browse buffer\n\n Error looking at file: "
@@ -1977,28 +1977,29 @@ A hook function for `post-command-hook'. It creates and kills
            (t
              (erase-buffer)
              (let ((type (car (file-attributes new-file))))
-               (insert   (cond
-                          ((stringp type)
-                            (format "Looking at a symbolic link to:\n\n   %s" type))
-                          ((and diredc--browse-magit
-                                type
-                                (equal (file-name-as-directory new-file)
-                                       (magit-toplevel new-file)))
-                            (let ((default-directory (file-name-as-directory new-file))
-                                  (magit-display-buffer-noselect t)
-                                  (magit-display-buffer-function
-                                    (lambda (buf) t)))
-                              (magit-setup-buffer-internal
-                                #'magit-status-mode nil nil browse-buf))
-                            ;; magit seems to clear the following
-                            (setq diredc-browse--buffer original-win)
-                            "")
-                          (type
-                            (format "Looking at a directory"))
-                          (t ;; ie. (eq type nil)
-                            (if (not new-file)
-                              "Looking at nothing"
-                             (format "Looking at an unreadable file")))))))))
+               (insert
+                 (cond
+                  ((stringp type)
+                    (format "Looking at a symbolic link to:\n\n   %s" type))
+                  ((and diredc--browse-magit
+                        type
+                        (equal (file-name-as-directory new-file)
+                               (magit-toplevel new-file)))
+                    (let ((default-directory (file-name-as-directory new-file))
+                          (magit-display-buffer-noselect t)
+                          (magit-display-buffer-function
+                            (lambda (buf) t)))
+                      (magit-setup-buffer-internal
+                        #'magit-status-mode nil nil browse-buf))
+                    ;; magit seems to clear the following
+                    (setq diredc-browse--buffer original-win)
+                    "")
+                  (type
+                    (format "Looking at a directory"))
+                  (t ;; ie. (eq type nil)
+                    (if (not new-file)
+                      "Looking at nothing"
+                     (format "Looking at an unreadable file")))))))))
         (setq header-line-format
           (format "Diredc %s buffer%s"
                   (propertize "browse" 'face 'warning)
