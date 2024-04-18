@@ -457,8 +457,10 @@
   ;; ref: https://emacs.stackexchange.com/questions/69050
   (list (list t (list :background
     (let*
-      ((fg (color-values (face-attribute 'default :foreground)))
-       (bg (color-values (face-attribute 'default :background)))
+      ((fg (or (color-values (face-attribute 'default :foreground))
+               '(0 0 0)))           ; (color-values "black")
+       (bg (or (color-values (face-attribute 'default :background))
+               '(58853 58853 58853))) ; (color-values "white")
        (fg-factor 0.92)
        (bg-factor (- 1.0 fg-factor)))
      (apply 'format
