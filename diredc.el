@@ -1613,15 +1613,18 @@ implements diredc feature `diredc-shell-guess-fallback'."
 _OLDFUN is function `dired-internal-noselect'. Args DIR-OR-LIST,
 SWITCHES, and MODE are as defined there.
 
-This function replaces the Emacs standard function in order to
-change a single line in order to allow multiple `dired' buffers
-to be visiting the same directory.
+Originally, this function replaced the Emacs standard function in
+order to change a single line in order to allow multiple `dired'
+buffers to be visiting the same directory.
 
 See also: Emacs bug report #44023:
-          https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44023"
-;; IMPORTANT: This has been checked and is good for emacs versions
-;; 26.1, 27.1, 28.0, 29.2
+          https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44023
 
+Subsequently, with the introduction of defcustom variable
+`diredc-update-interval', this function was further modified to
+not directly revert buffers."
+;; IMPORTANT: This function has been compared against function
+;; `dired-internal-noselect' in Emacs versions 26.1, 27.1, 28.0, 29.2
   (let* ((old-buf (current-buffer))
          (dirname (if (consp dir-or-list) (car dir-or-list) dir-or-list))
        ;; BEGIN modification
@@ -1643,15 +1646,18 @@ See also: Emacs bug report #44023:
               ;; if `dired-directory' is a cons but `dir-or-list' is not.
               ((or (consp dir-or-list) (consp dired-directory))
                (setq dired-directory dir-or-list)
-               (revert-buffer))
+               ;; (revert-buffer)
+               )
               ;; Always revert regardless of whether it has changed or not.
               ((eq dired-auto-revert-buffer t)
-               (revert-buffer))
+               ;; (revert-buffer))
+               )
               ;; Revert when predicate function returns non-nil.
               ((functionp dired-auto-revert-buffer)
-               (when (funcall dired-auto-revert-buffer dirname)
-                 (revert-buffer)
-                 (message "Changed directory automatically updated")))
+              ;; (when (funcall dired-auto-revert-buffer dirname)
+              ;;   (revert-buffer)
+              ;;   (message "Changed directory automatically updated")))
+               )
               ;; If directory has changed on disk, offer to revert.
               ((when (dired-directory-changed-p dirname)
                  (message "%s"

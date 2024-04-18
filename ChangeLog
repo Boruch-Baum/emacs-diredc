@@ -1,3 +1,8 @@
+2024-04-17  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--advice--dired-internal-noselect): Remove
+	instances of directly reverting buffers
+
 2024-04-14  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--bonus-configuration, diredc-trash-restore):
