@@ -1968,8 +1968,9 @@ A hook function for `post-command-hook'. It creates and kills
                    (setq diredc-browse--buffer original-win))
                  (error
                    (erase-buffer)
-                   (insert (concat "diredc browse buffer\n\n Error looking at file: "
-                                   (format "%s\n\n %s: %s" new-file (car err) (cdr err))))
+                   (insert
+                     (format "diredc browse buffer\n\n Error looking at file: %s\n\n %s: %s"
+                             new-file (car err) (cdr err)))
                    (dolist (w (window-list))
                      (when (not (eq w original-win))
                        (select-window w 'norecord)
@@ -1995,11 +1996,11 @@ A hook function for `post-command-hook'. It creates and kills
                         #'magit-status-mode nil nil browse-buf))
                     "")
                   (type
-                    (format "Looking at a directory"))
+                    "Looking at a directory")
                   (t ;; ie. (eq type nil)
                     (if (not new-file)
                       "Looking at nothing"
-                     (format "Looking at an unreadable file")))))))))
+                     "Looking at an unreadable file"))))))))
         (setq header-line-format
           (format "Diredc %s buffer%s"
                   (propertize "browse" 'face 'warning)
