@@ -47,6 +47,7 @@
 ;;     * inspired by, and similar to, midnight commander's "C-x q"
 ;;     * customizable exclusion criteria to suppress undesirable files
 ;;       (eg. binaries)
+;;     * optionally view magit status buffers for repository roots
 ;;   * Current file's supplemental information in minibuffer (optional)
 ;;     * eg. output from 'getfattr', 'getfacl', 'stat', 'exif'.
 ;;   * Multiple panel views
@@ -178,6 +179,10 @@
 ;; `dired' buffer window and the file preview window. There are several
 ;; options for excluding undesirable files (eg. binaries) from preview; see
 ;; the mode's docstring for details.
+;;
+;; The 'file preview' mode can also be configured to display the
+;; `magit-status' of a repository's root directory. See customization
+;; variable `diredc-browse-magit'.
 ;;
 ;; The traditional `dired' operations that 'find' or 'open' a file should
 ;; do so to a separate frame, most likely the one from which you came to
@@ -1111,6 +1116,12 @@ command as \"text\" and excludes all recognized as
   "This variable name was deprecated in version 1.4 in favor of
 `diredc-browse-helper', to which it is currently still aliased.")
 
+(defcustom diredc-browse-magit t
+  "View `magit-status' when browsing repository root directories."
+  :type 'boolean
+  :package-version '(diredc . "1.6")
+  :group 'diredc-browse)
+
 (defgroup diredc-sort nil
   "Mode line indicators for sort direction."
   :group 'diredc)
@@ -1530,6 +1541,9 @@ variable `dired-font-lock-keywords'.")
 
 (defvar diredc--update-timer nil
   "Timer object, created by function `diredc--update-control'.")
+
+(defvar diredc--browse-magit nil
+  "Internal version of customizable variable `diredc-browse-magit'.")
 
 
 ;;
@@ -1966,6 +1980,19 @@ A hook function for `post-command-hook'. It creates and kills
                (insert   (cond
                           ((stringp type)
                             (format "Looking at a symbolic link to:\n\n   %s" type))
+                          ((and diredc--browse-magit
+                                type
+                                (equal (file-name-as-directory new-file)
+                                       (magit-toplevel new-file)))
+                            (let ((default-directory (file-name-as-directory new-file))
+                                  (magit-display-buffer-noselect t)
+                                  (magit-display-buffer-function
+                                    (lambda (buf) t)))
+                              (magit-setup-buffer-internal
+                                #'magit-status-mode nil nil browse-buf))
+                            ;; magit seems to clear the following
+                            (setq diredc-browse--buffer original-win)
+                            "")
                           (type
                             (format "Looking at a directory"))
                           (t ;; ie. (eq type nil)
@@ -2971,14 +2998,16 @@ The shell process will be configured with the following variables:
 This function navigates to the other window only if no buttons
 exist in the current one."
   (interactive)
-  (condition-case nil
-    (forward-button 1)
-    (user-error
-      (goto-char (point-min))
-      (condition-case nil
-        (forward-button 1)
-        (user-error
-          (diredc-other-window))))))
+  (if (eq major-mode 'magit-status-mode)
+    (magit-section-toggle (magit-current-section))
+   (condition-case nil
+     (forward-button 1)
+     (user-error
+       (goto-char (point-min))
+       (condition-case nil
+         (forward-button 1)
+         (user-error
+           (diredc-other-window)))))))
 
 (defun diredc-browse-backtab ()
   "Tab-navigate to the previous button or other window.
@@ -3040,7 +3069,11 @@ See customization variables `diredc-browse-include-images',
 
 When called interactively with a PREFIX-ARG, enter the mode with
 the state of customization variable
-`diredc-browse-include-images' toggled."
+`diredc-browse-include-images' toggled.
+
+When customization variable `diredc-browse-magit' is non-NIL and
+POINT is on the root directory of a git repository, the
+`magit-status' of that repository is displayed."
   (interactive)
   (when (not diredc-mode)
     (user-error "Not in Diredc mode"))
@@ -3062,6 +3095,8 @@ the state of customization variable
     (setq diredc-browse-mode t)))
   (cond
    (diredc-browse-mode
+    (when diredc-browse-magit
+      (setq diredc--browse-magit (require 'magit-status nil t)))
     (add-hook 'post-command-hook #'diredc-browse--hook-function)
     (diredc-browse--hook-function))
    (t

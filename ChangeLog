@@ -1,5 +1,11 @@
 2024-04-17  Boruch Baum  <boruch_baum@gmx.com>
 
+	* diredc.el (diredc-browse-magit): New feature.
+	(diredc--browse-magit, diredc-browse--hook-function)
+	(diredc-browse-mode): Use it.
+
+2024-04-17  Boruch Baum  <boruch_baum@gmx.com>
+
 	* diredc.el (diredc--advice--dired-internal-noselect): Remove
 	instances of directly reverting buffers
 

@@ -19,6 +19,7 @@ all file managers, and also some unique features:
      * inspired by, and similar to, midnight commander's "C-x q"
      * customizable exclusion criteria to suppress undesirable files
        (eg. binaries)
+     * optionally view magit status buffers for repository roots
    * Current file's supplemental information in minibuffer (optional)
      * eg. output from `getfattr`, `getfacl`, `stat`, `exif`.
    * Multiple panel views
@@ -156,7 +157,11 @@ all file managers, and also some unique features:
  options for excluding undesirable files (eg. binaries) from preview;
  see the mode's docstring for details.
 
- The traditional `dired` operations that `find` or `open` a file should
+ The 'file preview' mode can also be configured to display the
+ `magit-status` of a repository's root directory. See customization
+ variable `diredc-browse-magit`.
+
+The traditional `dired` operations that `find` or `open` a file should
  do so to a separate frame, most likely the one from which you came to
  the `diredc` frame.
 

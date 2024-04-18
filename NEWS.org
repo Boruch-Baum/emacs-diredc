@@ -1,6 +1,11 @@
 * diredc NEWS
 ** 2024-04
 
++ New feature to browse the magit-status of a repository root
+  directory.
+
+  + diredc-browse-magit
+
 + New feature to view that single file at the bottom of a "sparse" path, ie.
   /path/with/only/single/entry.
 
