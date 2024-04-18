@@ -1950,7 +1950,10 @@ A hook function for `post-command-hook'. It creates and kills
             (setq diredc-browse--buffer original-win)))
         (setq diredc-browse--tracker (cons new-file browse-buf))
         (set-buffer browse-buf)
-        (let ((inhibit-read-only t))
+        (let ((inhibit-read-only t)
+              (buffer-undo-list t))
+          (erase-buffer)
+          (set-auto-mode)
           (cond
            ((and new-file
                  (file-regular-p new-file)
@@ -1959,7 +1962,7 @@ A hook function for `post-command-hook'. It creates and kills
              (unless (diredc-browse--exclude new-file)
                (condition-case err
                  (progn
-                   (insert-file-contents new-file nil nil nil 'replace)
+                   (insert-file-contents new-file)
                    (setq buffer-file-name new-file)
                    (set-auto-mode)
                    (setq diredc-browse--buffer original-win))
@@ -1975,7 +1978,6 @@ A hook function for `post-command-hook'. It creates and kills
                                     (string-match "^*diredc-shell " (buffer-name)))
                          (delete-window))))))))
            (t
-             (erase-buffer)
              (let ((type (car (file-attributes new-file))))
                (insert
                  (cond
@@ -1991,8 +1993,6 @@ A hook function for `post-command-hook'. It creates and kills
                             (lambda (buf) t)))
                       (magit-setup-buffer-internal
                         #'magit-status-mode nil nil browse-buf))
-                    ;; magit seems to clear the following
-                    (setq diredc-browse--buffer original-win)
                     "")
                   (type
                     (format "Looking at a directory"))
@@ -2004,6 +2004,7 @@ A hook function for `post-command-hook'. It creates and kills
           (format "Diredc %s buffer%s"
                   (propertize "browse" 'face 'warning)
                   (if new-file (concat ": " (file-name-nondirectory new-file)) "")))
+        (setq diredc-browse--buffer original-win)
         (set-buffer-modified-p nil)
         (buffer-disable-undo)
         (view-mode)
