@@ -778,6 +778,9 @@ See there and your version of \"man(1) ls\".")
   "Description of `diredc' line that we will parse for sorting by
   chmod, owner, or group. See function `diredc-sort-or-edit'.")
 
+(defconst diredc--update-interval-default 0.5
+  "Default update interval, in seconds, for `diredc' buffers.")
+
 
 ;;
 ;;; Customization variables:
@@ -890,7 +893,7 @@ variable LC_NUMERIC."
   :type 'string
   :package-version '(diredc . "1.0"))
 
-(defcustom diredc-update-interval 0.5
+(defcustom diredc-update-interval diredc--update-interval-default
   "How often, in seconds, to update `diredc' buffers.
 Positive integers or floating point numbers are acceptable.
 See function `diredc--update-control' for details."
@@ -2206,7 +2209,9 @@ it will remain so until some other action triggers a
     (setq diredc--update-timer
       (run-with-timer
         1
-        (if (< 0 diredc-update-interval) diredc-update-interval 1)
+        (if (< 0 diredc-update-interval)
+          diredc-update-interval
+         diredc--update-interval-default)
         'diredc--revert-all))))
 
 (defun diredc--thousands (num)
