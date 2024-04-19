@@ -1,3 +1,13 @@
+2024-04-19  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--update-interval-default): New constant.
+	(diredc-update-interval, diredc--update-control): Use it.
+
+2024-04-18  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc-collapse-shadow-face): Handle unspecified
+	default foreground and background attributes.
+
 2024-04-17  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc-browse-magit): New feature.
