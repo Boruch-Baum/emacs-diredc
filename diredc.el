@@ -893,6 +893,25 @@ variable LC_NUMERIC."
   :type 'string
   :package-version '(diredc . "1.0"))
 
+(defcustom diredc-update nil
+  "Whether to use the `diredc' buffer update feature.
+
+This feature currently defaults to OFF because of some unresolved
+buggy behavior: 1) After the minibuffer is used, it moves POINT
+of the unselected `diredc' buffer to POINT-MIN; 2) It unsets the
+highlighting of `hl-line-mode' in the selected `diredc' buffer.
+
+When this variable is non-NIL, `diredc' buffers will be
+reverted every `diredc-update-interval' seconds. This mitigates a
+deficiency of `Dired' in that it relies upon `file-notify' to
+trigger buffer updates. However, `file-notify' does not trigger
+upon events that change the size of a file that is listed in a
+`Dired' buffer. Thus, for example, when a tar archive is created,
+vanilla `Dired' records its size as zero, and it will remain so
+until some other action triggers a `revert-buffer' event."
+  :type 'boolean
+  :package-version '(diredc . "1.6"))
+
 (defcustom diredc-update-interval diredc--update-interval-default
   "How often, in seconds, to update `diredc' buffers.
 Positive integers or floating point numbers are acceptable.
@@ -2177,7 +2196,7 @@ See customization variables `diredc-face-file-name-alist' and
     'append))
 
 (defun diredc--revert-all ()
-  "Revert `diredc' buffers."
+  "Revert visible `diredc' buffers."
   (dolist (elem (mapcar 'cdr dired-buffers))
     (when (and (buffer-live-p elem)
                (get-buffer-window elem))
@@ -2189,11 +2208,11 @@ See customization variables `diredc-face-file-name-alist' and
           (hl-line-mode))))))
 
 (defun diredc--update-control (arg)
-  "Update `diredc' buffers.
+  "Update visible `diredc' buffers.
 
-Revert `diredc' buffers every `diredc-update-interval' seconds,
-unless they are in `wdired-mode'. ARG should be either 'start or
-'stop.
+Revert visible `diredc' buffers every `diredc-update-interval'
+seconds, unless they are in `wdired-mode'. ARG should be either
+'start or 'stop.
 
 This mitigates a deficiency of `Dired' in that it relies upon
 `file-notify' to trigger buffer updates. However, `file-notify'
@@ -2202,15 +2221,16 @@ is listed in a `Dired' buffer. Thus, for example, when a tar
 archive is created, vanilla `Dired' records its size as zero, and
 it will remain so until some other action triggers a
 `revert-buffer' event."
-  (and diredc--update-timer
-       (timerp diredc--update-timer)
-       (cancel-timer diredc--update-timer))
-  (when (eq arg 'start)
-    (let ((x (if (< 0 diredc-update-interval)
-               diredc-update-interval
-              diredc--update-interval-default)))
-     (setq diredc--update-timer
-       (run-with-timer x x 'diredc--revert-all)))))
+  (when diredc-update
+    (and diredc--update-timer
+         (timerp diredc--update-timer)
+         (cancel-timer diredc--update-timer))
+    (when (eq arg 'start)
+      (let ((x (if (< 0 diredc-update-interval)
+                 diredc-update-interval
+                diredc--update-interval-default)))
+       (setq diredc--update-timer
+         (run-with-timer x x 'diredc--revert-all))))))
 
 (defun diredc--thousands (num)
   "Return a readable string for integer NUM.

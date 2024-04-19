@@ -2,6 +2,8 @@
 
 	* diredc.el (diredc--update-interval-default): New constant.
 	(diredc-update-interval, diredc--update-control): Use it.
+	(diredc-update): New feature.
+	(diredc--update-control): Use it.
 
 2024-04-18  Boruch Baum  <boruch_baum@gmx.com>
 
