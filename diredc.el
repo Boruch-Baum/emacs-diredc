@@ -2206,13 +2206,11 @@ it will remain so until some other action triggers a
        (timerp diredc--update-timer)
        (cancel-timer diredc--update-timer))
   (when (eq arg 'start)
-    (setq diredc--update-timer
-      (run-with-timer
-        1
-        (if (< 0 diredc-update-interval)
-          diredc-update-interval
-         diredc--update-interval-default)
-        'diredc--revert-all))))
+    (let ((x (if (< 0 diredc-update-interval)
+               diredc-update-interval
+              diredc--update-interval-default)))
+     (setq diredc--update-timer
+       (run-with-timer x x 'diredc--revert-all)))))
 
 (defun diredc--thousands (num)
   "Return a readable string for integer NUM.
