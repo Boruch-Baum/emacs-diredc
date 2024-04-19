@@ -2178,15 +2178,15 @@ See customization variables `diredc-face-file-name-alist' and
 
 (defun diredc--revert-all ()
   "Revert `diredc' buffers."
-  (dolist (elem dired-buffers)
-    (when (buffer-live-p (cdr elem))
-      (with-current-buffer (cdr elem)
-        (unless (or (= (buffer-size) 0)
+  (dolist (elem (mapcar 'cdr dired-buffers))
+    (when (and (buffer-live-p elem)
+               (get-buffer-window elem))
+      (with-current-buffer elem
+        (unless (or revert-buffer-in-progress-p
+                    (= (buffer-size) 0)
                     (eq major-mode 'wdired-mode))
-          (let ((p (point)))
-            (revert-buffer)
-            (goto-char p)
-            (hl-line-mode)))))))
+          (revert-buffer)
+          (hl-line-mode))))))
 
 (defun diredc--update-control (arg)
   "Update `diredc' buffers.
