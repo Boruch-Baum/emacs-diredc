@@ -2418,17 +2418,16 @@ For keybindings and environment variables."
   ;; no way to nicely wait on a change of state in the comint buffer
   ;; (eg. process-sentinel). Revisit this situation periodically so we
   ;; can replace the following kludge.
-  (dotimes (x 2) ; two commands sent above
-    (cl-loop
-      repeat 10
-      do (sleep-for 0.1)
-      until
-        (when (not (equal diredc--shell-point (point-max)))
-          (goto-char (point-min))
-          (when (search-forward "diredc-shell:" nil t)
-            (delete-region (point-min) (match-beginning 0)))
-          (goto-char (point-max))
-          t)))
+  (cl-loop
+    repeat 10
+    do (sleep-for 0.1)
+    until
+      (when (not (equal diredc--shell-point (point-max)))
+        (goto-char (point-min))
+        (when (search-forward "diredc-shell:" nil t)
+          (delete-region (point-min) (match-beginning 0)))
+        (goto-char (point-max))
+        t))
   (setq-local diredc--shell-point nil))
 
 (defun diredc-shell--launch-shell (program d1 d2 f1 f2 t1 t2)

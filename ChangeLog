@@ -1,3 +1,8 @@
+2024-04-21  Boruch Baum  <boruch_baum@gmx.com>
+
+	* diredc.el (diredc--set-term-environment): Remove unnecessary
+	dotimes.
+
 2024-04-19  Boruch Baum  <boruch_baum@gmx.com>
 
 	* diredc.el (diredc--update-interval-default): New constant.
