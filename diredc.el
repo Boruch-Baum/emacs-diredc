@@ -1728,6 +1728,19 @@ not directly revert buffers."
     (set-buffer old-buf)
     buffer))
 
+(defun diredc--advice--dired-display-file (_oldfun)
+  "Diredc advice to function `dired-display-file'.
+
+This advice is necessary to avoid creating a new window on the
+'diredc' frame.
+
+OLDFUN is function `dired-display-file' and is never called
+by this advice.
+
+Usage: (advice-add \='dired-display-file
+                   :around #\='diredc--advice--dired-display-file)"
+  (diredc-hist-find-alternate-file))
+
 (defun diredc--advice--dired-run-shell-command (_oldfun command)
   "Optionally allow spawned asynchronous processes to out-live Emacs.
 See variable `diredc-async-processes-are-persistent' and function
@@ -4303,6 +4316,8 @@ turn the mode on; Otherwise, turn it off."
                  :around #'diredc--advice--repeat-over-lines)
      (advice-add 'dired-internal-noselect
                  :around #'diredc--advice--dired-internal-noselect)
+     (advice-add 'dired-display-file
+                 :around #'diredc--advice--dired-display-file)
      (advice-add 'dired-guess-default
                  :around #'diredc--advice--shell-guess-fallback)
      (advice-add 'dired-run-shell-command
@@ -4330,6 +4345,8 @@ turn the mode on; Otherwise, turn it off."
      ;; dired-frame.el)
      (advice-remove 'dired-repeat-over-lines
                     #'diredc--advice--repeat-over-lines)
+     (advice-remove 'dired-display-file
+                    #'diredc--advice--dired-display-file)
      (advice-remove 'dired-guess-default
                     #'diredc--advice--shell-guess-fallback)
      (advice-remove 'dired-run-shell-command
