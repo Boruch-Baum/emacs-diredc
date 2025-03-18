@@ -572,11 +572,18 @@ filename (for example when the final directory is empty)."
                   (setq path (s-chop-prefix (dired-current-directory) path))
                   (when (string-match-p "/" path)
                     (let ((default-directory (dired-current-directory)))
-                      (diredc-collapse--replace-file path))
+                      (diredc-collapse--replace-file path)
+                      ;; fix alignment of single-digit hard-link columns
+                      (when (not dired-hide-details-mode)
+                        (goto-char (pos-bol))
+                        (when (re-search-forward "[^ ] [0-9] " (pos-eol) t)
+                          (goto-char (match-beginning 0))
+                          (insert " "))))
                     (dired-insert-set-properties (line-beginning-position) (line-end-position))
                     (when diredc-collapse-fontify
                       (diredc-collapse--create-ov (not entry-1))))))))
-          (forward-line 1))))))
+          (forward-line 1))
+        (dired--align-all-files)))))
 
 
 ;;
