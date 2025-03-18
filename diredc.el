@@ -1617,8 +1617,11 @@ Usage: (advice-add \\'dired-guess-default
                    :around #\\'diredc--advice--shell-guess-fallback)
 
 This advice addresses the issues in Emacs bug report and patch #48071
-(http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48071) and also
-implements diredc feature `diredc-shell-guess-fallback'."
+(http://debbugs.gnu.org/cgi/bugreport.cgi?bug=48071) which was fixed in
+Emacs 29.
+
+It also implements diredc feature `diredc-shell-guess-fallback' and is
+called directly by function `diredc-do-async-shell-command'."
   (let* ((case-fold-search dired-guess-shell-case-fold-search)
          ;; Prepend the user's alist to the default alist.
          (alist (append dired-guess-shell-alist-user
@@ -4318,8 +4321,9 @@ turn the mode on; Otherwise, turn it off."
                  :around #'diredc--advice--dired-internal-noselect)
      (advice-add 'dired-display-file
                  :around #'diredc--advice--dired-display-file)
-     (advice-add 'dired-guess-default
-                 :around #'diredc--advice--shell-guess-fallback)
+     (when (< emacs-major-version 29)
+       (advice-add 'dired-guess-default
+                   :around #'diredc--advice--shell-guess-fallback))
      (advice-add 'dired-run-shell-command
                  :around #'diredc--advice--dired-run-shell-command)
      (advice-add 'dired-read-shell-command
@@ -4347,8 +4351,9 @@ turn the mode on; Otherwise, turn it off."
                     #'diredc--advice--repeat-over-lines)
      (advice-remove 'dired-display-file
                     #'diredc--advice--dired-display-file)
-     (advice-remove 'dired-guess-default
-                    #'diredc--advice--shell-guess-fallback)
+     (when (< emacs-major-version 29)
+       (advice-remove 'dired-guess-default
+                      #'diredc--advice--shell-guess-fallback))
      (advice-remove 'dired-run-shell-command
                     #'diredc--advice--dired-run-shell-command)
      (advice-remove 'dired-read-shell-command
