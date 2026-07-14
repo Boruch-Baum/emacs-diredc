@@ -10,7 +10,6 @@
   +  As such, this function departs both from the usual approach of
     `diredc`to behave like Midnight Commander, and from the Emacs
     `wdired-mode` approach."
-
 ** 2025-11
 + Bug fixes to diredc shell windows
 
