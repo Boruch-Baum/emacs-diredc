@@ -425,6 +425,17 @@
 (declare-function key-assist                 "ext:key-assist.el")
 (declare-function key-assist--get-keybinding "ext:key-assist.el")
 
+(declare-function magit-section-toggle "magit-section")
+(declare-function magit-current-section  "magit-section")
+(declare-function magit-status-mode "magit-status")
+(declare-function magit-setup-buffer-internal "magit-mode")
+(declare-function magit-toplevel "magit-git")
+
+(declare-function face-remap-remove-relative "face-remap")
+
+;; (declare-function minibuffer-default-add-dired-shell-commands)
+
+(declare-function s-chop-prefix "s")
 
 ;;
 ;;; Forked Code:
