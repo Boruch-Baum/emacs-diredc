@@ -2978,10 +2978,12 @@ Instead, run the first shell command on the file, and
 asynchronously."
   (let ((execs (dired-guess-default (list target)))
         exec found)
-    (when (< 1 (length execs))
+    (when (and (listp execs)
+               (< 1 (length execs)))
       ;; The final entry in 'execs' should always be xdg-open or
       ;; similar, which we will ignore for this feature since it would
       ;; apply to files find-able for Emacs.
+         ;; TODO: FALSE: "should always be xdg-open or similar"
       (setq execs (butlast execs))
       (while (and (not found)
                 (setq exec (pop execs)))
