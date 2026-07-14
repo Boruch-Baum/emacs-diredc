@@ -564,7 +564,7 @@ filename (for example when the final directory is empty)."
                        (not (member filename-no-dir (list "." "..")))
                        (not (eolp)))
               (let ((path (dired-get-filename nil t))
-                    entry-1 entry-2 files)
+                    entry files)
                 (while (and (file-directory-p path)
                             (file-accessible-directory-p path)
                             (setq files (directory-files path
@@ -575,9 +575,9 @@ filename (for example when the final directory is empty)."
                                               (lambda(f)
                                                 (string-match rgx (file-name-nondirectory f)))
                                               files)))
-                            (setq entry-1 (pop files))
-                            (not (setq entry-2 (pop files))))
-                  (setq path entry-1))
+                            (setq entry (pop files))
+                            (not (pop files)))
+                  (setq path entry))
                 (if (and (not files)
                          (equal path (dired-get-filename nil t)))
                     (when diredc-collapse-fontify
@@ -596,7 +596,7 @@ filename (for example when the final directory is empty)."
                            (insert " ")))
                     (dired-insert-set-properties (line-beginning-position) (line-end-position))
                     (when diredc-collapse-fontify
-                      (diredc-collapse--create-ov (not entry-1))))))))
+                      (diredc-collapse--create-ov (not entry))))))))
           (forward-line 1))
         (dired--align-all-files)))))
 
@@ -2148,7 +2148,7 @@ A hook function for `post-command-hook'. It creates and kills
                     (let ((default-directory (file-name-as-directory new-file))
                           (magit-display-buffer-noselect t)
                           (magit-display-buffer-function
-                            (lambda (buf) t)))
+                            (lambda (_buf) t)))
                       (magit-setup-buffer-internal
                         #'magit-status-mode nil nil browse-buf))
                     "")
@@ -2736,7 +2736,7 @@ variable `diredc-browse-helper' is used (see there)."
              (setq var 'diredc-browse-helper)
              (format "property \"%s\".\n\nSee variable %s"
                      helper-match var))
-           (browse-binary
+           (browse-binary ; TODO: Currently, always nil
              (setq var 'diredc-browse-binary)
              (format "property \"binary-file\".\n\nSee variable %s"
                      var))
@@ -4365,7 +4365,7 @@ the file in another frame."
               (if (< 1 (length (frame-list)))
                 (next-frame)
                (make-frame diredc-frame-parameters)))
-            (condition-case err ; return to diredc on failure
+            (condition-case _err ; return to diredc on failure
               (find-file target)
               (error (diredc))))))))))
 
