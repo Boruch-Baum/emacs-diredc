@@ -1800,7 +1800,7 @@ not directly revert buffers."
   "Diredc advice to function `dired-display-file'.
 
 This advice is necessary to avoid creating a new window on the
-'diredc' frame.
+`diredc' frame.
 
 OLDFUN is function `dired-display-file' and is never called
 by this advice.
@@ -2348,15 +2348,14 @@ See function `diredc--update-control' and variable `diredc-update'."
 
 Revert visible `diredc' buffers every `diredc-update-interval'
 seconds, unless they are in `wdired-mode'. ARG should be either
-'start or 'stop.
+\='start or \='stop.
 
 This mitigates a deficiency of `Dired' in that it relies upon
-`file-notify' to trigger buffer updates. However, `file-notify'
-does not trigger upon events that change the size of a file that
-is listed in a `Dired' buffer. Thus, for example, when a tar
-archive is created, vanilla `Dired' records its size as zero, and
-it will remain so until some other action triggers a
-`revert-buffer' event."
+\='file-notify\=' to trigger buffer updates. However, \='file-notify\='
+does not trigger upon events that change the size of a file that is
+listed in a `Dired' buffer. Thus, for example, when a tar archive is
+created, vanilla `Dired' records its size as zero, and it will remain so
+until some other action triggers a `revert-buffer' event."
   (when diredc-update
     (and diredc--update-timer
          (timerp diredc--update-timer)
@@ -2759,7 +2758,7 @@ variable `diredc-browse-helper' is used (see there)."
     )))
 
 (defun diredc-trash--show-more-file-info--freedesktop ()
-  "Internal function for `diredc-mode' 'Trash' file buffers.
+  "Internal function for `diredc-mode' \='Trash\=' file buffers.
 
 A hook function for `post-command-hook', when the user
 environment utilizes the freedesktop method of trash
@@ -3282,7 +3281,7 @@ window, and exits `diredc-browse-mode'."
 
 The file's buffer is not selected, and is killed when POINT in
 the dired buffer moves to another file. This is meant to emulate
-the behavior of 'C-x q' in midnight commander.
+the behavior of \='C-x q\=' in midnight commander.
 
 The browsed file's buffer is put in `view-mode' with the
 additional feature of having the TAB key set to switch the
@@ -3524,7 +3523,7 @@ files to their original location."
                  num (if (equal num "1") "" "s") size))))))
 
 (defun diredc-trash-restore ()
-  "Attempts to move 'Trash' file at point to its original location.
+  "Attempts to move \='Trash\=' file at point to its original location.
 
 If a REGION is selected, all files within are restored."
   (interactive)
@@ -3581,7 +3580,7 @@ If a REGION is selected, all files within are restored."
          (deactivate-mark))))))
 
 (defun diredc-trash-view ()
-  "Jump to the user's 'Trash' files directory."
+  "Jump to the user's \='Trash\=' files directory."
   (interactive)
   (cond
    (trash-directory
@@ -4156,7 +4155,7 @@ the currently selected `dired' buffer is the one navigated to the
 location of the `dired' buffer in the second window.
 
 Compare with the Midnight Commander feature bound there by
-default to 'M-i'."
+default to \='M-i\='."
 ;; NOTE: This function twice uses (user-error "") as an 'undocumented'
 ;; alternative to `throw'/`catch' or `defun*'/`return-from'. If that
 ;; causes some unexpected side-effect or otherwise bothers you, feel
