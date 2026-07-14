@@ -3693,7 +3693,7 @@ Navigates to the first filename entry in a `diredc' buffer. With
 a PREFIX-ARG, behaves as function `beginning-of-buffer'."
   (interactive)
   (if current-prefix-arg
-    (beginning-of-buffer current-prefix-arg)
+    (call-interactively 'beginning-of-buffer current-prefix-arg)
    (goto-char (point-min))
    (forward-line 1))
   (dired-move-to-filename))
@@ -3704,7 +3704,7 @@ Navigates to the final filename entry in a `diredc' buffer. With
 a PREFIX-ARG, behaves as function `end-of-buffer'."
   (interactive)
   (if current-prefix-arg
-    (end-of-buffer current-prefix-arg)
+    (call-interactively 'end-of-buffer current-prefix-arg)
    (goto-char (point-max))
    (forward-line -1))
   (dired-move-to-filename))
