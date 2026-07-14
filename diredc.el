@@ -366,6 +366,10 @@
 ;;    single file at the bottom of a "sparse" path, ie.
 ;;    ./path/with/only/single/entry. This feature respects
 ;;    `dired-omit-mode'.
+;;
+;; *] Use `diredc-unmark-all-marks' (default: whatever had been mapped
+;;    to function `dired-unmark-all-marks', usually `U') with a
+;;    PREFIX-ARG to act on the other `diredc' buffer.
 
 ;;
 ;;; Feedback:
@@ -630,6 +634,8 @@ Returns a keymap."
                                       'diredc-hist-find-file)
     (define-key map [remap dired-find-alternate-file]
                                       'diredc-hist-find-alternate-file)
+    (define-key map [remap dired-unmark-all-marks]
+                                      'diredc-unmark-all-marks)
     (define-key map (kbd "<RET>")     'diredc-hist-find-alternate-file)
     (define-key map (kbd "o")         'diredc-hist-find-file-other-window)
     (define-key map (kbd "/")         'diredc-hist-change-directory)
@@ -3137,6 +3143,22 @@ Emacs `wdired-mode` approach."
           nil ; REQUIRE-MATCH
           original-filename)) ; INITIAL INPUT
       nil)))
+
+(defun diredc-unmark-all-marks (&optional arg)
+  "Wrapper function for `dired-unmark-all-marks'.
+Adds functionality that when called with a PREFIX-ARG it operates on any
+other visible `diredc' buffers in the current frame."
+  (interactive "p")
+  (if (not current-prefix-arg)
+    (dired-unmark-all-marks)
+   (let ((win-list (window-list))
+         (this-win (selected-window))
+         win)
+     (while (setq win (pop win-list))
+       (when (not (equal win this-win))
+         (with-current-buffer (window-buffer win)
+           (when (eq major-mode 'dired-mode)
+             (dired-unmark-all-marks))))))))
 
 (defun diredc-shell-kill ()
   "Kill the current shell window, buffer, and process."
