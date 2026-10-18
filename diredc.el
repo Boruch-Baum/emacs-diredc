@@ -1647,6 +1647,10 @@ This is mainly here to ensure uniformity of the regexp."
   ;;       over-ride shell-aliases.
   (string-match "^ *\\\\?\\([^ ]+\\)" cmd))
 
+(defsubst diredc--set-hide-details-mode (yes)
+  "Set mode `dired-hide-details-mode' based upon value of YES."
+  (dired-hide-details-mode (if yes 1 -1)))
+
 (defsubst diredc--set-omit-mode (yes)
   "Set mode `dired-omit-mode' based upon value of YES."
   (dired-omit-mode (if yes 1 -1)))
@@ -4075,11 +4079,13 @@ NON-NIL is equivalent to calling the function with a PREFIX-ARG."
        (setf (nth 1 (nth pos hist)) (point))
        (setf (nth 2 (nth pos hist)) dired-omit-mode))
      (let ((omit-mode dired-omit-mode)
+           (hide-details-mode dired-hide-details-mode)
            (special-sort diredc--sort-option-special))
        (set-window-dedicated-p nil nil)
        (find-alternate-file new-dir)
        (set-window-dedicated-p nil t)
        (diredc--set-omit-mode omit-mode)
+       (diredc--set-hide-details-mode hide-details-mode)
        (when (setq restore-point
                (diredc--hist-guess-restore-point hist pos))
          (goto-char restore-point))
@@ -4104,6 +4110,7 @@ NON-NIL is equivalent to calling the function with a PREFIX-ARG."
 With optional prefix argument, repeat ARG times."
   (interactive "p")
   (let ((dir dired-directory)
+        (hide-details-mode dired-hide-details-mode)
         (omit-mode dired-omit-mode)
         (special-sort diredc--sort-option-special))
     (set-window-dedicated-p nil nil)
@@ -4129,6 +4136,7 @@ With optional prefix argument, repeat ARG times."
                 diredc-hist--history-list (car new)
                 diredc-hist--history-position (cdr new))))
        (diredc--set-omit-mode omit-mode)
+       (diredc--set-hide-details-mode hide-details-mode)
        (when special-sort
          (diredc--sort-special special-sort)))
      ((zerop arg) (message "Nothing to do!"))
@@ -4147,6 +4155,7 @@ With optional prefix argument, repeat ARG times."
                 (setq dir (file-name-directory (substring dir 0 -1)))))
             (find-alternate-file (or dir "/"))
             (diredc--set-omit-mode omit-mode)
+            (diredc--set-hide-details-mode hide-details-mode)
             (when (setq restore-point
                     (diredc--hist-guess-restore-point hist pos))
               (goto-char restore-point))
@@ -4161,6 +4170,7 @@ With optional prefix argument, repeat ARG times."
               (setq dir (file-name-directory (substring dir 0 -1)))))
           (find-alternate-file (or dir "/"))
           (diredc--set-omit-mode omit-mode)
+          (diredc--set-hide-details-mode hide-details-mode)
           (when special-sort
             (diredc--sort-special special-sort))))))
      (set-window-dedicated-p nil t)))
@@ -4197,7 +4207,8 @@ default to \='M-i\='."
   (let ((start-buf (current-buffer))
         (wins (window-list))
         (this-dir dired-directory)
-        that-dir old-point win target-win new-buf new-data hist pos dup-found omit-mode)
+        that-dir old-point pos win target-win new-buf new-data
+        hist dup-found omit-mode hide-details-mode)
     (cond
      ((or arg current-prefix-arg) ; Change this window/buffer
        (diredc--ask-on-directory-deleted dired-directory)
@@ -4210,10 +4221,12 @@ default to \='M-i\='."
                 (setq that-dir dired-directory)
                 (setq wins '(nil)))
               (setq old-point (point))
+              (setq hide-details-mode dired-hide-details-mode)
               (setq omit-mode dired-omit-mode)))))
        (when (and (not that-dir) dup-found)
          (if (equal omit-mode dired-omit-mode)
            (user-error "Nothing to do!")
+          (diredc--set-hide-details-mode hide-details-mode)
           (diredc--set-omit-mode omit-mode)
           (user-error ""))) ; Naughty me!
        (diredc--abort-on-directory-deleted that-dir)
@@ -4225,6 +4238,7 @@ default to \='M-i\='."
          (setf (nth 2 (nth pos hist)) dired-omit-mode))
        (set-window-dedicated-p nil nil)
        (find-alternate-file that-dir)
+       (diredc--set-hide-details-mode hide-details-mode)
        (diredc--set-omit-mode omit-mode)
        (set-window-dedicated-p nil t)
        (goto-char old-point)
@@ -4243,6 +4257,7 @@ default to \='M-i\='."
                  (setq dup-found t)
                 (setq that-dir dired-directory)
                 (setq wins '(nil)))
+               (setq hide-details-mode dired-hide-details-mode)
                (setq omit-mode dired-omit-mode)
                (setq target-win win)))))
        (when (and (not that-dir) dup-found)
@@ -4251,9 +4266,11 @@ default to \='M-i\='."
           ;; Abbreviated version of the remainder of the function
           (setq omit-mode dired-omit-mode)
           (select-window target-win 'norecord)
+          (diredc--set-hide-details-mode hide-details-mode)
           (diredc--set-omit-mode omit-mode)
           (pop-to-buffer start-buf)
           (user-error ""))) ; Naughty me!
+       (setq hide-details-mode dired-hide-details-mode)
        (setq omit-mode dired-omit-mode)
        (select-window target-win 'norecord)
        (diredc--ask-on-directory-deleted dired-directory)
@@ -4265,6 +4282,7 @@ default to \='M-i\='."
          (setf (nth 2 (nth pos hist)) dired-omit-mode))
        (set-window-dedicated-p nil nil)
        (find-alternate-file this-dir)
+       (diredc--set-hide-details-mode hide-details-mode)
        (diredc--set-omit-mode omit-mode)
        (set-window-dedicated-p nil t)
        (goto-char old-point)
@@ -4280,23 +4298,27 @@ default to \='M-i\='."
   (if diredc-history-mode
     (diredc-hist-find-alternate-file)
    (let ((omit-mode dired-omit-mode)
+         (hide-details-mode dired-hide-details-mode)
          (special-sort diredc--sort-option-special))
      (dired-find-file)
      (when (eq major-mode 'dired-mode)
+       (diredc--set-hide-details-mode hide-details-mode)
        (diredc--set-omit-mode omit-mode)
        (when special-sort
          (diredc--sort-special special-sort))
        (set-window-dedicated-p nil t)))))
-
+;; TODO: COMBINE
 (defun diredc-hist-find-file-other-window ()
   "In Dired, visit this file or directory in another window."
   (interactive)
   (if diredc-history-mode
     (diredc-hist-find-alternate-file 'other-window)
    (let ((omit-mode dired-omit-mode)
+         (hide-details-mode dired-hide-details-mode)
          (special-sort diredc--sort-option-special))
      (dired-find-file-other-window)
      (when (eq major-mode 'dired-mode)
+       (diredc--set-hide-details-mode hide-details-mode)
        (diredc--set-omit-mode omit-mode)
        (when special-sort
          (diredc--sort-special special-sort))
@@ -4319,15 +4341,18 @@ the file in another frame."
   (diredc--abort-on-directory-deleted dired-directory)
   (if (not diredc-history-mode)
     (let ((omit-mode dired-omit-mode)
+          (hide-details-mode dired-hide-details-mode)
           (special-sort diredc--sort-option-special))
       (dired-find-alternate-file)
       (when (eq major-mode 'dired-mode)
+        (diredc--set-hide-details-mode hide-details-mode)
         (diredc--set-omit-mode omit-mode)
         (when special-sort
           (diredc--sort-special special-sort))
         (set-window-dedicated-p nil t)))
    (diredc-hist--prune-deleted-directories)
    (let ((target (substring-no-properties (dired-get-file-for-visit)))
+         (hide-details-mode dired-hide-details-mode)
          (omit-mode dired-omit-mode)
          (special-sort diredc--sort-option-special)
          hist pos new hist-elem)
@@ -4372,6 +4397,7 @@ the file in another frame."
                    (dired target)
                    ; maybe instead: look for and use a non-visible dired buffer?
                   )))))))
+        (diredc--set-hide-details-mode hide-details-mode)
         (diredc--set-omit-mode omit-mode)
         (when special-sort
           (diredc--sort-special special-sort))
