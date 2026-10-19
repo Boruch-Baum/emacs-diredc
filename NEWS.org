@@ -1,4 +1,41 @@
 * diredc NEWS
+** 2026-10
++ New feature for `diredc-hide-details-mode`
+
+  + The setting for this mode is preserved for a diredc window on
+    directory navigation within that window.
+
+** 2026-07
++ New feature for `diredc-unmark-all-marks`
+
+  + Use a PREXIX-ARG to act on the "other" (non-focused) diredc buffer.
+
++ Bug fixes
+
+  + Properly handle `diredc--guess-and-do-async-shell-command` when
+    only one guess exists.
+
+** 2026-06
++ Bug fixes
+
+  + When a buffer exists for a visited file, but it is not in a
+    'visible' window of a frame, then diredc would not raise it.
+
+  + When visiting a file currently being viewed in
+    diredc-browse-mode, the diredc-browse-mode buffer would be
+    visited in the other frame.
+
+    + Now, diredc-browse-mode is exited, and the file is properly
+      visited in the other frame, in its proper mode.
+
+** 2026-05
++ New feature for `diredc-recover`
+
+  + Silently recover from configurable problem situations.
+
+  + The initial use-case preevnts files from being visited in a diredc
+    frame outside of diredc-browse-mode.
+
 ** 2026-02
 + New feature `diredc-rename-in-place`
 
