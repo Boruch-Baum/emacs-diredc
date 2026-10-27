@@ -3970,7 +3970,8 @@ Optionally, navigate prefix argument ARG number of history elements."
          (hist diredc-hist--history-list)
          (pos  (min max req)) ; i don't think pos is necessary anymore, use req instead
          (hist-elem (nth pos hist))
-         (special-sort diredc--sort-option-special))
+         (special-sort diredc--sort-option-special)
+         (hide-details-mode dired-hide-details-mode))
     (if ovr
       (message "No more directory history!")
      (setf (nth 1 (nth diredc-hist--history-position hist)) (point))
@@ -3979,6 +3980,7 @@ Optionally, navigate prefix argument ARG number of history elements."
      (find-alternate-file (car hist-elem))
      (set-window-dedicated-p nil t)
      (diredc--set-omit-mode (nth 2 hist-elem))
+     (diredc--set-hide-details-mode hide-details-mode)
      (goto-char (nth 1 hist-elem))
      (when special-sort
        (diredc--sort-special special-sort))
